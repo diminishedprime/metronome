@@ -4,6 +4,14 @@ import { connect } from 'react-redux'
 
 import './app.css'
 
+const BPM = connect(
+  (state) => ({
+    bpm: state.bpm
+  })
+)(({bpm}) => (
+  <div>{bpm}</div>
+))
+
 let lastPoint = undefined
 let lastTime = undefined
 const InfiniKnob = connect(
@@ -25,7 +33,7 @@ const InfiniKnob = connect(
             const y = -(boxCenter.y - clientY)
             const x = -(boxCenter.x - clientX)
             const radians = Math.atan2(y, x)
-            dispatch({type: 'setRadians', radians})
+            dispatch({type: 'async setRadians', radians})
       }
     })
 )(({radians, size, id, onTouchMove}) => {
@@ -47,35 +55,28 @@ const InfiniKnob = connect(
            height: size/2,
            borderRadius: size/2,
            position: "absolute",
-           top: size*0.25 + Math.sin(radians) * size*0.25,
-           left: size*0.25 + Math.cos(radians) * size*0.25,
+           top: size*0.25 + Math .sin(radians) * size*(1/4),
+           left: size*0.25 + Math.cos(radians) * size*(1/4),
          }}
     />
   </div>
 )
 })
-let radians = 0
-class App extends React.Component {
-   constructor(props) {
-    super(props);
-    this.state = {radians: Math.PI};
-  }
 
-  componentDidMount() {
-    this.timerID = setInterval(
-      () => {
-      },
-      100
-    );
-  }
+const Start = connect(
+  undefined,
+  (dispatch) => ({
+    onClick: () => dispatch({type: 'async togglePlaying'})
+  })
+)(({onClick}) => (
+  <button onClick={onClick}>Toggle</button>
+))
 
-  render() {
-    return (
+const App = () => (
       <div className="app">
+        <BPM />
         <InfiniKnob id="knob1"/>
+        <Start />
       </div>
 )
-  }
-}
-
 export default App
