@@ -1,6 +1,5 @@
 import R from 'ramda'
 import {
-  eventChannel,
   delay,
 } from 'redux-saga'
 import {
@@ -70,7 +69,7 @@ const bufferChange = function* () {
 }
 
 const setRadians = function* () {
-  yield takeEvery('async setRadians', function*({radians}) {
+  yield takeEvery('async setRadians', function* ({radians}) {
     const currentRads = yield select(R.prop('radians'))
     const diff = currentRads - radians
     yield put({type: 'async addtobuffer', diff})

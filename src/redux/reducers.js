@@ -22,8 +22,8 @@ const setRadians = (state, {radians}) => {
 }
 
 const addBpm = (state, {amount}) => R.pipe(
-    R.over(bpmPath, R.add(amount)),
-    R.over(bpmPath, R.clamp(30, 300))
+  R.over(bpmPath, R.add(amount)),
+  R.over(bpmPath, R.clamp(30, 300))
 )(state)
 
 const setPlaying = (state, {flag}) =>
