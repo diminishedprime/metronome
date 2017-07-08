@@ -14,7 +14,10 @@ import {
 const togglePlaying = function* () {
   const audio = yield select(R.prop('audio'))
 
-  yield takeLatest('async togglePlaying', function* () {
+  yield takeLatest((action) => {
+    return action.type === 'async togglePlaying'
+    || action.type === 'add bpm'
+  }, function* () {
     const bpm = yield select(R.prop('bpm'))
     const bpmAsMillis = 60000 / bpm
     console.log(bpmAsMillis)
@@ -26,6 +29,7 @@ const togglePlaying = function* () {
       return () => clearInterval(iv)
     })
     try {
+      audio.play()
       let beep
       while ((beep = yield take(chan))) {
         audio.play()
