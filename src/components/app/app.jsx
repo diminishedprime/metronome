@@ -1,7 +1,8 @@
 import React from 'react'
 import R from 'ramda'
 import { connect } from 'react-redux'
-
+import { afStopMetronome, afStartMetronome } from '../../redux/actions.js'
+import { playingPath } from '../../redux/paths.js'
 import './app.css'
 
 const BPM = connect(
@@ -63,20 +64,27 @@ const InfiniKnob = connect(
 )
 })
 
-const Start = connect(
-  undefined,
+const StartStop = connect(
+  (state) => ({
+    playing: R.view(playingPath, state),
+  }),
   (dispatch) => ({
-    onClick: () => dispatch({type: 'async togglePlaying'})
+    stop: () => dispatch(afStopMetronome()),
+    start: () => dispatch(afStartMetronome()),
+  }),
+  ({playing}, {stop, start}) => ({
+     onClick: playing ? stop : start,
+     text: playing ? 'Stop' : 'Start',
   })
-)(({onClick}) => (
-  <button onClick={onClick}>Toggle</button>
+)(({onClick, text}) => (
+  <button onClick={onClick}>{text}</button>
 ))
 
 const App = () => (
       <div className="app">
         <BPM />
         <InfiniKnob id="knob1"/>
-        <Start />
+        <StartStop />
       </div>
 )
 export default App

@@ -3,9 +3,16 @@ import R from 'ramda'
 import {
   initialState,
 } from './initial-state.js'
+import {
+  SET_PLAYING,
+  ADD_BPM,
+} from './actions.js'
+import {
+  playingPath,
+  radiansPath,
+  bpmPath,
+} from './paths.js'
 
-const radiansPath = R.lensPath(['radians'])
-const bpmPath = R.lensPath(['bpm'])
 
 const setRadians = (state, {radians}) => {
   const currentRads = R.view(radiansPath, state)
@@ -19,10 +26,14 @@ const addBpm = (state, {amount}) => R.pipe(
     R.over(bpmPath, R.clamp(30, 300))
 )(state)
 
+const setPlaying = (state, {flag}) =>
+  R.set(playingPath, flag, state)
+
 export const app = (state=initialState, action) => {
   switch(action.type) {
+    case SET_PLAYING: return setPlaying(state, action)
     case 'stateSetRadians': return setRadians(state, action)
-    case 'add bpm': return addBpm(state, action)
+    case ADD_BPM: return addBpm(state, action)
     default:
       if (!(
         action.type.startsWith('async') ||
