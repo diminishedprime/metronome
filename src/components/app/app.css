@@ -1,0 +1,15 @@
+.app {
+    font-family: "Helvetica";
+    margin: auto;
+    border: 3px solid #f6f8fa;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.knobContainer {
+  background-color: red;
+}
+
+.knobCircle {
+  background-color: green;
+}
