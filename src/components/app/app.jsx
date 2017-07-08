@@ -3,15 +3,8 @@ import R from 'ramda'
 import { connect } from 'react-redux'
 import { afStopMetronome, afStartMetronome } from '../../redux/actions.js'
 import { playingPath } from '../../redux/paths.js'
+import HUD from '../hud/hud.jsx'
 import './app.css'
-
-const BPM = connect(
-  (state) => ({
-    bpm: state.bpm,
-  })
-)(({bpm}) => (
-  <div>{bpm}</div>
-))
 
 const InfiniKnob = connect(
   (state) => ({
@@ -44,19 +37,19 @@ const InfiniKnob = connect(
         width: size,
         borderRadius: size,
       }}
-      id={id}
+         id={id}
     >
       <div className="knobCircle"
-        onTouchMove={onTouchMove}
-        id={`${id}Circle`}
-        style={{
-          width: size/2,
-          height: size/2,
-          borderRadius: size/2,
-          position: 'absolute',
-          top: size*0.25 + Math .sin(radians) * size*(1/4),
-          left: size*0.25 + Math.cos(radians) * size*(1/4),
-        }}
+           onTouchMove={onTouchMove}
+           id={`${id}Circle`}
+           style={{
+             width: size/2,
+             height: size/2,
+             borderRadius: size/2,
+             position: 'absolute',
+             top: size*0.25 + Math .sin(radians) * size*(1/4),
+             left: size*0.25 + Math.cos(radians) * size*(1/4),
+           }}
       />
     </div>
   )
@@ -80,7 +73,7 @@ const StartStop = connect(
 
 const App = () => (
   <div className="app">
-    <BPM />
+    <HUD />
     <InfiniKnob id="knob1"/>
     <StartStop />
   </div>
