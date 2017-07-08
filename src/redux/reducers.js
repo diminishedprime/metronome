@@ -9,17 +9,9 @@ import {
 } from './actions.js'
 import {
   playingPath,
-  radiansPath,
   bpmPath,
 } from './paths.js'
 
-
-const setRadians = (state, {radians}) => {
-  const currentRads = R.view(radiansPath, state)
-  const tmp = currentRads % (Math.PI*2)
-  const diff = radians - tmp
-  return R.over(radiansPath, R.add(diff), state)
-}
 
 const addBpm = (state, {amount}) => R.pipe(
   R.over(bpmPath, R.add(amount)),
@@ -32,7 +24,6 @@ const setPlaying = (state, {flag}) =>
 export const app = (state=initialState, action) => {
   switch(action.type) {
     case SET_PLAYING: return setPlaying(state, action)
-    case 'stateSetRadians': return setRadians(state, action)
     case ADD_BPM: return addBpm(state, action)
     default:
       if (!(

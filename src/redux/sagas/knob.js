@@ -3,7 +3,6 @@ import {
   delay,
 } from 'redux-saga'
 import {
-  takeEvery,
   takeLatest,
   select,
   put,
@@ -16,7 +15,6 @@ import {
   START_METRONOME,
   afSetPlaying,
   STOP_METRONOME,
-  afAddBPM,
   ADD_BPM,
   afStartMetronome,
 } from '../actions.js'
@@ -55,32 +53,8 @@ const startMetronome = function* () {
   })
 }
 
-const threshold = (Math.PI) / 60
-let totalDiff = 0
-const bufferChange = function* () {
-  yield takeEvery('async addtobuffer', function* ({diff}) {
-    if (Math.abs(totalDiff) < threshold) {
-      totalDiff += diff
-    } else {
-      yield put(afAddBPM((totalDiff > 0) ? -1 : 1))
-      totalDiff = 0
-    }
-  })
-}
-
-const setRadians = function* () {
-  yield takeEvery('async setRadians', function* ({radians}) {
-    const currentRads = yield select(R.prop('radians'))
-    const diff = currentRads - radians
-    yield put({type: 'async addtobuffer', diff})
-    yield put({type: 'stateSetRadians', radians})
-  })
-}
-
 export default function* () {
   yield all([
-    setRadians(),
-    bufferChange(),
     bufferSetBpm(),
     startMetronome(),
   ])
