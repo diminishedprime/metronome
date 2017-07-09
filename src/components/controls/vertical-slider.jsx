@@ -26,6 +26,7 @@ class VerticalSlider extends React.Component {
     const fixedPosition = R.clamp(min, max, relativePosition)
     const { onChange } = this.props
     if (!onChange) {
+      // eslint-disable-next-line no-console
       console.log('Don\'t forget to pass in an onChange prop')
     } else {
       onChange(1 - (fixedPosition / max))
@@ -61,8 +62,8 @@ class VerticalSlider extends React.Component {
       <div style={{margin: '1em', textAlign:'center'}}>
         <div style={{display: 'flex', height: '25px', alignItems: 'center', justifyContent: 'center'}}>{title}</div>
         <div style={outerStyle} ref={(me) => {
-            this.knobContainer = me
-          }}>
+          this.knobContainer = me
+        }}>
           <div style={innerStyle} onTouchMove={this.onTouchMove}/>
           {
             R.pipe(

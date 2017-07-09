@@ -45,7 +45,7 @@ const fetchAsArrayBuffer = (url) => {
 
 const decodeAudioData = (audioContext, arrayBuffer) => {
   return new Promise((resolve, reject) => {
-    audioContext.decodeAudioData(arrayBuffer, resolve, reject);
+    audioContext.decodeAudioData(arrayBuffer, resolve, reject)
   })
 }
 

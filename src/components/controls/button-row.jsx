@@ -33,7 +33,7 @@ const TapIn = connect(
   mapDispatchToProps
 )(({tap}) => (
   <button style={R.merge(baseButtonStyle, {flexGrow: '1'})}
-          onClick={tap}>
+    onClick={tap}>
     Tap
   </button>
 ))

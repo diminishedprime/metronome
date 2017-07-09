@@ -101,9 +101,9 @@ class InfiniKnob extends React.Component {
 
     return (
       <div style={outerCircleStyle}
-           ref={(me) => {
-               this.knobContainer = me
-             }}>
+        ref={(me) => {
+          this.knobContainer = me
+        }}>
         <div onTouchMove={this.onTouchMove} style={innerCircleStyle}/>
         <div style={lilNubStyle(Math.PI)} />
         <div style={lilNubStyle(Math.PI * (1/2))} />

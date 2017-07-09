@@ -26,6 +26,6 @@
         "deploy": "gh-pages -d build",
         "test": "react-scripts test --env=jsdom",
         "eject": "react-scripts eject",
-        "lint": "eslint . --ignore-path .gitignore --ext .js --ext .jsx"
+        "lint": "eslint . --ignore-path .eslintignore --ext .js --ext .jsx"
     }
 }
