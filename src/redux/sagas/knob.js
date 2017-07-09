@@ -73,23 +73,11 @@ const tapIn = function* () {
       )(previousTaps)
     }
     if (previousTaps.length > 1) {
-      const groupsOf2 = R.reduce(
-        ({last, groups}, ts) => {
-          return ({
-            last: ts,
-            groups: R.append([last, ts], groups),
-          })
-        },
-        {
-          last: R.head(previousTaps),
-          groups: [],
-        },
-        R.tail(previousTaps)
-      )
       const average = R.pipe(
+        R.aperture(2),
         R.map(([a, b]) => b - a),
         R.mean
-      )(groupsOf2.groups)
+      )(previousTaps)
       yield put(afSetBPM(60000/average))
     }
   })
