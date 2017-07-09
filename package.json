@@ -1,27 +1,31 @@
 {
-  "name": "metronome",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "ramda": "^0.24.1",
-    "react": "^15.6.1",
-    "react-dom": "^15.6.1",
-    "react-redux": "^5.0.5",
-    "redux": "^3.7.1",
-    "redux-saga": "^0.15.4"
-  },
-  "devDependencies": {
-    "eslint": "^4.1.1",
-    "eslint-plugin-import": "^2.7.0",
-    "eslint-plugin-react": "^7.1.0",
-    "eslint-plugin-redux-saga": "^0.4.0",
-    "react-scripts": "1.0.10"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject",
-    "lint": "eslint . --ignore-path .gitignore --ext .js --ext .jsx"
-  }
+    "homepage": "https://diminishedprime.github.io/metronome",
+    "name": "metronome",
+    "version": "0.1.0",
+    "private": true,
+    "dependencies": {
+        "gh-pages": "^1.0.0",
+        "ramda": "^0.24.1",
+        "react": "^15.6.1",
+        "react-dom": "^15.6.1",
+        "react-redux": "^5.0.5",
+        "redux": "^3.7.1",
+        "redux-saga": "^0.15.4"
+    },
+    "devDependencies": {
+        "eslint": "^4.1.1",
+        "eslint-plugin-import": "^2.7.0",
+        "eslint-plugin-react": "^7.1.0",
+        "eslint-plugin-redux-saga": "^0.4.0",
+        "react-scripts": "1.0.10"
+    },
+    "scripts": {
+        "start": "react-scripts start",
+        "build": "react-scripts build",
+        "predeploy": "npm run build",
+        "deploy": "gh-pages -d build",
+        "test": "react-scripts test --env=jsdom",
+        "eject": "react-scripts eject",
+        "lint": "eslint . --ignore-path .gitignore --ext .js --ext .jsx"
+    }
 }
