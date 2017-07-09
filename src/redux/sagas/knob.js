@@ -11,6 +11,7 @@ import {
   race,
   call,
   takeEvery,
+  fork,
 } from 'redux-saga/effects'
 import {
   afSetBPM,
@@ -21,7 +22,7 @@ import {
   ADD_BPM,
   afStartMetronome,
 } from '../actions.js'
-import { playingPath, bufferPath, masterVolumePath, quarterVolumePath } from '../paths.js'
+import { playingPath, bufferPath, masterVolumePath, quarterVolumePath, eighthVolumePath } from '../paths.js'
 
 const bufferSetBpm = function* () {
   yield takeLatest(ADD_BPM, function* () {
@@ -34,25 +35,38 @@ const bufferSetBpm = function* () {
 }
 const audioContext = new AudioContext()
 
-const beep = function* (buffer, millis) {
-  const source = audioContext.createBufferSource()
-  source.buffer = buffer
-  const gainNode = audioContext.createGain()
-  const masterVolume = yield select(R.view(masterVolumePath))
-  const quarterVolume = yield select(R.view(quarterVolumePath))
-  gainNode.gain.value = masterVolume * quarterVolume
-  gainNode.connect(audioContext.destination)
-  source.connect(gainNode)
-  source.start()
+const fancyBeep = function* (buffer, millis, path, offset) {
+  const volume = yield select(R.view(path))
+  if (volume > 0) {
+    const source = audioContext.createBufferSource()
+    source.buffer = buffer
+    const gainNode = audioContext.createGain()
+    const masterVolume = yield select(R.view(masterVolumePath))
+    gainNode.gain.value = masterVolume * volume
+    gainNode.connect(audioContext.destination)
+    source.connect(gainNode)
+    source.start()
+  }
+
+  const timeBeforeDelay = new Date().getTime()
   const {shouldContinue} = yield race({
-    shouldContinue: call(delay, millis),
+    shouldContinue: call(delay, (millis - offset)),
     stop: take(STOP_METRONOME),
   })
+  const expectedTime = timeBeforeDelay + (millis - offset)
+  const actualTime = new Date().getTime()
+  const newOffset = actualTime - expectedTime
+
   if (shouldContinue) {
-    yield beep(buffer, millis)
+    yield fancyBeep(buffer, millis, path, newOffset)
   } else {
     yield put(afSetPlaying(false))
   }
+}
+
+const beep = function* (buffer, millis) {
+  yield fork(fancyBeep, buffer, millis, quarterVolumePath, 0)
+  yield fork(fancyBeep, buffer, millis, eighthVolumePath, millis / 2)
 }
 
 const startMetronome = function* () {
