@@ -10,8 +10,11 @@ import {
   take,
   race,
   call,
+  takeEvery,
 } from 'redux-saga/effects'
 import {
+  afSetBPM,
+  TAP_IN,
   START_METRONOME,
   afSetPlaying,
   STOP_METRONOME,
@@ -53,8 +56,44 @@ const startMetronome = function* () {
   })
 }
 
+const tapIn = function* () {
+  let previousTaps = []
+  yield takeEvery(TAP_IN, function* () {
+    const timeStamp = new Date().getTime()
+    if (previousTaps.length < 3) {
+      previousTaps = R.append(timeStamp, previousTaps)
+    } else {
+      previousTaps = R.pipe(
+        R.append(timeStamp),
+        R.remove(0, 1)
+      )(previousTaps)
+    }
+    if (previousTaps.length > 1) {
+      const groupsOf2 = R.reduce(
+        ({last, groups}, ts) => {
+          return ({
+            last: ts,
+            groups: R.append([last, ts], groups),
+          })
+        },
+        {
+          last: R.head(previousTaps),
+          groups: [],
+        },
+        R.tail(previousTaps)
+      )
+      const average = R.pipe(
+        R.map(([a, b]) => b - a),
+        R.mean
+      )(groupsOf2.groups)
+      yield put(afSetBPM(60000/average))
+    }
+  })
+}
+
 export default function* () {
   yield all([
+    tapIn(),
     bufferSetBpm(),
     startMetronome(),
   ])

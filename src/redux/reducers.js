@@ -6,24 +6,36 @@ import {
 import {
   SET_PLAYING,
   ADD_BPM,
+  SET_BPM,
 } from './actions.js'
 import {
   playingPath,
   bpmPath,
 } from './paths.js'
 
+const clampBPM = R.pipe(
+  R.over(bpmPath, R.clamp(30, 250)),
+  R.over(bpmPath, Math.floor)
+)
+
+const setBPM = (state, {bpm}) => R.pipe(
+  R.set(bpmPath, bpm),
+  clampBPM
+)(state)
 
 const addBpm = (state, {amount}) => R.pipe(
   R.over(bpmPath, R.add(amount)),
-  R.over(bpmPath, R.clamp(30, 300))
+  clampBPM
 )(state)
 
 const setPlaying = (state, {flag}) =>
   R.set(playingPath, flag, state)
 
+
 export const app = (state=initialState, action) => {
   switch(action.type) {
     case SET_PLAYING: return setPlaying(state, action)
+    case SET_BPM: return setBPM(state, action)
     case ADD_BPM: return addBpm(state, action)
     default:
       if (!(
