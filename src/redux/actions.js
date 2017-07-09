@@ -20,3 +20,10 @@ export const afSetBPM = (bpm) => ({type: SET_BPM, bpm})
 
 export const SET_BUFFER = 'set buffer'
 export const afSetBuffer = (buffer) => ({type: SET_BUFFER, buffer})
+
+export const SET_VOLUME = 'set volume'
+export const afSetVolume = (path, value) => ({
+  type: SET_VOLUME,
+  path,
+  value,
+})

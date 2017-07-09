@@ -21,7 +21,7 @@ import {
   ADD_BPM,
   afStartMetronome,
 } from '../actions.js'
-import { playingPath, bufferPath } from '../paths.js'
+import { playingPath, bufferPath, masterVolumePath, quarterVolumePath } from '../paths.js'
 
 const bufferSetBpm = function* () {
   yield takeLatest(ADD_BPM, function* () {
@@ -37,7 +37,12 @@ const audioContext = new AudioContext()
 const beep = function* (buffer, millis) {
   const source = audioContext.createBufferSource()
   source.buffer = buffer
-  source.connect(audioContext.destination)
+  const gainNode = audioContext.createGain()
+  const masterVolume = yield select(R.view(masterVolumePath))
+  const quarterVolume = yield select(R.view(quarterVolumePath))
+  gainNode.gain.value = masterVolume * quarterVolume
+  gainNode.connect(audioContext.destination)
+  source.connect(gainNode)
   source.start()
   const {shouldContinue} = yield race({
     shouldContinue: call(delay, millis),

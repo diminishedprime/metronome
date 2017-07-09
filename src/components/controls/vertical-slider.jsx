@@ -1,7 +1,6 @@
 import React from 'react'
 import R from 'ramda'
 
-const nubPositionPath = R.lensPath(['nubPosition'])
 const outerWidth = 24
 const outerHeight = 160
 const innerHeight = 40
@@ -13,11 +12,6 @@ const outerBackground = 'black'
 class VerticalSlider extends React.Component {
   constructor() {
     super()
-
-    this.state = R.compose(
-      R.set(nubPositionPath, outerHeight - innerHeight)
-    )({})
-
     this.onTouchMove = this.onTouchMove.bind(this)
   }
 
@@ -27,13 +21,21 @@ class VerticalSlider extends React.Component {
     const {clientY} = t0
     const { top: boxTop, bottom: boxBottom } = this.knobContainer.getBoundingClientRect()
     const relativePosition = clientY - boxTop
-    const fixedPosition = R.clamp(0, boxBottom-boxTop-innerHeight, relativePosition)
-    this.setState(R.set(nubPositionPath, fixedPosition))
+    const min = 0
+    const max = (boxBottom - boxTop)
+    const fixedPosition = R.clamp(min, max, relativePosition)
+    const { onChange } = this.props
+    if (!onChange) {
+      console.log('Don\'t forget to pass in an onChange prop')
+    } else {
+      onChange(1 - (fixedPosition / max))
+    }
   }
 
   render() {
 
-    const innerTop = R.view(nubPositionPath, this.state)
+    const { title, value } = this.props
+    const innerTop = (1 - value) * (outerHeight - innerHeight)
 
     const outerStyle = {
       position: 'relative',
@@ -53,12 +55,11 @@ class VerticalSlider extends React.Component {
 
     }
 
-    const { title } = this.props
-    const numBumps = 8
+    const numBumps = 7
 
     return (
       <div style={{margin: '1em', textAlign:'center'}}>
-        <div>{title}</div>
+        <div style={{display: 'flex', height: '25px', alignItems: 'center', justifyContent: 'center'}}>{title}</div>
         <div style={outerStyle} ref={(me) => {
             this.knobContainer = me
           }}>
@@ -69,9 +70,9 @@ class VerticalSlider extends React.Component {
               R.map((idx) => {
                 const nubHeight = 2
                 const nubWidth = R.cond([
-                  [R.equals(numBumps/2 - 1), R.always(10)],
-                  [R.equals(numBumps/4 - 1), R.always(7.5)],
-                  [R.equals(3*numBumps/4 - 1), R.always(7.5)],
+                  [R.equals(3), R.always(10)],
+                  [R.equals(5), R.always(7.5)],
+                  [R.equals(1), R.always(7.5)],
                   [R.T, R.always(5)],
                 ])(idx)
                 const nubLeft = outerWidth + (10 - nubWidth / 2)

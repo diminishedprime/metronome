@@ -8,6 +8,7 @@ import {
   ADD_BPM,
   SET_BPM,
   SET_BUFFER,
+  SET_VOLUME,
 } from './actions.js'
 import {
   playingPath,
@@ -36,8 +37,12 @@ const setPlaying = (state, {flag}) =>
 const setBuffer = (state, {buffer}) =>
   R.set(bufferPath, buffer, state)
 
+const setVolume = (state, {path, value}) =>
+  R.set(path, value, state)
+
 export const app = (state=initialState, action) => {
   switch(action.type) {
+    case SET_VOLUME: return setVolume(state, action)
     case SET_BUFFER: return setBuffer(state, action)
     case SET_PLAYING: return setPlaying(state, action)
     case SET_BPM: return setBPM(state, action)
