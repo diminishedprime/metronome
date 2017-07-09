@@ -1,19 +1,23 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { afAddBPM } from '../../redux/actions.js'
-import StartStop from './start-stop.jsx'
 import InfiniKnob from './infini-knob.jsx'
-import TapIn from './tap-in.jsx'
+import ButtonRow from './button-row.jsx'
 
 const mapDispatchToProps = (dispatch) => ({
   emitDelta: (amount) => dispatch(afAddBPM(amount)),
 })
 
+const style = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+}
+
 const Controls = ({emitDelta}) => (
-  <div>
+  <div style={style}>
     <InfiniKnob emitDelta={emitDelta}/>
-    <StartStop />
-    <TapIn />
+    <ButtonRow />
   </div>
 )
 

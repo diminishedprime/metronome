@@ -7,6 +7,7 @@ const style = {
   fontFamily: 'Helvetica',
   margin: 'auto',
   display: 'flex',
+  flexDirection: 'column',
 }
 
 const App = () => (
