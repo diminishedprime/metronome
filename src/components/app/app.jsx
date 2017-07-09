@@ -1,7 +1,6 @@
 import React from 'react'
 import HUD from '../hud/hud.jsx'
 import Controls from '../controls/controls.jsx'
-import './app.css'
 
 const style = {
   fontFamily: 'Helvetica',
