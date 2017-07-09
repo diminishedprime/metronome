@@ -17,3 +17,6 @@ export const masterVolumePath = R.lensPath(masterVolumeA)
 
 const quarterVolumeA = [...volumeA, 'quarter']
 export const quarterVolumePath = R.lensPath(quarterVolumeA)
+
+const eighthVolumeA = [...volumeA, 'eighth']
+export const eighthVolumePath = R.lensPath(eighthVolumeA)
