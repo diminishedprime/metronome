@@ -1,5 +1,8 @@
 import R from 'ramda'
 
+const bufferA = ['buffer']
+export const bufferPath = R.lensPath(bufferA)
+
 const playingA = ['playing']
 export const playingPath = R.lensPath(playingA)
 

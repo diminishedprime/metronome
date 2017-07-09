@@ -21,7 +21,7 @@ import {
   ADD_BPM,
   afStartMetronome,
 } from '../actions.js'
-import { playingPath } from '../paths.js'
+import { playingPath, bufferPath } from '../paths.js'
 
 const bufferSetBpm = function* () {
   yield takeLatest(ADD_BPM, function* () {
@@ -32,27 +32,31 @@ const bufferSetBpm = function* () {
     }
   })
 }
+const audioContext = new AudioContext()
 
-const beep = function* (audio, millis) {
-  audio.play()
+const beep = function* (buffer, millis) {
+  const source = audioContext.createBufferSource()
+  source.buffer = buffer
+  source.connect(audioContext.destination)
+  source.start()
   const {shouldContinue} = yield race({
     shouldContinue: call(delay, millis),
     stop: take(STOP_METRONOME),
   })
   if (shouldContinue) {
-    yield beep(audio, millis)
+    yield beep(buffer, millis)
   } else {
     yield put(afSetPlaying(false))
   }
 }
 
 const startMetronome = function* () {
-  const audio = yield select(R.prop('audio'))
   yield takeLatest(START_METRONOME, function* () {
+    const buffer = yield select(R.view(bufferPath))
     yield put(afSetPlaying(true))
     const bpm = yield select(R.prop('bpm'))
     const bpmAsMillis = 60000 / bpm
-    yield beep(audio, bpmAsMillis)
+    yield beep(buffer, bpmAsMillis)
   })
 }
 

@@ -17,3 +17,6 @@ export const afTapIn = () => ({type: TAP_IN})
 
 export const SET_BPM = 'set bpm'
 export const afSetBPM = (bpm) => ({type: SET_BPM, bpm})
+
+export const SET_BUFFER = 'set buffer'
+export const afSetBuffer = (buffer) => ({type: SET_BUFFER, buffer})

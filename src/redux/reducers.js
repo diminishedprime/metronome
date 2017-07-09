@@ -7,10 +7,12 @@ import {
   SET_PLAYING,
   ADD_BPM,
   SET_BPM,
+  SET_BUFFER,
 } from './actions.js'
 import {
   playingPath,
   bpmPath,
+  bufferPath,
 } from './paths.js'
 
 const clampBPM = R.pipe(
@@ -31,9 +33,12 @@ const addBpm = (state, {amount}) => R.pipe(
 const setPlaying = (state, {flag}) =>
   R.set(playingPath, flag, state)
 
+const setBuffer = (state, {buffer}) =>
+  R.set(bufferPath, buffer, state)
 
 export const app = (state=initialState, action) => {
   switch(action.type) {
+    case SET_BUFFER: return setBuffer(state, action)
     case SET_PLAYING: return setPlaying(state, action)
     case SET_BPM: return setBPM(state, action)
     case ADD_BPM: return addBpm(state, action)
