@@ -98,6 +98,10 @@ const tapIn = function* () {
         R.mean
       )(previousTaps)
       yield put(afSetBPM(60000/average))
+      const isPlaying = yield select(R.view(playingPath))
+      if (isPlaying) {
+        yield put(afStartMetronome())
+      }
     }
   })
 }
