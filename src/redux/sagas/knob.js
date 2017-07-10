@@ -52,22 +52,24 @@ const betterPerfBeep = function* (click, up, myClick, millis24th, idx, offset) {
   }
   if (doPlay) {
     const volume = yield select(R.view(path))
-    const masterVolume = yield select(R.view(masterVolumePath))
-    const source = audioContext.createBufferSource()
-    source.buffer = buffer
-    const gainNode = audioContext.createGain()
-    gainNode.gain.value = masterVolume * volume
-    gainNode.connect(audioContext.destination)
-    source.connect(gainNode)
-    source.start()
+    if (volume > 0) {
+      const masterVolume = yield select(R.view(masterVolumePath))
+      const source = audioContext.createBufferSource()
+      source.buffer = buffer
+      const gainNode = audioContext.createGain()
+      gainNode.gain.value = masterVolume * volume
+      gainNode.connect(audioContext.destination)
+      source.connect(gainNode)
+      source.start()
+    }
   }
 
-  const timeBeforeDelay = new Date().getTime()
+  const timeBeforeDelay = performance.now()
   const {shouldContinue} = yield race({
-    shouldContinue: call(delay, millis24th),
+    shouldContinue: call(delay, (millis24th - offset)),
     stop: take(STOP_METRONOME),
   })
-  const actualTime = new Date().getTime()
+  const actualTime = performance.now()
   const expectedTime = timeBeforeDelay + (millis24th - offset)
   const newOffset = actualTime - expectedTime
   if (shouldContinue) {
@@ -81,7 +83,7 @@ const beep = function* (tempoAsMillis) {
   const click = yield select(R.view(bufferPath('weakPulse')))
   const up = yield select(R.view(bufferPath('up')))
   const myClick = yield select(R.view(bufferPath('myClick')))
-  yield betterPerfBeep(click, up, myClick, Math.round(tempoAsMillis/24), 0, 0)
+  yield betterPerfBeep(click, up, myClick, tempoAsMillis/24, 0, 0)
 }
 
 const startMetronome = function* () {
