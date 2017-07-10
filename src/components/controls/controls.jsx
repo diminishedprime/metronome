@@ -4,6 +4,7 @@ import { afAddBPM } from '../../redux/actions.js'
 import InfiniKnob from './infini-knob.jsx'
 import ButtonRow from './button-row.jsx'
 import VolumeControl from './volume-control.jsx'
+import CommonTempos from './common-tempos.jsx'
 
 const mapDispatchToProps = (dispatch) => ({
   emitDelta: (amount) => dispatch(afAddBPM(amount)),
@@ -17,6 +18,7 @@ const style = {
 
 const Controls = ({emitDelta}) => (
   <div style={style}>
+    <CommonTempos />
     <InfiniKnob emitDelta={emitDelta}/>
     <VolumeControl />
     <ButtonRow />

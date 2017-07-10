@@ -20,12 +20,13 @@ import {
   afSetPlaying,
   STOP_METRONOME,
   ADD_BPM,
+  SET_BPM,
   afStartMetronome,
 } from '../actions.js'
 import { playingPath, bufferPath, masterVolumePath, quarterVolumePath, eighthVolumePath, sixteenthVolumePath, tripletVolumePath } from '../paths.js'
 
 const bufferSetBpm = function* () {
-  yield takeLatest(ADD_BPM, function* () {
+  yield takeLatest(({type}) => type === ADD_BPM || type === SET_BPM, function* () {
     const isPlaying = yield select(R.view(playingPath))
     if (isPlaying) {
       yield delay(500)
