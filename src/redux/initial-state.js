@@ -4,6 +4,7 @@ import {
   quarterVolumePath,
   eighthVolumePath,
   sixteenthVolumePath,
+  tripletVolumePath,
 } from './paths.js'
 
 export const initialState = R.compose(
@@ -11,6 +12,7 @@ export const initialState = R.compose(
   R.set(quarterVolumePath, 1.0),
   R.set(eighthVolumePath, 0.0),
   R.set(sixteenthVolumePath, 0.0),
+  R.set(tripletVolumePath, 0.0),
   R.identity
 )({
   radians: 4.7,

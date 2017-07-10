@@ -23,3 +23,6 @@ export const eighthVolumePath = R.lensPath(eighthVolumeA)
 
 const sixteenthVolumeA = [...volumeA, 'sixteenth']
 export const sixteenthVolumePath = R.lensPath(sixteenthVolumeA)
+
+const tripletVolumeA = [...volumeA, 'triplet']
+export const tripletVolumePath = R.lensPath(tripletVolumeA)
