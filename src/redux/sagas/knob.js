@@ -22,7 +22,7 @@ import {
   ADD_BPM,
   afStartMetronome,
 } from '../actions.js'
-import { playingPath, bufferPath, masterVolumePath, quarterVolumePath, eighthVolumePath, sixteenthVolumePath } from '../paths.js'
+import { playingPath, bufferPath, masterVolumePath, quarterVolumePath, eighthVolumePath, sixteenthVolumePath, tripletVolumePath } from '../paths.js'
 
 const bufferSetBpm = function* () {
   yield takeLatest(ADD_BPM, function* () {
@@ -73,6 +73,10 @@ const beep = function* (buffer, millis) {
   // e and uh
   yield fork(fancyBeep, buffer, millis, sixteenthVolumePath, millis / 4)
   yield fork(fancyBeep, buffer, millis, sixteenthVolumePath, 3*millis / 4)
+
+  // puh let
+  yield fork(fancyBeep, buffer, millis, tripletVolumePath, millis / 3)
+  yield fork(fancyBeep, buffer, millis, tripletVolumePath, 2*millis / 3)
 
 }
 
