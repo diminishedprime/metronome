@@ -37,14 +37,15 @@ const audioContext = new AudioContext()
 
 // 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
 // q         s   puh       e           let   s
-const betterPerfBeep = function* (buffer, millis24th, idx, offset) {
+const betterPerfBeep = function* (click, up, myClick, millis24th, idx, offset) {
   let path
+  let buffer = myClick
   let doPlay = true
   switch (idx) {
-    case 0: path = quarterVolumePath; break
+    case 0: path = quarterVolumePath; buffer = click; break
     case 5: path = sixteenthVolumePath; break
     case 7: path = tripletVolumePath; break
-    case 11: path = eighthVolumePath; break
+    case 11: path = eighthVolumePath; buffer=up; break
     case 15: path = tripletVolumePath; break
     case 17: path = sixteenthVolumePath; break
     default: doPlay = false; break
@@ -70,15 +71,17 @@ const betterPerfBeep = function* (buffer, millis24th, idx, offset) {
   const expectedTime = timeBeforeDelay + (millis24th - offset)
   const newOffset = actualTime - expectedTime
   if (shouldContinue) {
-    yield betterPerfBeep(buffer, millis24th, (idx + 1) % 24, newOffset)
+    yield betterPerfBeep(click, up, myClick, millis24th, (idx + 1) % 24, newOffset)
   } else {
     yield put(afSetPlaying(false))
   }
 }
 
 const beep = function* (tempoAsMillis) {
-  const buffer = yield select(R.view(bufferPath))
-  yield betterPerfBeep(buffer, Math.round(tempoAsMillis/24), 0, 0)
+  const click = yield select(R.view(bufferPath('weakPulse')))
+  const up = yield select(R.view(bufferPath('up')))
+  const myClick = yield select(R.view(bufferPath('myClick')))
+  yield betterPerfBeep(click, up, myClick, Math.round(tempoAsMillis/24), 0, 0)
 }
 
 const startMetronome = function* () {

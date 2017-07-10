@@ -34,8 +34,8 @@ const addBpm = (state, {amount}) => R.pipe(
 const setPlaying = (state, {flag}) =>
   R.set(playingPath, flag, state)
 
-const setBuffer = (state, {buffer}) =>
-  R.set(bufferPath, buffer, state)
+const setBuffer = (state, {buffer, bufferName}) =>
+  R.set(bufferPath(bufferName), buffer, state)
 
 const setVolume = (state, {path, value}) =>
   R.set(path, value, state)

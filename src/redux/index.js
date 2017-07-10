@@ -1,4 +1,6 @@
-import click from '../click.wav'
+import weakPulse from '../weakPulse.wav'
+import up from '../metronomeUp.wav'
+import myClick from '../click.wav'
 import createSagaMiddleware from 'redux-saga'
 import {
   createStore,
@@ -51,9 +53,23 @@ const decodeAudioData = (audioContext, arrayBuffer) => {
 
 const audioContext = new AudioContext()
 
-fetchAsArrayBuffer(click)
+fetchAsArrayBuffer(weakPulse)
   .then((res) => decodeAudioData(audioContext, res)
     .then((buffer) => {
-      store.dispatch(afSetBuffer(buffer))
+      store.dispatch(afSetBuffer('weakPulse', buffer))
+    })
+  )
+
+fetchAsArrayBuffer(up)
+  .then((res) => decodeAudioData(audioContext, res)
+    .then((buffer) => {
+      store.dispatch(afSetBuffer('up', buffer))
+    })
+  )
+
+fetchAsArrayBuffer(myClick)
+  .then((res) => decodeAudioData(audioContext, res)
+    .then((buffer) => {
+      store.dispatch(afSetBuffer('myClick', buffer))
     })
   )
