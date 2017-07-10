@@ -7,9 +7,11 @@ import {
   masterVolumePath,
   quarterVolumePath,
   eighthVolumePath,
+  sixteenthVolumePath,
 } from '../../redux/paths.js'
 
 const mapStateToProps = (state) => ({
+  sixteenthVolume: R.view(sixteenthVolumePath, state),
   eighthVolume: R.view(eighthVolumePath, state),
   quarterVolume: R.view(quarterVolumePath, state),
   masterVolume: R.view(masterVolumePath, state),
@@ -20,8 +22,9 @@ const mapDispatchToProps = (dispatch) => ({
   onChange: (path) => (value) => dispatch(afSetVolume(path, value)),
 })
 
-const VolumeControl = ({onChange, quarterVolume, masterVolume, eighthVolume}) => (
+const VolumeControl = ({onChange, quarterVolume, masterVolume, eighthVolume, sixteenthVolume}) => (
   <div style={{display:'flex'}}>
+    <VerticalSlider title={'♬'} onChange={onChange(sixteenthVolumePath)} value={sixteenthVolume} />
     <VerticalSlider title={'♪'} onChange={onChange(eighthVolumePath)} value={eighthVolume} />
     <VerticalSlider title={'♩'} onChange={onChange(quarterVolumePath)} value={quarterVolume}/>
     <VerticalSlider title={'Vol'} onChange={onChange(masterVolumePath)} value={masterVolume} />
