@@ -11,7 +11,6 @@ import {
   race,
   call,
   takeEvery,
-  fork,
 } from 'redux-saga/effects'
 import {
   afSetBPM,
@@ -35,35 +34,6 @@ const bufferSetBpm = function* () {
   })
 }
 const audioContext = new AudioContext()
-
-const fancyBeep = function* (buffer, millis, path, offset) {
-  const volume = yield select(R.view(path))
-  if (volume > 0) {
-    const source = audioContext.createBufferSource()
-    source.buffer = buffer
-    const gainNode = audioContext.createGain()
-    const masterVolume = yield select(R.view(masterVolumePath))
-    gainNode.gain.value = masterVolume * volume
-    gainNode.connect(audioContext.destination)
-    source.connect(gainNode)
-    source.start()
-  }
-
-  const timeBeforeDelay = new Date().getTime()
-  const {shouldContinue} = yield race({
-    shouldContinue: call(delay, (millis - offset)),
-    stop: take(STOP_METRONOME),
-  })
-  const expectedTime = timeBeforeDelay + (millis - offset)
-  const actualTime = new Date().getTime()
-  const newOffset = actualTime - expectedTime
-
-  if (shouldContinue) {
-    yield fancyBeep(buffer, millis, path, newOffset)
-  } else {
-    yield put(afSetPlaying(false))
-  }
-}
 
 // 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
 // q         s   puh       e           let   s
