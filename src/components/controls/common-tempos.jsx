@@ -69,7 +69,7 @@ const style = {
 const grouping = 4
 
 const Tempo = ({name, bpms, bpm, setBpm}) => (
-  <div onClick={setBpm(bpm)} style={{cursor: 'pointer', display: 'flex', flexDirection: 'column', border: '3px solid #f6f8fa', alignItems: 'center', width: `${(1/grouping)*100}%`}}>
+  <div onClick={setBpm(bpm)} style={{padding: '5px', cursor: 'pointer', display: 'flex', flexDirection: 'column', border: '3px solid #f6f8fa', alignItems: 'center', width: `${(1/grouping)*100}%`, backgroundColor: `hsl(${((bpm-25)/200)*120}, 100%, 50%)`}}>
     <div style={{fontWeight: 'bold'}}>{bpms}</div>
     <div style={{fontSize: '0.75em'}}>{name}</div>
   </div>
