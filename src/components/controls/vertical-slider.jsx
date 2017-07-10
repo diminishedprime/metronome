@@ -1,7 +1,7 @@
 import React from 'react'
 import R from 'ramda'
 
-const outerWidth = 24
+const outerWidth = 20
 const outerHeight = 160
 const innerHeight = 40
 const innerWidth = outerWidth * 0.8

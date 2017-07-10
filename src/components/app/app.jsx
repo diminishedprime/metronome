@@ -1,6 +1,7 @@
 import React from 'react'
 import HUD from '../hud/hud.jsx'
 import Controls from '../controls/controls.jsx'
+import CommonTempos from '../controls/common-tempos.jsx'
 
 const style = {
   fontFamily: 'Helvetica',
@@ -12,8 +13,11 @@ const style = {
 
 const App = () => (
   <div style={style}>
+    <CommonTempos />
     <HUD />
-    <Controls />
+    <div style={{position: 'fixed', bottom: '0%'}}>
+      <Controls />
+    </div>
   </div>
 )
 export default App

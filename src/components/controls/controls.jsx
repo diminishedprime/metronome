@@ -14,13 +14,15 @@ const style = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
+  marginTop: '10px',
 }
 
 const Controls = ({emitDelta}) => (
   <div style={style}>
-    <CommonTempos />
-    <InfiniKnob emitDelta={emitDelta}/>
-    <VolumeControl />
+    <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+      <VolumeControl />
+      <InfiniKnob emitDelta={emitDelta} size={200}/>
+    </div>
     <ButtonRow />
   </div>
 )
