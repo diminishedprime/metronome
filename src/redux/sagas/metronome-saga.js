@@ -44,20 +44,30 @@ const nextNote = function* () {
   }
 }
 
-// 01 02 03 04 05 06 07 08 09 10 11 12
-// Q      e puh   &     letuh
+// 01  02  03  04  05  06  07  08  09  10  11  12
+// Q
+// E                       E
+// T               T               T
+// S           S           S           S
 const scheduleNote = function* (beatNumber, time) {
   notesInQueue.push( { note: beatNumber, time: time } )
 
   let path
   let oscValue
   switch (beatNumber) {
+      // Everything on beat 1
     case 0: path = quarterVolumePath; oscValue = 880; break
-    case 2: path = sixteenthVolumePath; oscValue = 440;break
-    case 3: path = tripletVolumePath; oscValue = 660; break
-    case 5: path = eighthVolumePath; oscValue = 220;break
-    case 7: path = tripletVolumePath; oscValue = 600; break
-    case 8: path = sixteenthVolumePath; oscValue = 440; break
+
+      // Eigth Notes Halfway Through
+    case 6: path = eighthVolumePath; oscValue = 880; break
+
+      // Sixteenth notes to either side of eighth
+    case 3:
+    case 9: path = sixteenthVolumePath; oscValue = 880; break
+
+      // Triplets right after and right before sixteenths
+    case 4:
+    case 8: path = tripletVolumePath; oscValue = 880; break
   }
   let volume = 0
   if (path) {
