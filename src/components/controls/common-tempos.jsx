@@ -1,5 +1,4 @@
 import React from 'react'
-import R from 'ramda'
 import { connect } from 'react-redux'
 import { afSetBPM } from '../../redux/actions.js'
 
@@ -62,14 +61,25 @@ const mapDispatchToProps = (dispatch) => ({
 const style = {
   display: 'flex',
   alignItems: 'center',
-  flexDirection: 'column',
+  flexDirection: 'row',
+  flexWrap: 'wrap',
   width: '100%',
 }
 
 const grouping = 4
 
 const Tempo = ({name, bpms, bpm, setBpm}) => (
-  <div onClick={setBpm(bpm)} style={{padding: '5px', cursor: 'pointer', display: 'flex', flexDirection: 'column', border: '3px solid #f6f8fa', alignItems: 'center', width: `${(1/grouping)*100}%`, backgroundColor: `hsl(${((bpm-25)/200)*120}, 100%, 50%)`}}>
+  <div onClick={setBpm(bpm)}
+    style={{
+      paddingTop: '5px',
+      paddingBottom: '5px',
+      cursor: 'pointer',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      width: `${(1/grouping)*100}%`,
+      backgroundColor:`hsl(${((bpm-25)/200)*120}, 100%, 50%)`,
+    }}>
     <div style={{fontWeight: 'bold'}}>{bpms}</div>
     <div style={{fontSize: '0.75em'}}>{name}</div>
   </div>
@@ -78,23 +88,15 @@ const Tempo = ({name, bpms, bpm, setBpm}) => (
 const CommonTempos = ({setBpm}) => (
   <div style={style}>
     {
-      R.pipe(
-        R.splitEvery(grouping),
-        R.addIndex(R.map)(((group, idx2) => (
-          <div key={`tempoThing${idx2}`}style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
-            {
-              group
-                .map((tempo, idx) => (
-                  <Tempo key={`tempo${idx}${idx2}`} {...tempo} setBpm={setBpm} />
-                ))
-            }
-          </div>
-        ))))(tempos)
+      tempos
+        .map((tempo, idx) => (
+          <Tempo key={`tempo${idx}`} {...tempo} setBpm={setBpm} />
+        ))
     }
   </div>
 )
 
-          export default connect(
-            undefined,
-            mapDispatchToProps
+export default connect(
+  undefined,
+  mapDispatchToProps
 )(CommonTempos)

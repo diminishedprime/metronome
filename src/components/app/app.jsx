@@ -15,9 +15,7 @@ const App = () => (
   <div style={style}>
     <CommonTempos />
     <HUD />
-    <div style={{position: 'fixed', bottom: '0%'}}>
-      <Controls />
-    </div>
+    <Controls />
   </div>
 )
 export default App

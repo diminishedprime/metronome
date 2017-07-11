@@ -55,7 +55,7 @@ const scheduleNote = function* (beatNumber, time) {
   let path
   let oscValue
   switch (beatNumber) {
-      // Everything on beat 1
+    // Everything on beat 1
     case 0: path = quarterVolumePath; oscValue = 880; break
 
       // Eigth Notes Halfway Through
@@ -111,7 +111,9 @@ const metronome = function* (timerWorker) {
     timerWorker.onmessage = function(e) {
       emitter(e)
     }
-    return () => timerWorker.onmessage = null
+    return () => {
+      timerWorker.onmessage = null
+    }
   })
 
   yield takeLatest(START_METRONOME, function* () {
