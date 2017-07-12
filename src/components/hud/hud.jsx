@@ -11,7 +11,6 @@ const mapStateToProps = (state) => ({
 
 const hudStyle = {
   display: 'flex',
-  flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
   border: '3px solid #f6f8fa',
@@ -25,6 +24,15 @@ const bpmStyle = {
 const titleStyle = {
   fontWeight: 'bold',
   fontSize: '0.5em',
+  display: 'flex',
+  justifyContent: 'center',
+}
+
+const sigStyle = {
+  display:'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  margin: '2px',
 }
 
 const HUD = ({bpm, beatsPerBar, beat}) => (
@@ -33,9 +41,15 @@ const HUD = ({bpm, beatsPerBar, beat}) => (
       <div style={titleStyle}>BPM</div>
       <div style={bpmStyle}>{bpm}</div>
     </div>
-    <div>
-      <div style={titleStyle}>Style</div>
-      <div>{beat}/{beatsPerBar}</div>
+    <div style={{display:'flex'}}>
+      <div style={sigStyle}>
+        <div style={titleStyle}>Beat</div>
+        <div>{beat}</div>
+      </div>
+      <div style={sigStyle}>
+        <div style={titleStyle}>Style</div>
+        <div>{beatsPerBar}</div>
+      </div>
     </div>
   </div>
 )
