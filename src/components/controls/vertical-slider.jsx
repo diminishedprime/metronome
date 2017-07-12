@@ -13,12 +13,11 @@ class VerticalSlider extends React.Component {
   constructor() {
     super()
     this.onTouchMove = this.onTouchMove.bind(this)
+    this.onClick = this.onClick.bind(this)
+    this.setY = this.setY.bind(this)
   }
 
-  onTouchMove(e) {
-    const t = e.changedTouches
-    const t0 = t[0]
-    const {clientY} = t0
+  setY({clientY}) {
     const { top: boxTop, bottom: boxBottom } = this.knobContainer.getBoundingClientRect()
     const relativePosition = clientY - boxTop
     const min = 0
@@ -31,6 +30,16 @@ class VerticalSlider extends React.Component {
     } else {
       onChange(1 - (fixedPosition / max))
     }
+  }
+
+  onClick(e) {
+    this.setY(e)
+  }
+
+  onTouchMove(e) {
+    const t = e.changedTouches
+    const t0 = t[0]
+    this.setY(t0)
   }
 
   render() {
@@ -61,7 +70,7 @@ class VerticalSlider extends React.Component {
     return (
       <div style={{margin: '1em', textAlign:'center'}}>
         <div style={{display: 'flex', height: '25px', alignItems: 'center', justifyContent: 'center'}}>{title}</div>
-        <div style={outerStyle} ref={(me) => {
+        <div style={outerStyle} onClick={this.onClick} ref={(me) => {
           this.knobContainer = me
         }}>
           <div style={innerStyle} onTouchMove={this.onTouchMove}/>
