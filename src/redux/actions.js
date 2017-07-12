@@ -36,6 +36,6 @@ export const afSetBeatsPerBar = (beatsPerBar) => ({
 
 export const SET_BEAT = 'set beat'
 export const afSetBeat = (beat) => ({
-  type: SET_BEATS_PER_BAR,
+  type: SET_BEAT,
   beat,
 })

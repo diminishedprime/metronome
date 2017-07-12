@@ -15,8 +15,11 @@ import {
   afSetPlaying,
   STOP_METRONOME,
   START_METRONOME,
+  afSetBeat,
 } from '../actions.js'
 import {
+  beatsPerBarPath,
+  beatPath,
   playingPath,
   masterVolumePath,
   quarterVolumePath,
@@ -51,6 +54,20 @@ const nextNote = function* () {
 // S           S           S           S
 const scheduleNote = function* (beatNumber, time) {
   notesInQueue.push( { note: beatNumber, time: time } )
+  if (time - audioContext.currentTime > 0 && beatNumber === 0) {
+    const beat = yield select(R.view(beatPath))
+    const beatsPerBar = yield select(R.view(beatsPerBarPath))
+    if (beat) {
+      const newBeat = (beat + 1)
+      if (newBeat === beatsPerBar + 1) {
+        yield put(afSetBeat(1))
+      } else {
+        yield put(afSetBeat(newBeat))
+      }
+    } else {
+      yield put(afSetBeat(1))
+    }
+  }
 
   let path
   let oscValue
@@ -103,6 +120,7 @@ const stopMetronome = function* (timerWorker) {
   yield takeEvery(STOP_METRONOME, function* () {
     timerWorker.postMessage('stop')
     yield put(afSetPlaying(false))
+    yield put(afSetBeat(undefined))
   })
 }
 
