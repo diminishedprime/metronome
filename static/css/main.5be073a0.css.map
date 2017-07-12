@@ -1,0 +1,1 @@
+{"version":3,"sources":["components/app/app.css"],"names":[],"mappings":"AAAA,KACE,iBAAmB","file":"static/css/main.5be073a0.css","sourcesContent":["body {\n  overflow-y: hidden;\n}\n\n\n\n// WEBPACK FOOTER //\n// ./src/components/app/app.css"],"sourceRoot":""}
