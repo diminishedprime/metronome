@@ -1,5 +1,7 @@
 import R from 'ramda'
 import {
+  beatPath,
+  beatsPerBarPath,
   masterVolumePath,
   quarterVolumePath,
   eighthVolumePath,
@@ -8,6 +10,8 @@ import {
 } from './paths.js'
 
 export const initialState = R.compose(
+  R.set(beatPath, 1),
+  R.set(beatsPerBarPath, 4),
   R.set(masterVolumePath, 0.5),
   R.set(quarterVolumePath, 1.0),
   R.set(eighthVolumePath, 0.0),

@@ -26,3 +26,6 @@ export const sixteenthVolumePath = R.lensPath(sixteenthVolumeA)
 
 const tripletVolumeA = [...volumeA, 'triplet']
 export const tripletVolumePath = R.lensPath(tripletVolumeA)
+
+export const beatsPerBarPath = R.lensPath(['beats per bar'])
+export const beatPath = R.lensPath(['beat'])

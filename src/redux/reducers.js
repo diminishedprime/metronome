@@ -9,8 +9,12 @@ import {
   SET_BPM,
   SET_BUFFER,
   SET_VOLUME,
+  SET_BEATS_PER_BAR,
+  SET_BEAT,
 } from './actions.js'
 import {
+  beatPath,
+  beatsPerBarPath,
   playingPath,
   bpmPath,
   bufferPath,
@@ -40,8 +44,16 @@ const setBuffer = (state, {buffer, bufferName}) =>
 const setVolume = (state, {path, value}) =>
   R.set(path, value, state)
 
+const setBeatsPerBar = (state, {beatsPerBar}) =>
+  R.set(beatsPerBarPath, beatsPerBar, state)
+
+const setBeat = (state, {beat}) =>
+  R.set(beatPath, beat, state)
+
 export const app = (state=initialState, action) => {
   switch(action.type) {
+    case SET_BEAT: return setBeat(state, action)
+    case SET_BEATS_PER_BAR: return setBeatsPerBar(state, action)
     case SET_VOLUME: return setVolume(state, action)
     case SET_BUFFER: return setBuffer(state, action)
     case SET_PLAYING: return setPlaying(state, action)

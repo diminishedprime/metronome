@@ -1,10 +1,12 @@
 import React from 'react'
 import R from 'ramda'
 import { connect } from 'react-redux'
-import { bpmPath } from '../../redux/paths.js'
+import { bpmPath, beatsPerBarPath, beatPath } from '../../redux/paths.js'
 
 const mapStateToProps = (state) => ({
   bpm: R.view(bpmPath, state),
+  beatsPerBar: R.view(beatsPerBarPath, state),
+  beat: R.view(beatPath, state),
 })
 
 const hudStyle = {
@@ -25,10 +27,16 @@ const titleStyle = {
   fontSize: '0.5em',
 }
 
-const HUD = ({bpm}) => (
+const HUD = ({bpm, beatsPerBar, beat}) => (
   <div style={hudStyle}>
-    <div style={titleStyle}>BPM</div>
-    <div style={bpmStyle}>{bpm}</div>
+    <div>
+      <div style={titleStyle}>BPM</div>
+      <div style={bpmStyle}>{bpm}</div>
+    </div>
+    <div>
+      <div style={titleStyle}>Style</div>
+      <div>{beat}/{beatsPerBar}</div>
+    </div>
   </div>
 )
 

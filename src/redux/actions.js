@@ -27,3 +27,15 @@ export const afSetVolume = (path, value) => ({
   path,
   value,
 })
+
+export const SET_BEATS_PER_BAR = 'set beats per bar'
+export const afSetBeatsPerBar = (beatsPerBar) => ({
+  type: SET_BEATS_PER_BAR,
+  beatsPerBar,
+})
+
+export const SET_BEAT = 'set beat'
+export const afSetBeat = (beat) => ({
+  type: SET_BEATS_PER_BAR,
+  beat,
+})
