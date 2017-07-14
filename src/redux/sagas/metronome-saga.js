@@ -12,13 +12,16 @@ import {
 } from 'redux-saga/effects'
 import initWorker from './timer-worker.js'
 import {
+  afNextBeatGroup,
   afSetPlaying,
   STOP_METRONOME,
   START_METRONOME,
   afSetBeat,
 } from '../actions.js'
 import {
-  beatsPerBarPath,
+  styleBeatsPath,
+  stylePath,
+  styleIndexPath,
   beatPath,
   playingPath,
   masterVolumePath,
@@ -56,11 +59,15 @@ const scheduleNote = function* (beatNumber, time) {
   notesInQueue.push( { note: beatNumber, time: time } )
   if (time - audioContext.currentTime > 0 && beatNumber === 0) {
     const beat = yield select(R.view(beatPath))
-    const beatsPerBar = yield select(R.view(beatsPerBarPath))
-    if (beat) {
+    const styles = yield select(R.view(stylePath))
+    const styleIndex = yield select(R.view(styleIndexPath))
+    const beats = yield select(R.view(styleBeatsPath))
+    const beatsPerBar = styles[styleIndex].beats[beats]
+    if (beat !== undefined) {
       const newBeat = (beat + 1)
-      if (newBeat === beatsPerBar + 1) {
+      if (newBeat >= beatsPerBar + 1) {
         yield put(afSetBeat(1))
+        yield put(afNextBeatGroup())
       } else {
         yield put(afSetBeat(newBeat))
       }
@@ -72,7 +79,7 @@ const scheduleNote = function* (beatNumber, time) {
   let path
   let oscValue
   switch (beatNumber) {
-    // Everything on beat 1
+      // Everything on beat 1
     case 0: path = quarterVolumePath; oscValue = 880; break
 
       // Eigth Notes Halfway Through
@@ -137,6 +144,7 @@ const metronome = function* (timerWorker) {
   yield takeLatest(START_METRONOME, function* () {
     timerWorker.postMessage({'interval':lookahead})
     timerWorker.postMessage('start')
+    nextNoteTime = audioContext.currentTime - noteLength
     yield put(afSetPlaying(true))
 
     let fromChan

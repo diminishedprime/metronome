@@ -27,5 +27,10 @@ export const sixteenthVolumePath = R.lensPath(sixteenthVolumeA)
 const tripletVolumeA = [...volumeA, 'triplet']
 export const tripletVolumePath = R.lensPath(tripletVolumeA)
 
-export const beatsPerBarPath = R.lensPath(['beats per bar'])
 export const beatPath = R.lensPath(['beat'])
+
+export const showTimeSignatureSettingsPath = R.lensPath(['show time signature settings'])
+
+export const stylePath = R.lensPath(['styles my man'])
+export const styleBeatsPath = R.lensPath(['style beats, my man'])
+export const styleIndexPath = R.lensPath(['style index'])

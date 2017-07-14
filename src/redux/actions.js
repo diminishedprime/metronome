@@ -28,14 +28,25 @@ export const afSetVolume = (path, value) => ({
   value,
 })
 
-export const SET_BEATS_PER_BAR = 'set beats per bar'
-export const afSetBeatsPerBar = (beatsPerBar) => ({
-  type: SET_BEATS_PER_BAR,
-  beatsPerBar,
-})
-
 export const SET_BEAT = 'set beat'
 export const afSetBeat = (beat) => ({
   type: SET_BEAT,
   beat,
+})
+
+export const SHOW_TIME_SIGNATURE_SETTINGS = 'show time signature settings'
+export const afShowTimeSignatureSettings = (flag) => ({
+  type: SHOW_TIME_SIGNATURE_SETTINGS,
+  flag,
+})
+
+export const CHANGE_STYLE = 'change style'
+export const afChangeStyle = (delta) => ({
+  type: CHANGE_STYLE,
+  delta,
+})
+
+export const NEXT_BEAT_GROUP = 'next beat group'
+export const afNextBeatGroup = () => ({
+  type: NEXT_BEAT_GROUP,
 })

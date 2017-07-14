@@ -1,7 +1,10 @@
 import R from 'ramda'
 import {
+  stylePath,
+  styleIndexPath,
+  styleBeatsPath,
+  showTimeSignatureSettingsPath,
   beatPath,
-  beatsPerBarPath,
   masterVolumePath,
   quarterVolumePath,
   eighthVolumePath,
@@ -9,11 +12,42 @@ import {
   tripletVolumePath,
 } from './paths.js'
 
+export const styles = [
+  {
+    name: '1',
+    beats: [1],
+  }, {
+    name: '2',
+    beats: [2],
+  }, {
+    name: '3',
+    beats: [3],
+  }, {
+    name: '4',
+    beats: [4],
+  }, {
+    name: '5',
+    beats: [5],
+  }, {
+    name: '6',
+    beats: [6],
+  }, {
+    name: '7',
+    beats: [7],
+  }, {
+    name: '2+3',
+    beats: [2, 3],
+  },
+]
+
 export const initialState = R.compose(
+  R.set(styleBeatsPath, 0),
+  R.set(styleIndexPath, 3),
+  R.set(showTimeSignatureSettingsPath, false),
   R.set(beatPath, undefined),
-  R.set(beatsPerBarPath, 4),
+  R.set(stylePath, styles),
   R.set(masterVolumePath, 0.5),
-  R.set(quarterVolumePath, 1.0),
+  R.set(quarterVolumePath, 0.5),
   R.set(eighthVolumePath, 0.0),
   R.set(sixteenthVolumePath, 0.0),
   R.set(tripletVolumePath, 0.0),
@@ -21,5 +55,5 @@ export const initialState = R.compose(
 )({
   radians: 4.7,
   size: 300,
-  bpm: 120,
+  bpm: 125,
 })
