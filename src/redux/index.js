@@ -1,6 +1,3 @@
-import weakPulse from '../weakPulse.wav'
-import up from '../metronomeUp.wav'
-import myClick from '../click.wav'
 import createSagaMiddleware from 'redux-saga'
 import {
   createStore,
@@ -13,9 +10,6 @@ import {
 import {
   app,
 } from './reducers.js'
-import {
-  afSetBuffer,
-} from './actions.js'
 
 // Paths & Initial State
 
@@ -25,51 +19,3 @@ export const store = createStore(
   applyMiddleware(sagaMiddleware)
 )
 sagaMiddleware.run(rootSaga)
-
-// load in wav
-const fetchAsArrayBuffer = (url) => {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest()
-
-    xhr.open('GET', url, true)
-    xhr.responseType = 'arraybuffer'
-
-    xhr.onload = function() {
-      if (xhr.response) {
-        resolve(xhr.response)
-      }
-    }
-    xhr.onerror = reject
-
-    xhr.send()
-  })
-}
-
-const decodeAudioData = (audioContext, arrayBuffer) => {
-  return new Promise((resolve, reject) => {
-    audioContext.decodeAudioData(arrayBuffer, resolve, reject)
-  })
-}
-
-const audioContext = new AudioContext()
-
-fetchAsArrayBuffer(weakPulse)
-  .then((res) => decodeAudioData(audioContext, res)
-    .then((buffer) => {
-      store.dispatch(afSetBuffer('weakPulse', buffer))
-    })
-  )
-
-fetchAsArrayBuffer(up)
-  .then((res) => decodeAudioData(audioContext, res)
-    .then((buffer) => {
-      store.dispatch(afSetBuffer('up', buffer))
-    })
-  )
-
-fetchAsArrayBuffer(myClick)
-  .then((res) => decodeAudioData(audioContext, res)
-    .then((buffer) => {
-      store.dispatch(afSetBuffer('myClick', buffer))
-    })
-  )

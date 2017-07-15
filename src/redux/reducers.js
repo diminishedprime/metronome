@@ -11,7 +11,6 @@ import {
   SET_PLAYING,
   ADD_BPM,
   SET_BPM,
-  SET_BUFFER,
   SET_VOLUME,
   SET_BEAT,
 } from './actions.js'
@@ -23,7 +22,6 @@ import {
   beatPath,
   playingPath,
   bpmPath,
-  bufferPath,
 } from './paths.js'
 
 const clampBPM = R.pipe(
@@ -43,9 +41,6 @@ const addBpm = (state, {amount}) => R.pipe(
 
 const setPlaying = (state, {flag}) =>
   R.set(playingPath, flag, state)
-
-const setBuffer = (state, {buffer, bufferName}) =>
-  R.set(bufferPath(bufferName), buffer, state)
 
 const setVolume = (state, {path, value}) =>
   R.set(path, value, state)
@@ -91,7 +86,6 @@ export const app = (state=initialState, action) => {
     case SHOW_TIME_SIGNATURE_SETTINGS: return showTimeSignatureSettings(state, action)
     case SET_BEAT: return setBeat(state, action)
     case SET_VOLUME: return setVolume(state, action)
-    case SET_BUFFER: return setBuffer(state, action)
     case SET_PLAYING: return setPlaying(state, action)
     case SET_BPM: return setBPM(state, action)
     case ADD_BPM: return addBpm(state, action)
