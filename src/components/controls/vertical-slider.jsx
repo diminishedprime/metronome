@@ -1,9 +1,9 @@
 import React from 'react'
 import R from 'ramda'
 
-const outerWidth = 20
+const outerWidth = 16
 const outerHeight = 160
-const innerHeight = 40
+const innerHeight = 30
 const innerWidth = outerWidth * 0.8
 const innerLeft = outerWidth / 2 - innerWidth / 2
 const innerBackground = 'red'
@@ -68,7 +68,7 @@ class VerticalSlider extends React.Component {
     const numBumps = 7
 
     return (
-      <div style={{margin: '1em', textAlign:'center'}}>
+      <div style={{margin: '0.75em', textAlign:'center'}}>
         <div style={{display: 'flex', height: '25px', alignItems: 'center', justifyContent: 'center'}}>{title}</div>
         <div style={outerStyle} onClick={this.onClick} ref={(me) => {
           this.knobContainer = me
