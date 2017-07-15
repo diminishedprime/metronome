@@ -8,6 +8,7 @@ import {
   put,
   takeLatest,
   all,
+  fork,
   take,
 } from 'redux-saga/effects'
 import initWorker from './timer-worker.js'
@@ -36,7 +37,7 @@ let current16thNote = 0
 const lookahead = 25.0
 const scheduleAheadTime = 0.1
 let nextNoteTime = 0.0
-const noteLength = 0.05
+const baseNoteLength = 0.05
 const notesInQueue = []
 
 const nextNote = function* () {
@@ -55,8 +56,37 @@ const nextNote = function* () {
 // E                       E
 // T               T               T
 // S           S           S           S
-const scheduleNote = function* (beatNumber, time) {
-  notesInQueue.push( { note: beatNumber, time: time } )
+const frequencyForBeat = R.cond([
+  // Quarter
+  [R.equals(0), R.always(440)],
+  // Eigth note
+  [R.equals(6), R.always(441)],
+  // Sixteenth Notes
+  [R.equals(3), R.always(440)],
+  [R.equals(9), R.always(440)],
+  // Triplets
+  [R.equals(4), R.always(440)],
+  [R.equals(8), R.always(440)],
+  // Everything else
+  [R.T, R.always(undefined)],
+])
+
+const pathForBeat = R.cond([
+  // Quarter
+  [R.equals(0), R.always(quarterVolumePath)],
+  // Eigth note
+  [R.equals(6), R.always(eighthVolumePath)],
+  // Sixteenth Notes
+  [R.equals(3), R.always(sixteenthVolumePath)],
+  [R.equals(9), R.always(sixteenthVolumePath)],
+  // Triplets
+  [R.equals(4), R.always(tripletVolumePath)],
+  [R.equals(8), R.always(tripletVolumePath)],
+  // Everything else
+  [R.T, R.always(undefined)],
+])
+
+const updateUIBeatNumber = function* (beatNumber, time) {
   if (time - audioContext.currentTime > 0 && beatNumber === 0) {
     const beat = yield select(R.view(beatPath))
     const styles = yield select(R.view(stylePath))
@@ -75,43 +105,42 @@ const scheduleNote = function* (beatNumber, time) {
       yield put(afSetBeat(1))
     }
   }
+}
 
-  let path
-  let oscValue
-  switch (beatNumber) {
-      // Everything on beat 1
-    case 0: path = quarterVolumePath; oscValue = 880; break
-
-      // Eigth Notes Halfway Through
-    case 6: path = eighthVolumePath; oscValue = 880; break
-
-      // Sixteenth notes to either side of eighth
-    case 3:
-    case 9: path = sixteenthVolumePath; oscValue = 880; break
-
-      // Triplets right after and right before sixteenths
-    case 4:
-    case 8: path = tripletVolumePath; oscValue = 880; break
-  }
-  let volume = 0
+const getVolume = function* (beatNumber) {
+  const path = pathForBeat(beatNumber)
   if (path) {
-    volume = yield select(R.view(path))
+    const volume = yield select(R.view(path))
+    const masterVolume = yield select(R.view(masterVolumePath))
+    return (volume * masterVolume)
+  } else {
+    return undefined
   }
-  const masterVolume = yield select(R.view(masterVolumePath))
-  if (masterVolume === 0 || volume === 0) {
+}
+
+
+const scheduleNote = function* (beatNumber, time) {
+  notesInQueue.push( { note: beatNumber, time: time } )
+
+  const oscValue = yield frequencyForBeat(beatNumber)
+  const volume = yield getVolume(beatNumber)
+  if (!(volume && oscValue)) {
     return
   }
 
   // create an oscillator
   const osc = audioContext.createOscillator()
   osc.frequency.value = oscValue
-  const gainNode = audioContext.createGain()
 
-  gainNode.gain.value = masterVolume * volume
+  const gainNode = audioContext.createGain()
+  gainNode.gain.value = volume
   osc.connect(gainNode)
+
   gainNode.connect(audioContext.destination)
   osc.start( time )
-  osc.stop( time + noteLength )
+  const noteLength = Math.floor(oscValue * baseNoteLength) * (1/oscValue)
+  osc.stop( time + noteLength)
+  yield fork(updateUIBeatNumber, beatNumber, time)
 }
 
 const scheduler = function* () {
@@ -144,7 +173,7 @@ const metronome = function* (timerWorker) {
   yield takeLatest(START_METRONOME, function* () {
     timerWorker.postMessage({'interval':lookahead})
     timerWorker.postMessage('start')
-    nextNoteTime = audioContext.currentTime - noteLength
+    nextNoteTime = audioContext.currentTime - baseNoteLength
     yield put(afSetPlaying(true))
 
     let fromChan
