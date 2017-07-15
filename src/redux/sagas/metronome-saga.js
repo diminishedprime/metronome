@@ -8,7 +8,6 @@ import {
   put,
   takeLatest,
   all,
-  fork,
   take,
 } from 'redux-saga/effects'
 import initWorker from './timer-worker.js'
@@ -20,6 +19,7 @@ import {
   afSetBeat,
 } from '../actions.js'
 import {
+  accentVolumePath,
   styleBeatsPath,
   stylePath,
   styleIndexPath,
@@ -38,7 +38,6 @@ const lookahead = 25.0
 const scheduleAheadTime = 0.1
 let nextNoteTime = 0.0
 const baseNoteLength = 0.05
-const notesInQueue = []
 
 const nextNote = function* () {
   const bpm = yield select(R.prop('bpm'))
@@ -118,29 +117,42 @@ const getVolume = function* (beatNumber) {
   }
 }
 
-
-const scheduleNote = function* (beatNumber, time) {
-  notesInQueue.push( { note: beatNumber, time: time } )
-
-  const oscValue = yield frequencyForBeat(beatNumber)
-  const volume = yield getVolume(beatNumber)
-  if (!(volume && oscValue)) {
-    return
-  }
-
-  // create an oscillator
+const playNote = (freq, volume, start) => {
   const osc = audioContext.createOscillator()
-  osc.frequency.value = oscValue
+  osc.frequency.value = freq
 
   const gainNode = audioContext.createGain()
   gainNode.gain.value = volume
   osc.connect(gainNode)
 
   gainNode.connect(audioContext.destination)
-  osc.start( time )
-  const noteLength = Math.floor(oscValue * baseNoteLength) * (1/oscValue)
-  osc.stop( time + noteLength)
-  yield fork(updateUIBeatNumber, beatNumber, time)
+  osc.start(start)
+  const noteLength = Math.floor(freq * baseNoteLength) * (1/freq)
+  osc.stop(start + noteLength)
+}
+
+const playSubdivision = function* (time, beatNumber) {
+  const oscValue = yield frequencyForBeat(beatNumber)
+  const volume = yield getVolume(beatNumber)
+  if (!(volume && oscValue)) {
+    return
+  }
+  playNote(oscValue, volume, time)
+}
+
+const playAccent = function* (time, beatNumber) {
+  const beat = yield select(R.view(beatPath))
+  const volume = yield select(R.view(accentVolumePath))
+  if (beat === 1 && beatNumber === 0 && volume > 0) {
+    const freq = frequencyForBeat(beatNumber) * 2
+    playNote(freq, volume, time)
+  }
+}
+
+const scheduleNote = function* (beatNumber, time) {
+  yield updateUIBeatNumber(beatNumber, time)
+  yield playSubdivision(time, beatNumber)
+  yield playAccent(time, beatNumber)
 }
 
 const scheduler = function* () {
