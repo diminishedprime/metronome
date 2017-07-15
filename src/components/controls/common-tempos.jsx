@@ -1,58 +1,29 @@
 import React from 'react'
+import R from 'ramda'
 import { connect } from 'react-redux'
+import {
+  bpmPath,
+} from '../../redux/paths.js'
 import { afSetBPM } from '../../redux/actions.js'
 
 const tempos = [
-  {
-    name: 'Grave',
-    bpms: '25–45',
-    bpm: 25,
-  }, {
-    name: 'Largo',
-    bpms: '40–60',
-    bpm: 40,
-  }, {
-    name: 'Lento',
-    bpms: '45–60',
-    bpm: 45,
-  }, {
-    name: 'Larghetto',
-    bpms: '60–66',
-    bpm: 60,
-  }, {
-    name: 'Adagio',
-    bpms: '66–76',
-    bpm: 66,
-  }, {
-    name: 'Andante',
-    bpms: '76–108',
-    bpm: 76,
-  }, {
-    name: 'Moderato',
-    bpms: '108–120',
-    bpm: 108,
-  }, {
-    name: 'Allegretto',
-    bpms: '112–120',
-    bpm: 112,
-  }, {
-    name: 'Allegro moderato',
-    bpms: '116–120',
-    bpm: 116,
-  }, {
-    name: 'Allegro',
-    bpms:'120–168',
-    bpm: 120,
-  }, {
-    name: 'Vivace',
-    bpms: '168–176',
-    bpm: 168,
-  }, {
-    name: 'Presto',
-    bpms: '168–200',
-    bpm: 168,
-  },
+  { name: 'Grave', from: 25, to: 45 },
+  { name: 'Largo', from: 40, to: 60 },
+  { name: 'Lento', from: 45, to: 60 },
+  { name: 'Larghetto', from: 60, to: 66 },
+  { name: 'Adagio', from: 66, to: 76 },
+  { name: 'Andante', from: 76, to: 108 },
+  { name: 'Moderato', from: 108, to: 120 },
+  { name: 'Allegretto', from: 112, to: 120 },
+  { name: 'Allegro moderato', from: 116, to: 120 },
+  { name: 'Allegro', from: 120, to: 168 },
+  { name: 'Vivace', from: 168, to: 176 },
+  { name: 'Presto', from: 168, to: 200 },
 ]
+
+const mapStateToProps = (state) => ({
+  bpm: R.view(bpmPath, state),
+})
 
 const mapDispatchToProps = (dispatch) => ({
   setBpm: (bpm) => () => dispatch(afSetBPM(bpm)),
@@ -68,35 +39,49 @@ const style = {
 
 const grouping = 4
 
-const Tempo = ({name, bpms, bpm, setBpm}) => (
-  <div onClick={setBpm(bpm)}
-    style={{
-      paddingTop: '5px',
-      paddingBottom: '5px',
-      cursor: 'pointer',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      width: `${(1/grouping)*100}%`,
-      backgroundColor:`hsl(${((bpm-25)/200)*120}, 100%, 50%)`,
-    }}>
-    <div style={{fontWeight: 'bold'}}>{bpms}</div>
-    <div style={{fontSize: '0.75em'}}>{name}</div>
-  </div>
-)
+const Tempo = ({name, from, to, setBpm, currentTempo}) => {
+  const inRange = (currentTempo >= from && currentTempo <=to)
+  const bpm = Math.round((from + to) / 2)
+  return (
+    <div onClick={setBpm(bpm)}
+      style={{
+        opacity: inRange ? '1.0' : '0.5',
+        paddingTop: '5px',
+        paddingBottom: '5px',
+        cursor: 'pointer',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        width: `${(1/grouping)*100}%`,
+        backgroundColor:`hsl(${((bpm-25)/200)*120}, 100%, 50%)`,
+        position: 'relative',
+      }}>
+      {inRange && <div style={{
+        position: 'absolute',
+        top: '0',
+        left: `${Math.round((1 - (to - currentTempo) / (to - from)) * 100)}%`,
+        width: '1px',
+        height: '100%',
+        backgroundColor: `hsl(${120 + ((bpm-25)/200)*120}, 100%, 50%)`,
+      }} />}
+      <div style={{fontWeight: 'bold'}}>{from}-{to}</div>
+      <div style={{fontSize: '0.75em'}}>{name}</div>
+    </div>
+  )
+}
 
-const CommonTempos = ({setBpm}) => (
+const CommonTempos = ({setBpm, bpm}) => (
   <div style={style}>
     {
       tempos
         .map((tempo, idx) => (
-          <Tempo key={`tempo${idx}`} {...tempo} setBpm={setBpm} />
+          <Tempo key={`tempo${idx}`} {...tempo} setBpm={setBpm} currentTempo={bpm}/>
         ))
     }
   </div>
 )
 
 export default connect(
-  undefined,
+  mapStateToProps,
   mapDispatchToProps
 )(CommonTempos)
