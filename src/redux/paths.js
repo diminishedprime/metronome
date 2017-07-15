@@ -1,33 +1,15 @@
 import R from 'ramda'
 
-const playingA = ['playing']
-export const playingPath = R.lensPath(playingA)
-
-const bpmA = ['bpm']
-export const bpmPath = R.lensPath(bpmA)
-
-const volumeA = ['volume']
-export const volumePath = R.lensPath(volumeA)
-
-const masterVolumeA = [...volumeA, 'master']
-export const masterVolumePath = R.lensPath(masterVolumeA)
-
-const quarterVolumeA = [...volumeA, 'quarter']
-export const quarterVolumePath = R.lensPath(quarterVolumeA)
-
-const eighthVolumeA = [...volumeA, 'eighth']
-export const eighthVolumePath = R.lensPath(eighthVolumeA)
-
-const sixteenthVolumeA = [...volumeA, 'sixteenth']
-export const sixteenthVolumePath = R.lensPath(sixteenthVolumeA)
-
-const tripletVolumeA = [...volumeA, 'triplet']
-export const tripletVolumePath = R.lensPath(tripletVolumeA)
-
+export const playingPath = R.lensPath(['playing'])
+export const bpmPath = R.lensPath(['bpm'])
+export const volumePath = R.lensPath(['volume'])
+export const masterVolumePath = R.compose(volumePath, R.lensPath(['master']))
+export const quarterVolumePath = R.compose(volumePath, R.lensPath(['quarter']))
+export const eighthVolumePath = R.compose(volumePath, R.lensPath(['eighth']))
+export const sixteenthVolumePath = R.compose(volumePath, R.lensPath(['sixteenth']))
+export const tripletVolumePath = R.compose(volumePath, R.lensPath(['triplet']))
 export const beatPath = R.lensPath(['beat'])
-
-export const showTimeSignatureSettingsPath = R.lensPath(['show time signature settings'])
-
+export const showTimeSignatureSettingsPath = R.lensPath(['show time sig sets'])
 export const stylePath = R.lensPath(['styles my man'])
 export const styleBeatsPath = R.lensPath(['style beats, my man'])
 export const styleIndexPath = R.lensPath(['style index'])
