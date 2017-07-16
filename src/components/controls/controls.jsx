@@ -16,6 +16,7 @@ const style = {
 
 const infiniKnobStyle = {
   marginLeft: 'auto',
+  alignSelf: 'center',
 }
 
 const Controls = ({emitDelta}) => (

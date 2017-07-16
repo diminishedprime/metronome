@@ -36,13 +36,25 @@ const VolumeControl = ({
   accentVolume,
 }) => (
   <div style={{display:'flex'}}>
-    <VerticalSlider title={'♪♪♪'} onChange={onChange(tripletVolumePath)} value={tripletVolume} />
-    <VerticalSlider title={'♬'} onChange={onChange(sixteenthVolumePath)} value={sixteenthVolume} />
-    <VerticalSlider title={'♪♪'} onChange={onChange(eighthVolumePath)} value={eighthVolume} />
-    <VerticalSlider title={'♩'} onChange={onChange(quarterVolumePath)} value={quarterVolume}/>
-    <VerticalSlider title={'Vol'} onChange={onChange(masterVolumePath)} value={masterVolume} />
-    <VerticalSlider title={'Acc'} onChange={onChange(accentVolumePath)} value={accentVolume} />
-
+    {
+      [
+        ['\uE1F1\uE1F3\uE1F3', onChange(tripletVolumePath), tripletVolume],
+        ['\uE1D9', onChange(sixteenthVolumePath), sixteenthVolume],
+        ['\uE1D7', onChange(eighthVolumePath), eighthVolume],
+        ['\uE1D5', onChange(quarterVolumePath), quarterVolume],
+        ['\uE4A0', onChange(accentVolumePath), accentVolume],
+        ['M', onChange(masterVolumePath), masterVolume],
+      ].map(([title, onChange, value], idx) => (
+        <div key={`volumeControl${idx}`}style={{margin: '5px'}}>
+          <div style={{height: '40px', fontFamily: 'Bravura', display: 'flex', justifyContent: 'center'}}>
+            {title}
+          </div>
+          <div style={{height: '150px', display: 'flex', justifyContent: 'center'}}>
+            <VerticalSlider onChange={onChange} value={value} />
+          </div>
+        </div>
+      ))
+    }
   </div>
 )
 
