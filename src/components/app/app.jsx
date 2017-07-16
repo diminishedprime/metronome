@@ -13,9 +13,6 @@ import './app.css'
 const style = {
   fontFamily: 'Helvetica',
   margin: 'auto',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
 }
 
 const mapStateToProps = (state) => ({
