@@ -10,14 +10,12 @@ import {
   takeEvery,
 } from 'redux-saga/effects'
 import {
+  keymapPath,
   playingPath,
 } from '../paths.js'
 import {
-  afKeyForStart,
   KEY_FOR_START,
-  afKeyForDown,
   KEY_FOR_DOWN,
-  afKeyForUp,
   KEY_FOR_UP,
   afAddBPM,
   afStartMetronome,
@@ -49,10 +47,10 @@ const forKeyDown = function* () {
 
 const onDocumentKeyDown = function* (chan) {
   const {key} = yield take(chan)
-  switch (key) {
-    case 'ArrowUp': yield put(afKeyForUp()); break
-    case 'ArrowDown': yield put(afKeyForDown()); break
-    case ' ': yield put(afKeyForStart()); break
+  const keyPath = R.compose(keymapPath, R.lensPath([key]))
+  const action = yield select(R.view(keyPath))
+  if (action) {
+    yield put(action)
   }
   yield onDocumentKeyDown(chan)
 }

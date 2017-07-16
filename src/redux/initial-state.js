@@ -11,7 +11,13 @@ import {
   eighthVolumePath,
   sixteenthVolumePath,
   tripletVolumePath,
+  keymapPath,
 } from './paths.js'
+import {
+  afKeyForStart,
+  afKeyForDown,
+  afKeyForUp,
+} from './actions.js'
 
 export const styles = [
   {
@@ -41,7 +47,15 @@ export const styles = [
   },
 ]
 
+const initialKeymap = {
+  'ArrowUp': afKeyForUp(),
+  'ArrowDown': afKeyForDown(),
+  ' ': afKeyForStart(),
+  'Enter': afKeyForStart(),
+}
+
 export const initialState = R.compose(
+  R.set(keymapPath, initialKeymap),
   R.set(styleBeatsPath, 0),
   R.set(styleIndexPath, 3),
   R.set(showTimeSignatureSettingsPath, false),
