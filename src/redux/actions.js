@@ -53,3 +53,18 @@ export const afSetEditingBPM = (flag) => ({
   type: SET_EDITING_BPM,
   flag,
 })
+
+export const KEY_FOR_UP = 'async key for up'
+export const afKeyForUp = () => ({
+  type: KEY_FOR_UP,
+})
+
+export const KEY_FOR_DOWN = 'async key for down'
+export const afKeyForDown = () => ({
+  type: KEY_FOR_DOWN,
+})
+
+export const KEY_FOR_START = 'async key for start'
+export const afKeyForStart = () => ({
+  type: KEY_FOR_START,
+})
