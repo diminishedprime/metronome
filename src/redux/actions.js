@@ -47,3 +47,9 @@ export const NEXT_BEAT_GROUP = 'next beat group'
 export const afNextBeatGroup = () => ({
   type: NEXT_BEAT_GROUP,
 })
+
+export const SET_EDITING_BPM = 'set editing bpm'
+export const afSetEditingBPM = (flag) => ({
+  type: SET_EDITING_BPM,
+  flag,
+})

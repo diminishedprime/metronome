@@ -7,9 +7,12 @@ import {
   stylePath,
   beatPath,
   showTimeSignatureSettingsPath,
+  editingBPMPath,
 } from '../../redux/paths.js'
 import {
   afShowTimeSignatureSettings,
+  afSetEditingBPM,
+  afSetBPM,
 } from '../../redux/actions.js'
 import TimeSignatureSettings from './time-signature-settings.jsx'
 
@@ -17,6 +20,7 @@ const mapStateToProps = (state) => {
   const style = R.view(stylePath, state)[R.view(styleIndexPath, state)]
 
   return ({
+    editingBPM: R.view(editingBPMPath, state),
     bpm: R.view(bpmPath, state),
     styleName: style.name,
     beat: R.view(beatPath, state),
@@ -26,6 +30,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => ({
   showTimeSignatureSettings: (flag) => () => dispatch(afShowTimeSignatureSettings(flag)),
+  setEditingBPM: (flag) => () => dispatch(afSetEditingBPM(flag)),
+  setBPM: (value) => dispatch(afSetBPM(value)),
 })
 
 const hudStyle = {
@@ -67,11 +73,23 @@ const HUD = ({
   beat,
   shouldShowTimeSignatureSettings,
   showTimeSignatureSettings,
+  editingBPM,
+  setEditingBPM,
+  setBPM,
 }) => (
   <div style={hudStyle}>
-    <div>
+    <div onClick={setEditingBPM(true)}>
       <div style={titleStyle}>BPM</div>
-      <div style={bpmStyle}>{bpm}</div>
+      {
+        editingBPM ? <input type="number"
+          autoFocus
+          value={bpm}
+          onChange={({target: {value}}) => setBPM(value)}
+          style={R.merge(bpmStyle, {width: '100px'})}
+          onBlur={setEditingBPM(false)}
+          placeholder="edit me"/>
+          : <div style={bpmStyle}>{bpm}</div>
+      }
     </div>
     <div style={sigContainerStyle} onClick={showTimeSignatureSettings(true)}>
       <div style={sigStyle}>

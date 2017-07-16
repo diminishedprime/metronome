@@ -5,6 +5,7 @@ import {
   styles,
 } from './initial-state.js'
 import {
+  SET_EDITING_BPM,
   NEXT_BEAT_GROUP,
   CHANGE_STYLE,
   SHOW_TIME_SIGNATURE_SETTINGS,
@@ -15,6 +16,7 @@ import {
   SET_BEAT,
 } from './actions.js'
 import {
+  editingBPMPath,
   styleBeatsPath,
   stylePath,
   styleIndexPath,
@@ -79,8 +81,12 @@ const nextBeatGroup = (state, _) => {
   return R.set(styleBeatsPath, nextBeatsIndex, state)
 }
 
+const setEditingBPM = (state, {flag}) =>
+  R.set(editingBPMPath, flag, state)
+
 export const app = (state=initialState, action) => {
   switch(action.type) {
+    case SET_EDITING_BPM: return setEditingBPM(state, action)
     case NEXT_BEAT_GROUP: return nextBeatGroup(state, action)
     case CHANGE_STYLE: return changeStyle(state, action)
     case SHOW_TIME_SIGNATURE_SETTINGS: return showTimeSignatureSettings(state, action)
