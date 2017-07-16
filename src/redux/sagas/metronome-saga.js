@@ -32,7 +32,8 @@ import {
   tripletVolumePath,
 } from '../paths.js'
 
-const audioContext = new AudioContext()
+const acConstructor = window.AudioContext || window.webkitAudioContext
+const audioContext = new acConstructor()
 let current16thNote = 0
 const lookahead = 25.0
 const scheduleAheadTime = 0.1
