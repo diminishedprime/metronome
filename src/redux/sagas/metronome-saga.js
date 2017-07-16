@@ -57,15 +57,15 @@ const nextNote = function* () {
 // S           S           S           S
 const frequencyForBeat = R.cond([
   // Quarter
-  [R.equals(0), R.always(440)],
+  [R.equals(0), R.always(880)],
   // Eigth note
-  [R.equals(6), R.always(441)],
+  [R.equals(6), R.always(880)],
   // Sixteenth Notes
-  [R.equals(3), R.always(440)],
-  [R.equals(9), R.always(440)],
+  [R.equals(3), R.always(880)],
+  [R.equals(9), R.always(880)],
   // Triplets
-  [R.equals(4), R.always(440)],
-  [R.equals(8), R.always(440)],
+  [R.equals(4), R.always(880)],
+  [R.equals(8), R.always(880)],
   // Everything else
   [R.T, R.always(undefined)],
 ])
