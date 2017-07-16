@@ -1,5 +1,6 @@
 import R from 'ramda'
 import {
+  versionPath,
   stylePath,
   styleIndexPath,
   styleBeatsPath,
@@ -54,7 +55,10 @@ const initialKeymap = {
   'Enter': afKeyForStart(),
 }
 
+const version = process.env.REACT_APP_VERSION || 'error'
+
 export const initialState = R.compose(
+  R.set(versionPath, version),
   R.set(keymapPath, initialKeymap),
   R.set(styleBeatsPath, 0),
   R.set(styleIndexPath, 3),

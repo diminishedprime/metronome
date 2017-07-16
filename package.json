@@ -1,7 +1,7 @@
 {
     "homepage": "https://diminishedprime.github.io/metronome",
     "name": "metronome",
-    "version": "0.2.0",
+    "version": "1.0.0",
     "private": true,
     "dependencies": {
         "gh-pages": "^1.0.0",
@@ -20,9 +20,9 @@
         "react-scripts": "1.0.10"
     },
     "scripts": {
-        "start": "react-scripts start",
-        "build": "react-scripts build",
-        "predeploy": "npm run build",
+        "start": "REACT_APP_VERSION=$npm_package_version react-scripts start",
+        "build": "REACT_APP_VERSION=$npm_package_version react-scripts build",
+        "predeploy": "npm version major && npm run build",
         "deploy": "gh-pages -d build",
         "test": "react-scripts test --env=jsdom",
         "eject": "react-scripts eject",
