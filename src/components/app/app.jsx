@@ -9,7 +9,6 @@ const style = {
   margin: 'auto',
   display: 'flex',
   flexDirection: 'column',
-  maxWidth: '500px',
 }
 
 const App = () => (

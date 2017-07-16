@@ -21,6 +21,7 @@ const mergeStateDispatch = ({playing}, {stop, start}) => ({
 })
 
 const baseButtonStyle = {
+  margin: '5px',
   fontSize: '2.5em',
   height: '1.5em',
   display: 'flpex',
@@ -48,7 +49,6 @@ const StartStop = connect(
 
 const buttonRowStyle = {
   display: 'flex',
-  width: '100%',
 }
 
 const ButtonRow = () => (

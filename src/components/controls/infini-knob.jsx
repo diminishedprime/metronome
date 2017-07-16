@@ -55,7 +55,7 @@ class InfiniKnob extends React.Component {
   render() {
     const radians = R.view(radiansPath, this.state)
 
-    const {size=300} = this.props
+    const {size=300, style={}} = this.props
 
     const innerColor = '#bfa100'
     const outerColor = '#ffd700'
@@ -100,18 +100,20 @@ class InfiniKnob extends React.Component {
     })
 
     return (
-      <div style={outerCircleStyle}
-        ref={(me) => {
-          this.knobContainer = me
-        }}>
-        <div onTouchMove={this.onTouchMove} style={innerCircleStyle}/>
-        <div style={lilNubStyle(Math.PI)} />
-        <div style={lilNubStyle(Math.PI * (1/2))} />
-        <div style={lilNubStyle(Math.PI * (1/4))} />
-        <div style={lilNubStyle(Math.PI * (3/4))} />
-        <div style={lilNubStyle(Math.PI * -(1/2))} />
-        <div style={lilNubStyle(Math.PI * -(1/4))} />
-        <div style={lilNubStyle(Math.PI * -(3/4))} />
+      <div style={style}>
+        <div style={outerCircleStyle}
+          ref={(me) => {
+            this.knobContainer = me
+          }}>
+          <div onTouchMove={this.onTouchMove} style={innerCircleStyle}/>
+          <div style={lilNubStyle(Math.PI)} />
+          <div style={lilNubStyle(Math.PI * (1/2))} />
+          <div style={lilNubStyle(Math.PI * (1/4))} />
+          <div style={lilNubStyle(Math.PI * (3/4))} />
+          <div style={lilNubStyle(Math.PI * -(1/2))} />
+          <div style={lilNubStyle(Math.PI * -(1/4))} />
+          <div style={lilNubStyle(Math.PI * -(3/4))} />
+        </div>
       </div>
     )
   }

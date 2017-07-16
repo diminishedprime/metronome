@@ -11,16 +11,18 @@ const mapDispatchToProps = (dispatch) => ({
 
 const style = {
   display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  marginTop: '10px',
+  flexWrap: 'wrap',
+}
+
+const infiniKnobStyle = {
+  marginLeft: 'auto',
 }
 
 const Controls = ({emitDelta}) => (
-  <div style={style}>
-    <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+  <div>
+    <div style={style}>
       <VolumeControl />
-      <InfiniKnob emitDelta={emitDelta} size={200}/>
+      <InfiniKnob style={infiniKnobStyle} emitDelta={emitDelta} size={200}/>
     </div>
     <ButtonRow />
   </div>

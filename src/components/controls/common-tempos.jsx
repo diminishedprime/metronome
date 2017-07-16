@@ -34,10 +34,7 @@ const style = {
   alignItems: 'center',
   flexDirection: 'row',
   flexWrap: 'wrap',
-  width: '100%',
 }
-
-const grouping = 4
 
 const Tempo = ({name, from, to, setBpm, currentTempo}) => {
   const inRange = (currentTempo >= from && currentTempo <=to)
@@ -45,6 +42,8 @@ const Tempo = ({name, from, to, setBpm, currentTempo}) => {
   return (
     <div onClick={setBpm(bpm)}
       style={{
+        minWidth: '100px',
+        flexGrow: '1',
         opacity: inRange ? '1.0' : '0.5',
         paddingTop: '5px',
         paddingBottom: '5px',
@@ -52,7 +51,6 @@ const Tempo = ({name, from, to, setBpm, currentTempo}) => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        width: `${(1/grouping)*100}%`,
         backgroundColor:`hsl(${((bpm-25)/200)*120}, 100%, 50%)`,
         position: 'relative',
       }}>
