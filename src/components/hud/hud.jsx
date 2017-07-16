@@ -93,10 +93,12 @@ const HUD = ({
       }
     </div>
     <div style={sigContainerStyle} onClick={showTimeSignatureSettings(true)}>
-      <div style={sigStyle}>
-        <div style={titleStyle}>Beat</div>
-        <div style={bpmStyle}>{beat}</div>
-      </div>
+      {beat &&
+       <div style={sigStyle}>
+         <div style={titleStyle}>Beat</div>
+         <div style={bpmStyle}>{beat}</div>
+       </div>
+      }
       <div style={sigStyle}>
         <div style={titleStyle}>Style</div>
         <div style={bpmStyle}>{styleName}</div>
