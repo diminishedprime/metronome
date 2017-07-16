@@ -36,6 +36,7 @@ const mapDispatchToProps = (dispatch) => ({
 
 const hudStyle = {
   display: 'flex',
+  flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
   border: '3px solid #f6f8fa',
