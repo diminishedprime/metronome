@@ -2,9 +2,10 @@ import React from 'react'
 import R from 'ramda'
 import { connect } from 'react-redux'
 import { afStopMetronome, afStartMetronome, afTapIn } from '../../redux/actions.js'
-import { playingPath } from '../../redux/paths.js'
+import { playingPath, audioContextPath } from '../../redux/paths.js'
 
 const mapStateToProps = (state) => ({
+  audioContext: R.view(audioContextPath, state),
   playing: R.view(playingPath, state),
 })
 
@@ -15,8 +16,11 @@ const mapDispatchToProps = (dispatch) => ({
   tap: () => dispatch(afTapIn()),
 })
 
-const mergeStateDispatch = ({playing}, {stop, start}) => ({
-  onClick: playing ? stop : start,
+const mergeStateDispatch = ({playing, audioContext}, {stop, start}) => ({
+  onClick: playing ? stop : () => {
+    audioContext.createGainNode && audioContext.createGainNode()
+    start()
+  },
   text: playing ? 'Stop' : 'Start',
 })
 

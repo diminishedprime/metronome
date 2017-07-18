@@ -19,6 +19,7 @@ import {
   afSetBeat,
 } from '../actions.js'
 import {
+  audioContextPath,
   accentVolumePath,
   styleBeatsPath,
   stylePath,
@@ -32,10 +33,6 @@ import {
   tripletVolumePath,
 } from '../paths.js'
 
-const acConstructor = window.AudioContext || window.webkitAudioContext
-const audioContext = new acConstructor()
-// For some reason this makes it work on Safari?
-audioContext.createGain && audioContext.createGain()
 let current16thNote = 0
 const lookahead = 25.0
 const scheduleAheadTime = 0.1
@@ -89,6 +86,7 @@ const pathForBeat = R.cond([
 ])
 
 const updateUIBeatNumber = function* (beatNumber, time) {
+  const audioContext = yield select(R.view(audioContextPath))
   if (time - audioContext.currentTime > 0 && beatNumber === 0) {
     const beat = yield select(R.view(beatPath))
     const styles = yield select(R.view(stylePath))
@@ -120,7 +118,7 @@ const getVolume = function* (beatNumber) {
   }
 }
 
-const playNote = (freq, volume, start) => {
+const playNote = (audioContext, freq, volume, start) => {
   const osc = audioContext.createOscillator()
   osc.frequency.value = freq
 
@@ -135,20 +133,22 @@ const playNote = (freq, volume, start) => {
 }
 
 const playSubdivision = function* (time, beatNumber) {
+  const audioContext = yield select(R.view(audioContextPath))
   const oscValue = yield frequencyForBeat(beatNumber)
   const volume = yield getVolume(beatNumber)
   if (!(volume && oscValue)) {
     return
   }
-  playNote(oscValue, volume, time)
+  playNote(audioContext, oscValue, volume, time)
 }
 
 const playAccent = function* (time, beatNumber) {
+  const audioContext = yield select(R.view(audioContextPath))
   const beat = yield select(R.view(beatPath))
   const volume = yield select(R.view(accentVolumePath))
   if (beat === 1 && beatNumber === 0 && volume > 0) {
     const freq = frequencyForBeat(beatNumber) * 2
-    playNote(freq, volume, time)
+    playNote(audioContext, freq, volume, time)
   }
 }
 
@@ -161,6 +161,7 @@ const scheduleNote = function* (beatNumber, time) {
 const scheduler = function* () {
   // while there are notes that will need to play before the next interval,
   // schedule them and advance the pointer.
+  const audioContext = yield select(R.view(audioContextPath))
   while (nextNoteTime < audioContext.currentTime + scheduleAheadTime ) {
     yield scheduleNote( current16thNote, nextNoteTime )
     yield nextNote()
@@ -188,7 +189,8 @@ const metronome = function* (timerWorker) {
   yield takeLatest(START_METRONOME, function* () {
     timerWorker.postMessage({'interval':lookahead})
     timerWorker.postMessage('start')
-    nextNoteTime = audioContext.currentTime - baseNoteLength
+    const audioContext = yield select(R.view(audioContextPath))
+    nextNoteTime = Math.max(audioContext.currentTime - baseNoteLength, 0)
     yield put(afSetPlaying(true))
 
     let fromChan

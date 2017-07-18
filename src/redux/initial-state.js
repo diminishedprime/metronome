@@ -1,5 +1,6 @@
 import R from 'ramda'
 import {
+  audioContextPath,
   versionPath,
   stylePath,
   styleIndexPath,
@@ -57,7 +58,11 @@ const initialKeymap = {
 
 const version = process.env.REACT_APP_VERSION || 'error'
 
+const acConstructor = window.AudioContext || window.webkitAudioContext
+const audioContext = new acConstructor()
+
 export const initialState = R.compose(
+  R.set(audioContextPath, audioContext),
   R.set(versionPath, version),
   R.set(keymapPath, initialKeymap),
   R.set(styleBeatsPath, 0),
