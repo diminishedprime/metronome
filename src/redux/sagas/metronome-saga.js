@@ -35,7 +35,7 @@ import {
 const acConstructor = window.AudioContext || window.webkitAudioContext
 const audioContext = new acConstructor()
 // For some reason this makes it work on Safari?
-audioContext.createGainNode()
+audioContext.createGain && audioContext.createGain()
 let current16thNote = 0
 const lookahead = 25.0
 const scheduleAheadTime = 0.1
