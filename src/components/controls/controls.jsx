@@ -11,11 +11,11 @@ const mapDispatchToProps = (dispatch) => ({
 
 const style = {
   display: 'flex',
+  justifyContent: 'space-around',
   flexWrap: 'wrap',
 }
 
 const infiniKnobStyle = {
-  marginLeft: 'auto',
   alignSelf: 'center',
 }
 
