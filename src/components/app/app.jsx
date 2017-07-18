@@ -12,6 +12,8 @@ import './app.css'
 
 const style = {
   fontFamily: 'Helvetica',
+  display: 'flex',
+  flexDirection: 'column',
   margin: 'auto',
 }
 
@@ -21,10 +23,29 @@ const mapStateToProps = (state) => ({
 
 const App = ({version}) => (
   <div style={style}>
-    <CommonTempos />
-    <HUD />
-    <Controls />
-    <div>v{version}</div>
+  <CommonTempos />
+  <HUD />
+  <Controls />
+  {
+    /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+    !window.MSStream &&
+    <button onClick={
+      () => {
+        const ctx = new window.webkitAudioContext()
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+        gain.gain.value = 0
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        osc.start(ctx.currentTime)
+        osc.stop(ctx.currentTime + 0.05)
+      }
+                    }
+            style={{width: '100px', alignSelf: 'center'}}>
+      IPhone Fix
+    </button>
+  }
+  <div style={{textAlign: 'center'}}>v{version}</div>
   </div>
 )
 export default connect(
