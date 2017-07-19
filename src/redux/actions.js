@@ -74,3 +74,8 @@ export const afToggleMute = (path) => ({
   type: TOGGLE_MUTE,
   path,
 })
+
+export const NEW_CONTENT_AVAILABLE = 'new content available'
+export const afNewContentAvailable = () => ({
+  type: NEW_CONTENT_AVAILABLE,
+})

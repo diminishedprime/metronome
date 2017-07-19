@@ -6,6 +6,7 @@ import Controls from '../controls/controls.jsx'
 import CommonTempos from '../controls/common-tempos.jsx'
 import {
   versionPath,
+  newContentAvailablePath,
 } from '../../redux/paths.js'
 import './app.css'
 
@@ -19,10 +20,23 @@ const style = {
 
 const mapStateToProps = (state) => ({
   version: R.view(versionPath, state),
+  newContentAvailable: R.view(newContentAvailablePath, state),
 })
 
-const App = ({version}) => (
+const App = ({version, newContentAvailable}) => (
   <div style={style}>
+    { newContentAvailable &&
+      <div
+        style={{
+          fontFamily: 'Helvetica',
+          textAlign: 'center',
+          fontSize: '1em',
+          fontWeight: 'bold',
+          padding: '1em',
+        }}
+      >
+        There is a new version available, please refresh
+      </div>}
     <CommonTempos />
     <HUD />
     <Controls />

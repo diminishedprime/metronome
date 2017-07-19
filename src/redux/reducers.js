@@ -15,8 +15,10 @@ import {
   SET_VOLUME,
   SET_BEAT,
   TOGGLE_MUTE,
+  NEW_CONTENT_AVAILABLE,
 } from './actions.js'
 import {
+  newContentAvailablePath,
   editingBPMPath,
   styleBeatsPath,
   stylePath,
@@ -90,6 +92,7 @@ const toggleMute = (state, {path}) =>
 
 export const app = (state=initialState, action) => {
   switch(action.type) {
+    case NEW_CONTENT_AVAILABLE: return R.set(newContentAvailablePath, true, state)
     case TOGGLE_MUTE: return toggleMute(state, action)
     case SET_EDITING_BPM: return setEditingBPM(state, action)
     case NEXT_BEAT_GROUP: return nextBeatGroup(state, action)

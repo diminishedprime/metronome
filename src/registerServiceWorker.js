@@ -1,3 +1,5 @@
+import { store } from './redux/index.js'
+import { afNewContentAvailable } from './redux/actions.js'
 // In production, we register a service worker to serve assets from local cache.
 
 // This lets the app load faster on subsequent visits in production, and gives
@@ -28,6 +30,7 @@ export default function register() {
 
                   // eslint-disable-next-line no-console
                   console.log('New content is available; please refresh.')
+                  store.dispatch(afNewContentAvailable())
                 } else {
                   // At this point, everything has been precached.
                   // It's the perfect time to display a
