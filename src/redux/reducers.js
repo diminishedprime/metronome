@@ -14,6 +14,7 @@ import {
   SET_BPM,
   SET_VOLUME,
   SET_BEAT,
+  TOGGLE_MUTE,
 } from './actions.js'
 import {
   editingBPMPath,
@@ -84,8 +85,12 @@ const nextBeatGroup = (state, _) => {
 const setEditingBPM = (state, {flag}) =>
   R.set(editingBPMPath, flag, state)
 
+const toggleMute = (state, {path}) =>
+  R.over(path, R.not, state)
+
 export const app = (state=initialState, action) => {
   switch(action.type) {
+    case TOGGLE_MUTE: return toggleMute(state, action)
     case SET_EDITING_BPM: return setEditingBPM(state, action)
     case NEXT_BEAT_GROUP: return nextBeatGroup(state, action)
     case CHANGE_STYLE: return changeStyle(state, action)

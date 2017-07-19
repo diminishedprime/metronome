@@ -1,5 +1,11 @@
 import R from 'ramda'
 import {
+  masterMutePath,
+  accentMutePath,
+  quarterMutePath,
+  eighthMutePath,
+  sixteenthMutePath,
+  tripletMutePath,
   audioContextPath,
   versionPath,
   stylePath,
@@ -62,6 +68,12 @@ const acConstructor = window.AudioContext || window.webkitAudioContext
 const audioContext = new acConstructor()
 
 export const initialState = R.compose(
+  R.set(masterMutePath, false),
+  R.set(accentMutePath, false),
+  R.set(quarterMutePath, false),
+  R.set(eighthMutePath, false),
+  R.set(sixteenthMutePath, false),
+  R.set(tripletMutePath, false),
   R.set(audioContextPath, audioContext),
   R.set(versionPath, version),
   R.set(keymapPath, initialKeymap),

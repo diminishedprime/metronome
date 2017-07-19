@@ -68,3 +68,9 @@ export const KEY_FOR_START = 'async key for start'
 export const afKeyForStart = () => ({
   type: KEY_FOR_START,
 })
+
+export const TOGGLE_MUTE = 'toggle mute'
+export const afToggleMute = (path) => ({
+  type: TOGGLE_MUTE,
+  path,
+})

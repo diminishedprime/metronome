@@ -19,6 +19,12 @@ import {
   afSetBeat,
 } from '../actions.js'
 import {
+  masterMutePath,
+  accentMutePath,
+  quarterMutePath,
+  eighthMutePath,
+  sixteenthMutePath,
+  tripletMutePath,
   audioContextPath,
   accentVolumePath,
   styleBeatsPath,
@@ -72,17 +78,17 @@ const frequencyForBeat = R.cond([
 
 const pathForBeat = R.cond([
   // Quarter
-  [R.equals(0), R.always(quarterVolumePath)],
+  [R.equals(0), R.always([quarterVolumePath, quarterMutePath])],
   // Eigth note
-  [R.equals(6), R.always(eighthVolumePath)],
+  [R.equals(6), R.always([eighthVolumePath, eighthMutePath])],
   // Sixteenth Notes
-  [R.equals(3), R.always(sixteenthVolumePath)],
-  [R.equals(9), R.always(sixteenthVolumePath)],
+  [R.equals(3), R.always([sixteenthVolumePath, sixteenthMutePath])],
+  [R.equals(9), R.always([sixteenthVolumePath, sixteenthMutePath])],
   // Triplets
-  [R.equals(4), R.always(tripletVolumePath)],
-  [R.equals(8), R.always(tripletVolumePath)],
+  [R.equals(4), R.always([tripletVolumePath, tripletMutePath])],
+  [R.equals(8), R.always([tripletVolumePath, tripletMutePath])],
   // Everything else
-  [R.T, R.always(undefined)],
+  [R.T, R.always([undefined, undefined])],
 ])
 
 const updateUIBeatNumber = function* (beatNumber, time) {
@@ -108,11 +114,13 @@ const updateUIBeatNumber = function* (beatNumber, time) {
 }
 
 const getVolume = function* (beatNumber) {
-  const path = pathForBeat(beatNumber)
-  if (path) {
-    const volume = yield select(R.view(path))
+  const [volumePath, mutePath] = pathForBeat(beatNumber)
+  if (volumePath) {
+    const volume = yield select(R.view(volumePath))
     const masterVolume = yield select(R.view(masterVolumePath))
-    return (volume * masterVolume)
+    const muted = yield select(R.view(mutePath))
+    const masterMuted = yield select(R.view(masterMutePath))
+    return (muted || masterMuted ? 0 : (volume * masterVolume))
   } else {
     return undefined
   }
@@ -145,10 +153,17 @@ const playSubdivision = function* (time, beatNumber) {
 const playAccent = function* (time, beatNumber) {
   const audioContext = yield select(R.view(audioContextPath))
   const beat = yield select(R.view(beatPath))
+
   const volume = yield select(R.view(accentVolumePath))
+  const masterVolume = yield select(R.view(masterVolumePath))
+  const muted = yield select(R.view(accentMutePath))
+  const masterMuted = yield select(R.view(masterMutePath))
+  const accentVolume = (muted || masterMuted ? 0 : (volume * masterVolume))
+
+
   if (beat === 1 && beatNumber === 0 && volume > 0) {
     const freq = frequencyForBeat(beatNumber) * 2
-    playNote(audioContext, freq, volume, time)
+    playNote(audioContext, freq, accentVolume, time)
   }
 }
 
