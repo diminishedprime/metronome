@@ -3,16 +3,68 @@ import R from 'ramda'
 
 const totalDiffPath = R.lensPath(['totalDiff'])
 const radiansPath = R.lensPath(['radians'])
+const mouseDownPath = R.lensPath(['mouse down'])
 
 class InfiniKnob extends React.Component {
   constructor() {
     super()
     this.state = R.compose(
       R.set(totalDiffPath, 0),
-      R.set(radiansPath, Math.PI)
+      R.set(radiansPath, Math.PI),
+      R.set(mouseDownPath, false)
     )({})
     this.addToBuffer = this.addToBuffer.bind(this)
     this.onTouchMove = this.onTouchMove.bind(this)
+    this.onMouseDown = this.onMouseDown.bind(this)
+    this.moveKnob = this.moveKnob.bind(this)
+    this.mouseUp = this.mouseUp.bind(this)
+    this.mouseMove = this.mouseMove.bind(this)
+  }
+
+  mouseUp() {
+    this.setState(R.set(mouseDownPath, false))
+  }
+
+  mouseMove(e) {
+    if (R.view(mouseDownPath, this.state)) {
+      this.moveKnob(e)
+    }
+  }
+
+  componentDidMount() {
+    window.addEventListener('mouseup', this.mouseUp)
+    window.addEventListener('mousemove', this.mouseMove)
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('mouseup', this.mouseUp)
+    window.removeEventListener('mousemove', this.mouseMove)
+  }
+
+  moveKnob(e) {
+    const {clientX, clientY} = e
+
+    const box = this.knobContainer.getBoundingClientRect()
+    const boxCenter = {
+      x:  box.left + box.width / 2,
+      y: box.top + box.height / 2,
+    }
+    const y = -(boxCenter.y - clientY)
+    const x = -(boxCenter.x - clientX)
+    const radians = Math.atan2(y, x)
+    const currentRadians = R.view(radiansPath, this.state)
+    let diff = currentRadians - radians
+    if (diff < -Math.PI) {
+      diff = -currentRadians - radians
+    } else if (diff > Math.PI) {
+      diff = currentRadians - -radians
+    }
+    this.addToBuffer(diff)
+    this.setState(R.set(radiansPath, radians))
+  }
+
+  onMouseDown() {
+    this.setState(R.set(mouseDownPath, true))
   }
 
   addToBuffer(diff) {
@@ -36,20 +88,7 @@ class InfiniKnob extends React.Component {
   onTouchMove(e) {
     const t = e.changedTouches
     const t0 = t[0]
-    const {clientX, clientY} = t0
-
-    const box = this.knobContainer.getBoundingClientRect()
-    const boxCenter = {
-      x:  box.left + box.width / 2,
-      y: box.top + box.height / 2,
-    }
-    const y = -(boxCenter.y - clientY)
-    const x = -(boxCenter.x - clientX)
-    const radians = Math.atan2(y, x)
-    const currentRadians = R.view(radiansPath, this.state)
-    const diff = currentRadians - radians
-    this.addToBuffer(diff)
-    this.setState(R.set(radiansPath, radians))
+    this.moveKnob(t0)
   }
 
   render() {
@@ -105,7 +144,11 @@ class InfiniKnob extends React.Component {
           ref={(me) => {
             this.knobContainer = me
           }}>
-          <div onTouchMove={this.onTouchMove} style={innerCircleStyle}/>
+          <div
+            onMouseDown={this.onMouseDown}
+            onTouchMove={this.onTouchMove}
+            style={innerCircleStyle}
+          />
           <div style={lilNubStyle(Math.PI)} />
           <div style={lilNubStyle(Math.PI * (1/2))} />
           <div style={lilNubStyle(Math.PI * (1/4))} />
