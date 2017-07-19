@@ -2,13 +2,44 @@ import React from 'react'
 import R from 'ramda'
 
 const numBumps = 7
+const mouseDownPath = R.lensPath(['mouse down'])
 class VerticalSlider extends React.Component {
   constructor() {
     super()
+    this.state = R.compose(
+      R.set(mouseDownPath, false)
+    )({})
     this.onTouchMove = this.onTouchMove.bind(this)
     this.onClick = this.onClick.bind(this)
     this.setY = this.setY.bind(this)
     this.setKnob = this.setKnob.bind(this)
+    this.mouseUp = this.mouseUp.bind(this)
+    this.onMouseDown = this.onMouseDown.bind(this)
+    this.mouseMove = this.mouseMove.bind(this)
+  }
+
+  componentDidMount() {
+    window.addEventListener('mouseup', this.mouseUp)
+    window.addEventListener('mousemove', this.mouseMove)
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('mouseup', this.mouseUp)
+    window.removeEventListener('mousemove', this.mouseMove)
+  }
+
+  onMouseDown() {
+    this.setState(R.set(mouseDownPath, true))
+  }
+
+  mouseUp() {
+    this.setState(R.set(mouseDownPath, false))
+  }
+
+  mouseMove(e) {
+    if (R.view(mouseDownPath, this.state)) {
+      this.setY(e)
+    }
   }
 
   setY({clientY}) {
@@ -89,8 +120,16 @@ class VerticalSlider extends React.Component {
     }
     return (
       <div style={{height: '100%', width: width, display: 'flex'}}>
-        <div style={outerStyle} onClick={this.onClick} ref={this.setKnob}>
-          <div style={innerStyle} onTouchMove={this.onTouchMove}/>
+        <div
+          onClick={this.onClick}
+          style={outerStyle}
+          ref={this.setKnob}
+        >
+          <div
+            style={innerStyle}
+            onTouchMove={this.onTouchMove}
+            onMouseDown={this.onMouseDown}
+          />
           { this.renderBumps() }
         </div>
       </div>
