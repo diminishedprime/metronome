@@ -26,7 +26,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  setBpm: (bpm) => () => dispatch(afSetBPM(bpm)),
+  setBpm: (bpm) => dispatch(afSetBPM(bpm)),
 })
 
 const style = {
@@ -40,7 +40,14 @@ const Tempo = ({name, from, to, setBpm, currentTempo}) => {
   const inRange = (currentTempo >= from && currentTempo <=to)
   const bpm = Math.round((from + to) / 2)
   return (
-    <div onClick={setBpm(bpm)}
+    <div
+      onClick={(e) => {
+        const { clientX, target } = e
+        const { width , right } = target.getBoundingClientRect()
+        const fraction = (1 - (right - clientX) / width)
+        const bpm = Math.round(fraction * (to - from) + from)
+        setBpm(bpm)
+      }}
       style={{
         minWidth: '100px',
         flexGrow: '1',
