@@ -28,8 +28,9 @@ class VerticalSlider extends React.Component {
     window.removeEventListener('mousemove', this.mouseMove)
   }
 
-  onMouseDown() {
+  onMouseDown(e) {
     this.setState(R.set(mouseDownPath, true))
+    e.preventDefault()
   }
 
   mouseUp() {

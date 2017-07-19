@@ -21,6 +21,11 @@ class InfiniKnob extends React.Component {
     this.mouseMove = this.mouseMove.bind(this)
   }
 
+  onMouseDown(e) {
+    this.setState(R.set(mouseDownPath, true))
+    e.preventDefault()
+  }
+
   mouseUp() {
     this.setState(R.set(mouseDownPath, false))
   }
@@ -61,10 +66,6 @@ class InfiniKnob extends React.Component {
     }
     this.addToBuffer(diff)
     this.setState(R.set(radiansPath, radians))
-  }
-
-  onMouseDown() {
-    this.setState(R.set(mouseDownPath, true))
   }
 
   addToBuffer(diff) {
