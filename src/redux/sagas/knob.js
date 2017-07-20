@@ -8,9 +8,7 @@ import {
 import {
   afSetBPM,
   TAP_IN,
-  afStartMetronome,
 } from '../actions.js'
-import { playingPath } from '../paths.js'
 
 const tapIn = function* () {
   let previousTaps = []
@@ -31,10 +29,6 @@ const tapIn = function* () {
         R.mean
       )(previousTaps)
       yield put(afSetBPM(60000/average))
-      const isPlaying = yield select(R.view(playingPath))
-      if (isPlaying) {
-        yield put(afStartMetronome())
-      }
     }
   })
 }

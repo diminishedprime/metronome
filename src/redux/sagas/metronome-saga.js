@@ -191,6 +191,20 @@ const stopMetronome = function* (timerWorker) {
   })
 }
 
+const scheduleBasedOnChan = function* (chan) {
+  const fromChan = yield take(chan)
+  const { data } = fromChan
+  if (data === 'tick') {
+    yield scheduler()
+  }
+  const isPlaying = yield select(R.view(playingPath))
+  if (!isPlaying) {
+    return
+  } else {
+    yield scheduleBasedOnChan(chan)
+  }
+}
+
 const metronome = function* (timerWorker) {
   const chan = eventChannel((emitter) => {
     timerWorker.onmessage = function(e) {
@@ -207,23 +221,7 @@ const metronome = function* (timerWorker) {
     const audioContext = yield select(R.view(audioContextPath))
     nextNoteTime = Math.max(audioContext.currentTime - baseNoteLength, 0)
     yield put(afSetPlaying(true))
-
-    let fromChan
-    while ((fromChan = yield take(chan))) {
-      const { data } = fromChan
-      if (data === 'tick') {
-        //eslint-disable-next-line
-        /* console.log('do a tick')*/
-        yield scheduler()
-      } else {
-        //eslint-disable-next-line
-        console.log(data)
-      }
-      const isPlaying = yield select(R.view(playingPath))
-      if (!isPlaying) {
-        break
-      }
-    }
+    yield scheduleBasedOnChan(chan)
   })
 }
 
