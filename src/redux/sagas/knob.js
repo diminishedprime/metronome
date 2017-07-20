@@ -1,6 +1,5 @@
 import R from 'ramda'
 import {
-  select,
   put,
   all,
   takeEvery,
