@@ -11,5 +11,5 @@
 }
 
 body {
-    overflow-y: hidden;
+    touch-action: none;
 }
