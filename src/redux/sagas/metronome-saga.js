@@ -216,6 +216,7 @@ const metronome = function* (timerWorker) {
   })
 
   yield takeLatest(START_METRONOME, function* () {
+    current16thNote = 0
     timerWorker.postMessage({'interval':lookahead})
     timerWorker.postMessage('start')
     const audioContext = yield select(R.view(audioContextPath))
