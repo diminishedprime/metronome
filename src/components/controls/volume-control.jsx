@@ -66,7 +66,7 @@ const VolumeControl = ({
         ['M', onChange(masterVolumePath), masterVolume, toggleMute(masterMutePath), masterMute],
       ].map(([title, onChange, value, toggleMute, muted], idx) => (
         <div key={`volumeControl${idx}`}style={{margin: '5px'}}>
-          <div style={{height: '40px', fontFamily: 'Bravura', display: 'flex', justifyContent: 'center', color: (muted ? 'red' : undefined)}}>
+          <div style={{lineHeight: '12pt', fontFamily: 'Bravura', display: 'flex', justifyContent: 'center', color: (muted ? 'red' : undefined)}}>
             {title}
           </div>
           <div style={{height: '150px', display: 'flex', justifyContent: 'center'}}>
