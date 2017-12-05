@@ -12,6 +12,14 @@ import {
 } from 'redux-saga/effects'
 import initWorker from './timer-worker.js'
 import {
+  triplet,
+  sixteenth,
+  eighth,
+  quarter,
+  accent,
+  master,
+} from '../../constants.js'
+import {
   afNextBeatGroup,
   afSetPlaying,
   STOP_METRONOME,
@@ -19,24 +27,14 @@ import {
   afSetBeat,
 } from '../actions.js'
 import {
-  masterMutePath,
-  accentMutePath,
-  quarterMutePath,
-  eighthMutePath,
-  sixteenthMutePath,
-  tripletMutePath,
   audioContextPath,
-  accentVolumePath,
   styleBeatsPath,
   stylePath,
   styleIndexPath,
   beatPath,
   playingPath,
-  masterVolumePath,
-  quarterVolumePath,
-  eighthVolumePath,
-  sixteenthVolumePath,
-  tripletVolumePath,
+  volumePathFor,
+  mutePathFor,
 } from '../paths.js'
 
 let current16thNote = 0
@@ -78,15 +76,15 @@ const frequencyForBeat = R.cond([
 
 const pathForBeat = R.cond([
   // Quarter
-  [R.equals(0), R.always([quarterVolumePath, quarterMutePath])],
+  [R.equals(0), R.always([volumePathFor(quarter), mutePathFor(quarter)])],
   // Eigth note
-  [R.equals(6), R.always([eighthVolumePath, eighthMutePath])],
+  [R.equals(6), R.always([volumePathFor(eighth), mutePathFor(eighth)])],
   // Sixteenth Notes
-  [R.equals(3), R.always([sixteenthVolumePath, sixteenthMutePath])],
-  [R.equals(9), R.always([sixteenthVolumePath, sixteenthMutePath])],
+  [R.equals(3), R.always([volumePathFor(sixteenth), mutePathFor(sixteenth)])],
+  [R.equals(9), R.always([volumePathFor(sixteenth), mutePathFor(sixteenth)])],
   // Triplets
-  [R.equals(4), R.always([tripletVolumePath, tripletMutePath])],
-  [R.equals(8), R.always([tripletVolumePath, tripletMutePath])],
+  [R.equals(4), R.always([volumePathFor(triplet), mutePathFor(triplet)])],
+  [R.equals(8), R.always([volumePathFor(triplet), mutePathFor(triplet)])],
   // Everything else
   [R.T, R.always([undefined, undefined])],
 ])
@@ -117,9 +115,9 @@ const getVolume = function* (beatNumber) {
   const [volumePath, mutePath] = pathForBeat(beatNumber)
   if (volumePath) {
     const volume = yield select(R.view(volumePath))
-    const masterVolume = yield select(R.view(masterVolumePath))
+    const masterVolume = yield select(R.view(volumePathFor(master)))
     const muted = yield select(R.view(mutePath))
-    const masterMuted = yield select(R.view(masterMutePath))
+    const masterMuted = yield select(R.view(mutePathFor(master)))
     return (muted || masterMuted ? 0 : (volume * masterVolume))
   } else {
     return undefined
@@ -154,10 +152,10 @@ const playAccent = function* (time, beatNumber) {
   const audioContext = yield select(R.view(audioContextPath))
   const beat = yield select(R.view(beatPath))
 
-  const volume = yield select(R.view(accentVolumePath))
-  const masterVolume = yield select(R.view(masterVolumePath))
-  const muted = yield select(R.view(accentMutePath))
-  const masterMuted = yield select(R.view(masterMutePath))
+  const volume = yield select(R.view(volumePathFor(accent)))
+  const masterVolume = yield select(R.view(volumePathFor(master)))
+  const muted = yield select(R.view(mutePathFor(accent)))
+  const masterMuted = yield select(R.view(mutePathFor(master)))
   const accentVolume = (muted || masterMuted ? 0 : (volume * masterVolume))
 
 

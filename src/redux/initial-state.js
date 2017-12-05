@@ -1,12 +1,16 @@
 import R from 'ramda'
 import {
+  triplet,
+  sixteenth,
+  eighth,
+  quarter,
+  accent,
+  master,
+} from '../constants.js'
+import {
+  volumePathFor,
+  mutePathFor,
   newContentAvailablePath,
-  masterMutePath,
-  accentMutePath,
-  quarterMutePath,
-  eighthMutePath,
-  sixteenthMutePath,
-  tripletMutePath,
   audioContextPath,
   versionPath,
   stylePath,
@@ -14,12 +18,6 @@ import {
   styleBeatsPath,
   showTimeSignatureSettingsPath,
   beatPath,
-  masterVolumePath,
-  accentVolumePath,
-  quarterVolumePath,
-  eighthVolumePath,
-  sixteenthVolumePath,
-  tripletVolumePath,
   keymapPath,
 } from './paths.js'
 import {
@@ -70,12 +68,12 @@ const audioContext = new acConstructor()
 
 export const initialState = R.compose(
   R.set(newContentAvailablePath, false),
-  R.set(masterMutePath, false),
-  R.set(accentMutePath, false),
-  R.set(quarterMutePath, false),
-  R.set(eighthMutePath, false),
-  R.set(sixteenthMutePath, false),
-  R.set(tripletMutePath, false),
+  R.set(mutePathFor(master), false),
+  R.set(mutePathFor(accent), false),
+  R.set(mutePathFor(quarter), false),
+  R.set(mutePathFor(eighth), false),
+  R.set(mutePathFor(sixteenth), false),
+  R.set(mutePathFor(triplet), false),
   R.set(audioContextPath, audioContext),
   R.set(versionPath, version),
   R.set(keymapPath, initialKeymap),
@@ -84,12 +82,12 @@ export const initialState = R.compose(
   R.set(showTimeSignatureSettingsPath, false),
   R.set(beatPath, undefined),
   R.set(stylePath, styles),
-  R.set(masterVolumePath, 0.5),
-  R.set(accentVolumePath, 0.5),
-  R.set(quarterVolumePath, 0.5),
-  R.set(eighthVolumePath, 0.0),
-  R.set(sixteenthVolumePath, 0.0),
-  R.set(tripletVolumePath, 0.0),
+  R.set(volumePathFor(master), 0.5),
+  R.set(volumePathFor(accent), 0.5),
+  R.set(volumePathFor(quarter), 0.5),
+  R.set(volumePathFor(eighth), 0.0),
+  R.set(volumePathFor(sixteenth), 0.0),
+  R.set(volumePathFor(triplet), 0.0),
   R.identity
 )({
   radians: 4.7,
