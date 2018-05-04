@@ -19,21 +19,23 @@ const mapStateToProps = (state) => ({
   newContentAvailable: R.view(newContentAvailablePath, state),
 })
 
+const NewContentAvailable = () => (
+  <div
+    style={{
+      fontFamily: 'Helvetica',
+      textAlign: 'center',
+      fontSize: '1em',
+      fontWeight: 'bold',
+      padding: '1em',
+    }}
+  >
+    There is a new version available, please refresh
+  </div>
+)
+
 const App = ({version, newContentAvailable}) => (
   <div style={style}>
-    {newContentAvailable && (
-      <div
-        style={{
-          fontFamily: 'Helvetica',
-          textAlign: 'center',
-          fontSize: '1em',
-          fontWeight: 'bold',
-          padding: '1em',
-        }}
-      >
-        There is a new version available, please refresh
-      </div>
-    )}
+    {newContentAvailable && <NewContentAvailable />}
     <CommonTempos />
     <HUD />
     <Controls />
