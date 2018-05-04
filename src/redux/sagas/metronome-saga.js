@@ -1,15 +1,6 @@
 import R from 'ramda'
-import {
-  eventChannel,
-} from 'redux-saga'
-import {
-  takeEvery,
-  select,
-  put,
-  takeLatest,
-  all,
-  take,
-} from 'redux-saga/effects'
+import {eventChannel} from 'redux-saga'
+import {takeEvery, select, put, takeLatest, all, take} from 'redux-saga/effects'
 import initWorker from './timer-worker.js'
 import {
   triplet,
@@ -43,12 +34,12 @@ const scheduleAheadTime = 0.1
 let nextNoteTime = 0.0
 const baseNoteLength = 0.05
 
-const nextNote = function* () {
+const nextNote = function*() {
   const bpm = yield select(R.prop('bpm'))
   const secondsPerBeat = 60.0 / bpm
-  nextNoteTime += (1/12) * secondsPerBeat// Add beat length to last beat time
+  nextNoteTime += 1 / 12 * secondsPerBeat // Add beat length to last beat time
 
-  current16thNote = current16thNote + 1// Advance the beat number, wrap to zero
+  current16thNote = current16thNote + 1 // Advance the beat number, wrap to zero
   if (current16thNote === 12) {
     current16thNote = 0
   }
@@ -89,7 +80,7 @@ const pathForBeat = R.cond([
   [R.T, R.always([undefined, undefined])],
 ])
 
-const updateUIBeatNumber = function* (beatNumber, time) {
+const updateUIBeatNumber = function*(beatNumber, time) {
   const audioContext = yield select(R.view(audioContextPath))
   if (time - audioContext.currentTime > 0 && beatNumber === 0) {
     const beat = yield select(R.view(beatPath))
@@ -98,7 +89,7 @@ const updateUIBeatNumber = function* (beatNumber, time) {
     const beats = yield select(R.view(styleBeatsPath))
     const beatsPerBar = styles[styleIndex].beats[beats]
     if (beat !== undefined) {
-      const newBeat = (beat + 1)
+      const newBeat = beat + 1
       if (newBeat >= beatsPerBar + 1) {
         yield put(afSetBeat(1))
         yield put(afNextBeatGroup())
@@ -111,14 +102,14 @@ const updateUIBeatNumber = function* (beatNumber, time) {
   }
 }
 
-const getVolume = function* (beatNumber) {
+const getVolume = function*(beatNumber) {
   const [volumePath, mutePath] = pathForBeat(beatNumber)
   if (volumePath) {
     const volume = yield select(R.view(volumePath))
     const masterVolume = yield select(R.view(volumePathFor(master)))
     const muted = yield select(R.view(mutePath))
     const masterMuted = yield select(R.view(mutePathFor(master)))
-    return (muted || masterMuted ? 0 : (volume * masterVolume))
+    return muted || masterMuted ? 0 : volume * masterVolume
   } else {
     return undefined
   }
@@ -134,11 +125,11 @@ const playNote = (audioContext, freq, volume, start) => {
 
   gainNode.connect(audioContext.destination)
   osc.start(start)
-  const noteLength = Math.floor(freq * baseNoteLength) * (1/freq)
+  const noteLength = Math.floor(freq * baseNoteLength) * (1 / freq)
   osc.stop(start + noteLength)
 }
 
-const playSubdivision = function* (time, beatNumber) {
+const playSubdivision = function*(time, beatNumber) {
   const audioContext = yield select(R.view(audioContextPath))
   const oscValue = yield frequencyForBeat(beatNumber)
   const volume = yield getVolume(beatNumber)
@@ -148,7 +139,7 @@ const playSubdivision = function* (time, beatNumber) {
   playNote(audioContext, oscValue, volume, time)
 }
 
-const playAccent = function* (time, beatNumber) {
+const playAccent = function*(time, beatNumber) {
   const audioContext = yield select(R.view(audioContextPath))
   const beat = yield select(R.view(beatPath))
 
@@ -156,8 +147,7 @@ const playAccent = function* (time, beatNumber) {
   const masterVolume = yield select(R.view(volumePathFor(master)))
   const muted = yield select(R.view(mutePathFor(accent)))
   const masterMuted = yield select(R.view(mutePathFor(master)))
-  const accentVolume = (muted || masterMuted ? 0 : (volume * masterVolume))
-
+  const accentVolume = muted || masterMuted ? 0 : volume * masterVolume
 
   if (beat === 1 && beatNumber === 0 && volume > 0) {
     const freq = frequencyForBeat(beatNumber) * 2
@@ -165,33 +155,33 @@ const playAccent = function* (time, beatNumber) {
   }
 }
 
-const scheduleNote = function* (beatNumber, time) {
+const scheduleNote = function*(beatNumber, time) {
   yield updateUIBeatNumber(beatNumber, time)
   yield playSubdivision(time, beatNumber)
   yield playAccent(time, beatNumber)
 }
 
-const scheduler = function* () {
+const scheduler = function*() {
   // while there are notes that will need to play before the next interval,
   // schedule them and advance the pointer.
   const audioContext = yield select(R.view(audioContextPath))
-  while (nextNoteTime < audioContext.currentTime + scheduleAheadTime ) {
-    yield scheduleNote( current16thNote, nextNoteTime )
+  while (nextNoteTime < audioContext.currentTime + scheduleAheadTime) {
+    yield scheduleNote(current16thNote, nextNoteTime)
     yield nextNote()
   }
 }
 
-const stopMetronome = function* (timerWorker) {
-  yield takeEvery(STOP_METRONOME, function* () {
+const stopMetronome = function*(timerWorker) {
+  yield takeEvery(STOP_METRONOME, function*() {
     timerWorker.postMessage('stop')
     yield put(afSetPlaying(false))
     yield put(afSetBeat(undefined))
   })
 }
 
-const scheduleBasedOnChan = function* (chan) {
+const scheduleBasedOnChan = function*(chan) {
   const fromChan = yield take(chan)
-  const { data } = fromChan
+  const {data} = fromChan
   if (data === 'tick') {
     yield scheduler()
   }
@@ -203,7 +193,7 @@ const scheduleBasedOnChan = function* (chan) {
   }
 }
 
-const metronome = function* (timerWorker) {
+const metronome = function*(timerWorker) {
   const chan = eventChannel((emitter) => {
     timerWorker.onmessage = function(e) {
       emitter(e)
@@ -213,9 +203,9 @@ const metronome = function* (timerWorker) {
     }
   })
 
-  yield takeLatest(START_METRONOME, function* () {
+  yield takeLatest(START_METRONOME, function*() {
     current16thNote = 0
-    timerWorker.postMessage({'interval':lookahead})
+    timerWorker.postMessage({interval: lookahead})
     timerWorker.postMessage('start')
     const audioContext = yield select(R.view(audioContextPath))
     nextNoteTime = Math.max(audioContext.currentTime - baseNoteLength, 0)
@@ -224,10 +214,7 @@ const metronome = function* (timerWorker) {
   })
 }
 
-export default function* () {
+export default function*() {
   const timerWorker = initWorker()
-  yield all([
-    metronome(timerWorker),
-    stopMetronome(timerWorker),
-  ])
+  yield all([metronome(timerWorker), stopMetronome(timerWorker)])
 }

@@ -20,45 +20,48 @@ import {
   beatPath,
   keymapPath,
 } from './paths.js'
-import {
-  afKeyForStart,
-  afKeyForDown,
-  afKeyForUp,
-} from './actions.js'
+import {afKeyForStart, afKeyForDown, afKeyForUp} from './actions.js'
 
 export const styles = [
   {
     name: '1',
     beats: [1],
-  }, {
+  },
+  {
     name: '2',
     beats: [2],
-  }, {
+  },
+  {
     name: '3',
     beats: [3],
-  }, {
+  },
+  {
     name: '4',
     beats: [4],
-  }, {
+  },
+  {
     name: '5',
     beats: [5],
-  }, {
+  },
+  {
     name: '6',
     beats: [6],
-  }, {
+  },
+  {
     name: '7',
     beats: [7],
-  }, {
+  },
+  {
     name: '2+3',
     beats: [2, 3],
   },
 ]
 
 const initialKeymap = {
-  'ArrowUp': afKeyForUp(),
-  'ArrowDown': afKeyForDown(),
+  ArrowUp: afKeyForUp(),
+  ArrowDown: afKeyForDown(),
   ' ': afKeyForStart(),
-  'Enter': afKeyForStart(),
+  Enter: afKeyForStart(),
 }
 
 const version = process.env.REACT_APP_VERSION || 'error'

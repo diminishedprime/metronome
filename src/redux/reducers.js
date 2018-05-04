@@ -1,9 +1,6 @@
 import R from 'ramda'
 
-import {
-  initialState,
-  styles,
-} from './initial-state.js'
+import {initialState, styles} from './initial-state.js'
 import {
   SET_EDITING_BPM,
   NEXT_BEAT_GROUP,
@@ -34,27 +31,19 @@ const clampBPM = R.pipe(
   R.over(bpmPath, Math.round)
 )
 
-const setBPM = (state, {bpm}) => R.pipe(
-  R.set(bpmPath, bpm),
-  clampBPM
-)(state)
+const setBPM = (state, {bpm}) => R.pipe(R.set(bpmPath, bpm), clampBPM)(state)
 
-const addBpm = (state, {amount}) => R.pipe(
-  R.over(bpmPath, R.add(amount)),
-  clampBPM
-)(state)
+const addBpm = (state, {amount}) =>
+  R.pipe(R.over(bpmPath, R.add(amount)), clampBPM)(state)
 
-const setPlaying = (state, {flag}) =>
-  R.set(playingPath, flag, state)
+const setPlaying = (state, {flag}) => R.set(playingPath, flag, state)
 
-const setVolume = (state, {path, value}) =>
-  R.set(path, value, state)
+const setVolume = (state, {path, value}) => R.set(path, value, state)
 
 /* const setBeatsPerBar = (state, {beatsPerBar}) =>
  *   R.set(beatsPerBarPath, beatsPerBar, state)*/
 
-const setBeat = (state, {beat}) =>
-  R.set(beatPath, beat, state)
+const setBeat = (state, {beat}) => R.set(beatPath, beat, state)
 
 const showTimeSignatureSettings = (state, {flag}) =>
   R.set(showTimeSignatureSettingsPath, flag, state)
@@ -64,13 +53,15 @@ const changeStyle = (state, {delta}) => {
   const numStyles = styles.length
   const nextStyleIndex = (currentStyleIndex + delta) % numStyles
   return R.compose(
-    R.set(styleIndexPath, nextStyleIndex < 0 ? styles.length -1 : nextStyleIndex),
+    R.set(
+      styleIndexPath,
+      nextStyleIndex < 0 ? styles.length - 1 : nextStyleIndex
+    ),
     R.set(styleBeatsPath, 0),
-    R.over(beatPath, R.ifElse(
-      R.equals(undefined),
-      R.always(undefined),
-      R.always(1)
-    ))
+    R.over(
+      beatPath,
+      R.ifElse(R.equals(undefined), R.always(undefined), R.always(1))
+    )
   )(state)
 }
 
@@ -84,34 +75,41 @@ const nextBeatGroup = (state, _) => {
   return R.set(styleBeatsPath, nextBeatsIndex, state)
 }
 
-const setEditingBPM = (state, {flag}) =>
-  R.set(editingBPMPath, flag, state)
+const setEditingBPM = (state, {flag}) => R.set(editingBPMPath, flag, state)
 
-const toggleMute = (state, {path}) =>
-  R.over(path, R.not, state)
+const toggleMute = (state, {path}) => R.over(path, R.not, state)
 
-export const app = (state=initialState, action) => {
-  switch(action.type) {
-    case NEW_CONTENT_AVAILABLE: return R.set(newContentAvailablePath, true, state)
-    case TOGGLE_MUTE: return toggleMute(state, action)
-    case SET_EDITING_BPM: return setEditingBPM(state, action)
-    case NEXT_BEAT_GROUP: return nextBeatGroup(state, action)
-    case CHANGE_STYLE: return changeStyle(state, action)
-    case SHOW_TIME_SIGNATURE_SETTINGS: return showTimeSignatureSettings(state, action)
-    case SET_BEAT: return setBeat(state, action)
-    case SET_VOLUME: return setVolume(state, action)
-    case SET_PLAYING: return setPlaying(state, action)
-    case SET_BPM: return setBPM(state, action)
-    case ADD_BPM: return addBpm(state, action)
+export const app = (state = initialState, action) => {
+  switch (action.type) {
+    case NEW_CONTENT_AVAILABLE:
+      return R.set(newContentAvailablePath, true, state)
+    case TOGGLE_MUTE:
+      return toggleMute(state, action)
+    case SET_EDITING_BPM:
+      return setEditingBPM(state, action)
+    case NEXT_BEAT_GROUP:
+      return nextBeatGroup(state, action)
+    case CHANGE_STYLE:
+      return changeStyle(state, action)
+    case SHOW_TIME_SIGNATURE_SETTINGS:
+      return showTimeSignatureSettings(state, action)
+    case SET_BEAT:
+      return setBeat(state, action)
+    case SET_VOLUME:
+      return setVolume(state, action)
+    case SET_PLAYING:
+      return setPlaying(state, action)
+    case SET_BPM:
+      return setBPM(state, action)
+    case ADD_BPM:
+      return addBpm(state, action)
     default:
-      if (!(
-        action.type.startsWith('async') ||
-        action.type.startsWith('@@redux')
-      )) {
+      if (
+        !(action.type.startsWith('async') || action.type.startsWith('@@redux'))
+      ) {
         // eslint-disable-next-line no-console
         console.log(`${action.type} not handled`)
       }
       return state
   }
-
 }

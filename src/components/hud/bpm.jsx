@@ -1,13 +1,8 @@
 import React from 'react'
 import R from 'ramda'
-import { connect } from 'react-redux'
-import {
-  bpmPath,
-} from '../../redux/paths.js'
-import {
-  afAddBPM,
-} from '../../redux/actions.js'
-
+import {connect} from 'react-redux'
+import {bpmPath} from '../../redux/paths.js'
+import {afAddBPM} from '../../redux/actions.js'
 
 const mapStateToProps = (state) => ({
   bpm: R.view(bpmPath, state),
@@ -16,7 +11,6 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   emitDelta: (amount) => () => dispatch(afAddBPM(amount)),
 })
-
 
 const bpmStyle = {
   fontSize: '3em',
@@ -29,7 +23,7 @@ const titleStyle = {
   justifyContent: 'center',
 }
 
-const BPM = ({ bpm, emitDelta }) => (
+const BPM = ({bpm, emitDelta}) => (
   <div>
     <div style={titleStyle}>BPM</div>
     <div style={{display: 'flex', alignItems: 'center'}}>
@@ -42,8 +36,4 @@ const BPM = ({ bpm, emitDelta }) => (
   </div>
 )
 
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(BPM)
+export default connect(mapStateToProps, mapDispatchToProps)(BPM)

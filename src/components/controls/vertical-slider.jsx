@@ -6,9 +6,7 @@ const mouseDownPath = R.lensPath(['mouse down'])
 class VerticalSlider extends React.Component {
   constructor() {
     super()
-    this.state = R.compose(
-      R.set(mouseDownPath, false)
-    )({})
+    this.state = R.compose(R.set(mouseDownPath, false))({})
     this.onTouchMove = this.onTouchMove.bind(this)
     this.onClick = this.onClick.bind(this)
     this.setY = this.setY.bind(this)
@@ -44,17 +42,20 @@ class VerticalSlider extends React.Component {
   }
 
   setY({clientY}) {
-    const { top: boxTop, bottom: boxBottom } = this.knobContainer.getBoundingClientRect()
+    const {
+      top: boxTop,
+      bottom: boxBottom,
+    } = this.knobContainer.getBoundingClientRect()
     const relativePosition = clientY - boxTop
     const min = 0
-    const max = (boxBottom - boxTop)
+    const max = boxBottom - boxTop
     const fixedPosition = R.clamp(min, max, relativePosition)
-    const { onChange } = this.props
+    const {onChange} = this.props
     if (!onChange) {
       // eslint-disable-next-line no-console
-      console.log('Don\'t forget to pass in an onChange prop')
+      console.log("Don't forget to pass in an onChange prop")
     } else {
-      onChange(1 - (fixedPosition / max))
+      onChange(1 - fixedPosition / max)
     }
   }
 
@@ -84,23 +85,20 @@ class VerticalSlider extends React.Component {
       zIndex: 0,
       position: 'absolute',
       left: `${(100 - width) / 2}%`,
-      top: `${(100 - height)/numBumps * idx + (100/numBumps/2)}%`,
+      top: `${(100 - height) / numBumps * idx + 100 / numBumps / 2}%`,
       background: 'green',
       width: `${width}%`,
       height: `${height}%`,
     }
-    return (<div key={idx} style={style} />)
+    return <div key={idx} style={style} />
   }
 
   renderBumps() {
-    return R.pipe(
-      R.range(0),
-      R.map(this.renderBump)
-    )(numBumps)
+    return R.pipe(R.range(0), R.map(this.renderBump))(numBumps)
   }
 
   render() {
-    const { value, width=15 } = this.props
+    const {value, width = 15} = this.props
     const sliderHeight = 5
     const innerTop = Math.round((1 - value) * (100 - sliderHeight))
 
@@ -121,17 +119,13 @@ class VerticalSlider extends React.Component {
     }
     return (
       <div style={{height: '100%', width: width, display: 'flex'}}>
-        <div
-          onClick={this.onClick}
-          style={outerStyle}
-          ref={this.setKnob}
-        >
+        <div onClick={this.onClick} style={outerStyle} ref={this.setKnob}>
           <div
             style={innerStyle}
             onTouchMove={this.onTouchMove}
             onMouseDown={this.onMouseDown}
           />
-          { this.renderBumps() }
+          {this.renderBumps()}
         </div>
       </div>
     )

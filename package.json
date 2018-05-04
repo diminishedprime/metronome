@@ -17,7 +17,15 @@
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-react": "^7.1.0",
     "eslint-plugin-redux-saga": "^0.4.0",
+    "prettier": "^1.12.1",
     "react-scripts": "1.0.10"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "es5",
+    "bracketSpacing": false,
+    "arrowParens": "always"
   },
   "scripts": {
     "start": "REACT_APP_VERSION=$npm_package_version react-scripts start",
@@ -26,6 +34,8 @@
     "deploy": "gh-pages -d build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
+    "prettier":
+      "prettier --write 'src/**/*.jsx' 'src/**/*.js' package.json .eslintrc.js",
     "lint": "eslint . --ignore-path .eslintignore --ext .js --ext .jsx"
   }
 }

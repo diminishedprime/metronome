@@ -1,14 +1,17 @@
 import React from 'react'
 import R from 'ramda'
-import { connect } from 'react-redux'
-import { afStopMetronome, afStartMetronome, afTapIn } from '../../redux/actions.js'
-import { playingPath, audioContextPath } from '../../redux/paths.js'
+import {connect} from 'react-redux'
+import {
+  afStopMetronome,
+  afStartMetronome,
+  afTapIn,
+} from '../../redux/actions.js'
+import {playingPath, audioContextPath} from '../../redux/paths.js'
 
 const mapStateToProps = (state) => ({
   audioContext: R.view(audioContextPath, state),
   playing: R.view(playingPath, state),
 })
-
 
 const mapDispatchToProps = (dispatch) => ({
   stop: () => dispatch(afStopMetronome()),
@@ -17,10 +20,12 @@ const mapDispatchToProps = (dispatch) => ({
 })
 
 const mergeStateDispatch = ({playing, audioContext}, {stop, start}) => ({
-  onClick: playing ? stop : () => {
-    audioContext.createGainNode && audioContext.createGainNode()
-    start()
-  },
+  onClick: playing
+    ? stop
+    : () => {
+        audioContext.createGainNode && audioContext.createGainNode()
+        start()
+      },
   text: playing ? 'Stop' : 'Start',
 })
 
@@ -33,12 +38,8 @@ const baseButtonStyle = {
   justifyContent: 'center',
 }
 
-const TapIn = connect(
-  undefined,
-  mapDispatchToProps
-)(({tap}) => (
-  <button style={R.merge(baseButtonStyle, {flexGrow: '1'})}
-    onClick={tap}>
+const TapIn = connect(undefined, mapDispatchToProps)(({tap}) => (
+  <button style={R.merge(baseButtonStyle, {flexGrow: '1'})} onClick={tap}>
     Tap
   </button>
 ))
@@ -48,7 +49,9 @@ const StartStop = connect(
   mapDispatchToProps,
   mergeStateDispatch
 )(({onClick, text}) => (
-  <button style={R.merge(baseButtonStyle, {flexGrow: '3'})} onClick={onClick}>{text}</button>
+  <button style={R.merge(baseButtonStyle, {flexGrow: '3'})} onClick={onClick}>
+    {text}
+  </button>
 ))
 
 const buttonRowStyle = {
