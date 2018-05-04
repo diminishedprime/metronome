@@ -204,10 +204,11 @@ const metronome = function*(timerWorker) {
   })
 
   yield takeLatest(START_METRONOME, function*() {
+    const audioContext = yield select(R.view(audioContextPath))
+    yield audioContext.resume()
     current16thNote = 0
     timerWorker.postMessage({interval: lookahead})
     timerWorker.postMessage('start')
-    const audioContext = yield select(R.view(audioContextPath))
     nextNoteTime = Math.max(audioContext.currentTime - baseNoteLength, 0)
     yield put(afSetPlaying(true))
     yield scheduleBasedOnChan(chan)
