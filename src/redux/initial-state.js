@@ -62,6 +62,16 @@ export const styles = [
     beats: [7],
   },
   {
+    name: '3+3',
+    display: '(3+3)',
+    beats: [3, 3],
+  },
+  {
+    name: '3+3+3',
+    display: '(3+3+3)',
+    beats: [3, 3, 3],
+  },
+  {
     name: '2+3',
     display: '(2+3)',
     beats: [2, 3],
