@@ -11,7 +11,6 @@ const hudStyle = {
 const HUD = () => (
   <div style={hudStyle}>
     <BPM />
-    <TimeSignature />
   </div>
 )
 

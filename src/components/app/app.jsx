@@ -1,9 +1,8 @@
 import React from 'react'
 import R from 'ramda'
 import {connect} from 'react-redux'
-import HUD from '../hud/hud.jsx'
+import BPM from '../hud/bpm.jsx'
 import Controls from '../controls/controls.jsx'
-import CommonTempos from '../controls/common-tempos.jsx'
 import {versionPath, newContentAvailablePath} from '../../redux/paths.js'
 import './app.css'
 
@@ -12,6 +11,7 @@ const style = {
   display: 'flex',
   flexDirection: 'column',
   margin: 'auto',
+  marginTop: '1em',
 }
 
 const mapStateToProps = (state) => ({
@@ -36,8 +36,7 @@ const NewContentAvailable = () => (
 const App = ({version, newContentAvailable}) => (
   <div style={style}>
     {newContentAvailable && <NewContentAvailable />}
-    <CommonTempos />
-    <HUD />
+    <BPM />
     <Controls />
     <div style={{textAlign: 'center'}}>v{version}</div>
   </div>

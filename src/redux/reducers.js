@@ -13,6 +13,11 @@ import {
   SET_BEAT,
   TOGGLE_MUTE,
   NEW_CONTENT_AVAILABLE,
+  TOGGLE_VOLUME_CONTROL,
+  TOGGLE_WHEEL_CONTROL,
+  SET_STYLE,
+  SET_BEAT_GROUP,
+  SET_BEAT_LENGTH,
 } from './actions.js'
 import {
   newContentAvailablePath,
@@ -24,6 +29,9 @@ import {
   beatPath,
   playingPath,
   bpmPath,
+  volumeControlPath,
+  wheelControlPath,
+  beatLengthPath,
 } from './paths.js'
 
 const clampBPM = R.pipe(
@@ -47,6 +55,11 @@ const setBeat = (state, {beat}) => R.set(beatPath, beat, state)
 
 const showTimeSignatureSettings = (state, {flag}) =>
   R.set(showTimeSignatureSettingsPath, flag, state)
+
+const setStyle = (state, {index}) => R.set(styleIndexPath, index, state)
+const setBeatGroup = (state, {index}) => R.set(styleBeatsPath, index, state)
+const setBeatLength = (state, {beatLength}) =>
+  R.set(beatLengthPath, beatLength, state)
 
 const changeStyle = (state, {delta}) => {
   const currentStyleIndex = R.view(styleIndexPath, state)
@@ -79,6 +92,10 @@ const setEditingBPM = (state, {flag}) => R.set(editingBPMPath, flag, state)
 
 const toggleMute = (state, {path}) => R.over(path, R.not, state)
 
+const toggleVolumeControl = (state) => R.over(volumeControlPath, R.not, state)
+
+const toggleWheelControl = (state) => R.over(wheelControlPath, R.not, state)
+
 export const app = (state = initialState, action) => {
   switch (action.type) {
     case NEW_CONTENT_AVAILABLE:
@@ -103,6 +120,16 @@ export const app = (state = initialState, action) => {
       return setBPM(state, action)
     case ADD_BPM:
       return addBpm(state, action)
+    case TOGGLE_VOLUME_CONTROL:
+      return toggleVolumeControl(state, action)
+    case TOGGLE_WHEEL_CONTROL:
+      return toggleWheelControl(state, action)
+    case SET_STYLE:
+      return setStyle(state, action)
+    case SET_BEAT_GROUP:
+      return setBeatGroup(state, action)
+    case SET_BEAT_LENGTH:
+      return setBeatLength(state, action)
     default:
       if (
         !(action.type.startsWith('async') || action.type.startsWith('@@redux'))

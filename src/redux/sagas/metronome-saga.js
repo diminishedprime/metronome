@@ -9,6 +9,7 @@ import {
   quarter,
   accent,
   master,
+  half,
 } from '../../constants.js'
 import {
   afNextBeatGroup,
@@ -16,6 +17,7 @@ import {
   STOP_METRONOME,
   START_METRONOME,
   afSetBeat,
+  afSetBeatGroup,
 } from '../actions.js'
 import {
   audioContextPath,
@@ -26,6 +28,7 @@ import {
   playingPath,
   volumePathFor,
   mutePathFor,
+  beatLengthPath,
 } from '../paths.js'
 
 let current16thNote = 0
@@ -34,9 +37,17 @@ const scheduleAheadTime = 0.1
 let nextNoteTime = 0.0
 const baseNoteLength = 0.05
 
+const multiplierForBeatLength = {
+  [sixteenth]: 0.25,
+  [eighth]: 0.5,
+  [quarter]: 1,
+  [half]: 2,
+}
+
 const nextNote = function*() {
   const bpm = yield select(R.prop('bpm'))
-  const secondsPerBeat = 60.0 / bpm
+  const beatLength = yield select(R.view(beatLengthPath))
+  const secondsPerBeat = 60.0 / bpm * multiplierForBeatLength[beatLength]
   nextNoteTime += 1 / 12 * secondsPerBeat // Add beat length to last beat time
 
   current16thNote = current16thNote + 1 // Advance the beat number, wrap to zero
@@ -176,6 +187,7 @@ const stopMetronome = function*(timerWorker) {
     timerWorker.postMessage('stop')
     yield put(afSetPlaying(false))
     yield put(afSetBeat(undefined))
+    yield put(afSetBeatGroup(0))
   })
 }
 

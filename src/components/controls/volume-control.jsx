@@ -9,6 +9,9 @@ import {volumePathFor, mutePathFor} from '../../redux/paths.js'
 const mapStateToProps = (state) => ({
   volume: (type) => R.view(volumePathFor(type), state),
   mute: (type) => R.view(mutePathFor(type), state),
+  effectiveMute: (type) =>
+    R.view(mutePathFor(type), state) ||
+    R.view(volumePathFor(type), state) === 0,
 })
 
 const mapDispatchToProps = (dispatch) => ({
@@ -17,31 +20,38 @@ const mapDispatchToProps = (dispatch) => ({
   toggleMute: (type) => () => dispatch(afToggleMute(mutePathFor(type))),
 })
 
-const VolumeControl = ({toggleMute, onChange, volume, mute}) => (
-  <div style={{display: 'flex'}}>
+const VolumeControl = ({toggleMute, onChange, volume, mute, effectiveMute}) => (
+  <div style={{display: 'flex', justifyContent: 'space-between'}}>
     {noteDisplayOrder.map((type, idx) => (
-      <div key={`volumeControl${idx}`} style={{margin: '5px'}}>
+      <div
+        key={`volumeControl${idx}`}
+        style={{
+          margin: '5px',
+        }}
+      >
         <div
           style={{
             lineHeight: '12pt',
             fontFamily: 'Bravura',
             display: 'flex',
             justifyContent: 'center',
-            color: mute(type) ? 'red' : undefined,
           }}
         >
           {type}
         </div>
         <div
-          style={{height: '150px', display: 'flex', justifyContent: 'center'}}
+          style={{height: '250px', display: 'flex', justifyContent: 'center'}}
         >
-          <VerticalSlider onChange={onChange(type)} value={volume(type)} />
+          <VerticalSlider
+            onChange={onChange(type)}
+            overhangPercentage={100}
+            value={volume(type)}
+            sliderHeight={10}
+          />
         </div>
-        <input
-          type="checkbox"
-          onChange={toggleMute(type)}
-          checked={mute(type)}
-        />
+        <button onClick={toggleMute(type)}>
+          {effectiveMute(type) ? '🔇' : '🔊'}
+        </button>
       </div>
     ))}
   </div>

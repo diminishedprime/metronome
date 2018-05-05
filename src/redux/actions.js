@@ -37,10 +37,22 @@ export const afShowTimeSignatureSettings = (flag) => ({
   flag,
 })
 
+export const SET_STYLE = 'set style'
+export const afSetStyle = (index) => ({
+  type: SET_STYLE,
+  index,
+})
+
 export const CHANGE_STYLE = 'change style'
 export const afChangeStyle = (delta) => ({
   type: CHANGE_STYLE,
   delta,
+})
+
+export const SET_BEAT_GROUP = 'set beat group'
+export const afSetBeatGroup = (index) => ({
+  type: SET_BEAT_GROUP,
+  index,
 })
 
 export const NEXT_BEAT_GROUP = 'next beat group'
@@ -78,4 +90,22 @@ export const afToggleMute = (path) => ({
 export const NEW_CONTENT_AVAILABLE = 'new content available'
 export const afNewContentAvailable = () => ({
   type: NEW_CONTENT_AVAILABLE,
+})
+
+export const TOGGLE_VOLUME_CONTROL = 'set show volume control'
+export const afToggleVolumeControl = (toggle) => ({
+  type: TOGGLE_VOLUME_CONTROL,
+  toggle,
+})
+
+export const TOGGLE_WHEEL_CONTROL = 'set show wheel control'
+export const afToggleWheelControl = (toggle) => ({
+  type: TOGGLE_WHEEL_CONTROL,
+  toggle,
+})
+
+export const SET_BEAT_LENGTH = ' set beat length'
+export const afSetBeatLength = (beatLength) => ({
+  type: SET_BEAT_LENGTH,
+  beatLength,
 })

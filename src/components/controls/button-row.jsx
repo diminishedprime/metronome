@@ -5,8 +5,13 @@ import {
   afStopMetronome,
   afStartMetronome,
   afTapIn,
+  afToggleVolumeControl,
 } from '../../redux/actions.js'
-import {playingPath, audioContextPath} from '../../redux/paths.js'
+import {
+  playingPath,
+  audioContextPath,
+  volumeControlPath,
+} from '../../redux/paths.js'
 
 const mapStateToProps = (state) => ({
   audioContext: R.view(audioContextPath, state),
@@ -38,6 +43,20 @@ const baseButtonStyle = {
   justifyContent: 'center',
 }
 
+const ShowVolumeControl = connect(
+  (state) => ({showVolumeControl: R.view(volumeControlPath, state)}),
+  (dispatch) => ({setVolumeControl: () => dispatch(afToggleVolumeControl())})
+)(({setVolumeControl}) => (
+  <button
+    style={R.merge(baseButtonStyle, {flexGrow: '1'})}
+    onClick={setVolumeControl}
+  >
+    <span role="img" aria-label="show volume control">
+      🔊
+    </span>
+  </button>
+))
+
 const TapIn = connect(undefined, mapDispatchToProps)(({tap}) => (
   <button style={R.merge(baseButtonStyle, {flexGrow: '1'})} onClick={tap}>
     Tap
@@ -60,6 +79,7 @@ const buttonRowStyle = {
 
 const ButtonRow = () => (
   <div style={buttonRowStyle}>
+    <ShowVolumeControl />
     <StartStop />
     <TapIn />
   </div>

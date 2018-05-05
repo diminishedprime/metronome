@@ -6,14 +6,17 @@ import {
   styleIndexPath,
   stylePath,
   beatPath,
-  showTimeSignatureSettingsPath,
   editingBPMPath,
+  styleBeatsPath,
+  playingPath,
 } from '../../redux/paths.js'
 import {
-  afShowTimeSignatureSettings,
   afSetEditingBPM,
   afSetBPM,
+  afSetStyle,
+  afSetBeatGroup,
 } from '../../redux/actions.js'
+import {styles} from '../../redux/initial-state.js'
 
 const mapStateToProps = (state) => {
   const style = R.view(stylePath, state)[R.view(styleIndexPath, state)]
@@ -22,35 +25,28 @@ const mapStateToProps = (state) => {
     editingBPM: R.view(editingBPMPath, state),
     bpm: R.view(bpmPath, state),
     styleName: style.name,
+    selectedStyle: R.view(styleIndexPath, state),
     beat: R.view(beatPath, state),
-    shouldShowTimeSignatureSettings: R.view(
-      showTimeSignatureSettingsPath,
-      state
-    ),
+    styleBeatsIndex: R.view(styleBeatsPath, state),
+    playing: R.view(playingPath, state),
+    style,
   }
 }
 
 const mapDispatchToProps = (dispatch) => ({
-  showTimeSignatureSettings: (flag) => () =>
-    dispatch(afShowTimeSignatureSettings(flag)),
   setEditingBPM: (flag) => () => dispatch(afSetEditingBPM(flag)),
   setBPM: (value) => dispatch(afSetBPM(value)),
+  setStyle: (idx) => dispatch(afSetStyle(idx)),
+  resetBeatGroup: () => dispatch(afSetBeatGroup(0)),
 })
 
 const bpmStyle = {
   fontSize: '3em',
 }
 
-const titleStyle = {
-  fontWeight: 'bold',
-  fontSize: '0.5em',
-  display: 'flex',
-  justifyContent: 'center',
-}
-
 const sigContainerStyle = {
-  position: 'relative',
   display: 'flex',
+  margin: 'auto',
 }
 
 const sigStyle = {
@@ -60,18 +56,62 @@ const sigStyle = {
   margin: '2px',
 }
 
-const HUD = ({styleName, beat, showTimeSignatureSettings}) => (
-  <div style={sigContainerStyle} onClick={showTimeSignatureSettings(true)}>
-    {beat && (
+const HUD = ({
+  playing,
+  styleBeatsIndex,
+  style,
+  beat,
+  selectedStyle,
+  resetBeatGroup,
+  setStyle,
+}) => (
+  <div style={{display: 'flex', flexDirection: 'column'}}>
+    <div style={sigContainerStyle}>
+      {beat && (
+        <div style={sigStyle}>
+          <div style={bpmStyle}>{beat}/</div>
+        </div>
+      )}
       <div style={sigStyle}>
-        <div style={titleStyle}>Beat</div>
-        <div style={bpmStyle}>{beat}</div>
+        <div style={bpmStyle}>
+          {style.beats.length === 1 ? (
+            <span>{style.beats[0]}</span>
+          ) : (
+            style.beats
+              .reduce((acc, beat, idx) => {
+                acc.push(<span key={`${beat}key${idx}`}>+</span>)
+                acc.push(
+                  <span
+                    style={{
+                      fontWeight:
+                        idx === styleBeatsIndex && playing ? 'bold' : undefined,
+                    }}
+                    key={`${beat}value${idx}`}
+                  >
+                    {beat}
+                  </span>
+                )
+                return acc
+              }, [])
+              .splice(1)
+          )}
+        </div>
       </div>
-    )}
-    <div style={sigStyle}>
-      <div style={titleStyle}>Style</div>
-      <div style={bpmStyle}>{styleName}</div>
     </div>
+    <select
+      value={selectedStyle}
+      onChange={(e) => {
+        const optionValue = parseInt(e.target.value, 10)
+        resetBeatGroup()
+        setStyle(optionValue)
+      }}
+    >
+      {styles.map(({display}, idx) => (
+        <option key={display} value={idx}>
+          {display}
+        </option>
+      ))}
+    </select>
   </div>
 )
 

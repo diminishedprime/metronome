@@ -98,24 +98,31 @@ class VerticalSlider extends React.Component {
   }
 
   render() {
-    const {value, width = 15} = this.props
-    const sliderHeight = 5
+    const {
+      value,
+      width = 20,
+      backgroundColor = 'black',
+      sliderColor = 'orange',
+      sliderHeight = 5,
+      overhangPercentage = 0,
+      showBumps = true,
+    } = this.props
     const innerTop = Math.round((1 - value) * (100 - sliderHeight))
 
     const outerStyle = {
       position: 'relative',
       height: '100%',
       width: '100%',
-      backgroundColor: 'black',
+      backgroundColor,
     }
     const innerStyle = {
       zIndex: 1,
       position: 'absolute',
       top: `${innerTop}%`,
-      left: '0',
-      backgroundColor: 'orange',
+      left: `${-overhangPercentage}%`,
+      backgroundColor: sliderColor,
       height: `${sliderHeight}%`,
-      width: '100%',
+      width: `${100 + overhangPercentage * 2}%`,
     }
     return (
       <div style={{height: '100%', width: width, display: 'flex'}}>
@@ -125,7 +132,7 @@ class VerticalSlider extends React.Component {
             onTouchMove={this.onTouchMove}
             onMouseDown={this.onMouseDown}
           />
-          {this.renderBumps()}
+          {showBumps && this.renderBumps()}
         </div>
       </div>
     )
