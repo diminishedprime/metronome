@@ -22,6 +22,7 @@ import {
   volumeControlPath,
   wheelControlPath,
   beatLengthPath,
+  bpmPath,
 } from './paths.js'
 import {afKeyForStart, afKeyForDown, afKeyForUp} from './actions.js'
 
@@ -120,9 +121,9 @@ export const initialState = R.compose(
   R.set(volumePathFor(triplet), 0.0),
   R.set(volumeControlPath, false),
   R.set(wheelControlPath, false),
+  R.set(bpmPath, 125),
   R.identity
 )({
   radians: 4.7,
   size: 300,
-  bpm: 125,
 })

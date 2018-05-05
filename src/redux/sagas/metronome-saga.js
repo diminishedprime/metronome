@@ -29,6 +29,7 @@ import {
   volumePathFor,
   mutePathFor,
   beatLengthPath,
+  bpmPath,
 } from '../paths.js'
 
 let current16thNote = 0
@@ -45,7 +46,7 @@ const multiplierForBeatLength = {
 }
 
 const nextNote = function*() {
-  const bpm = yield select(R.prop('bpm'))
+  const bpm = yield select(R.view(bpmPath))
   const beatLength = yield select(R.view(beatLengthPath))
   const secondsPerBeat = 60.0 / bpm * multiplierForBeatLength[beatLength]
   nextNoteTime += 1 / 12 * secondsPerBeat // Add beat length to last beat time

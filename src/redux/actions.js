@@ -109,3 +109,9 @@ export const afSetBeatLength = (beatLength) => ({
   type: SET_BEAT_LENGTH,
   beatLength,
 })
+
+export const JOIN_URL_STATE = 'join url state'
+export const afJoinUrlState = (urlState) => ({
+  type: JOIN_URL_STATE,
+  urlState,
+})

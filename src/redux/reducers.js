@@ -18,6 +18,7 @@ import {
   SET_STYLE,
   SET_BEAT_GROUP,
   SET_BEAT_LENGTH,
+  JOIN_URL_STATE,
 } from './actions.js'
 import {
   newContentAvailablePath,
@@ -32,6 +33,7 @@ import {
   volumeControlPath,
   wheelControlPath,
   beatLengthPath,
+  urlRelevantStatePath,
 } from './paths.js'
 
 const clampBPM = R.pipe(
@@ -96,6 +98,9 @@ const toggleVolumeControl = (state) => R.over(volumeControlPath, R.not, state)
 
 const toggleWheelControl = (state) => R.over(wheelControlPath, R.not, state)
 
+const joinUrlState = (state, {urlState}) => {
+  return R.over(urlRelevantStatePath, R.flip(R.merge)(urlState), state)
+}
 export const app = (state = initialState, action) => {
   switch (action.type) {
     case NEW_CONTENT_AVAILABLE:
@@ -130,6 +135,8 @@ export const app = (state = initialState, action) => {
       return setBeatGroup(state, action)
     case SET_BEAT_LENGTH:
       return setBeatLength(state, action)
+    case JOIN_URL_STATE:
+      return joinUrlState(state, action)
     default:
       if (
         !(action.type.startsWith('async') || action.type.startsWith('@@redux'))
