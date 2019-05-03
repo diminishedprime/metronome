@@ -1,14 +1,24 @@
-import * as React from "react"
-import Layout from "../components/layout"
+import * as React from 'react';
+import { useState } from 'react';
+import Layout from '../components/layout';
 
-const Metronome = () => {
-  return <div>TODO - actually you know, make this.</div>
-}
+const IndexPage = () => {
+  const [state, setState] = useState({ bpm: 90, playing: false });
+  const changeBPM = diff => () =>
+    setState(oldState => ({ ...oldState, bpm: oldState.bpm + diff }));
+  const start = () =>
+    setState(oldState => ({ ...oldState, playing: !oldState.playing }));
+  return (
+    <Layout>
+      <div>bpm: {state.bpm}</div>
+      <div>playing: {state.playing + ''}</div>
+      <div>
+        <button onClick={start}>{state.playing ? 'Stop' : 'Start'}</button>
+        <button onClick={changeBPM(10)}>+10</button>
+        <button onClick={changeBPM(-10)}>-10</button>
+      </div>
+    </Layout>
+  );
+};
 
-const IndexPage = () => (
-  <Layout>
-    <Metronome />
-  </Layout>
-)
-
-export default IndexPage
+export default IndexPage;

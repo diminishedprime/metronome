@@ -11,12 +11,10 @@ import styled from 'styled-components';
 const Content = styled.div`
   margin: 0 auto;
   max-width: 20em;
+  display: flex;
+  flex-direction: column;
 `;
 
-const Layout = ({ children }) => (
-  <Content>
-    <main>{children}</main>
-  </Content>
-);
+const Layout = ({ children }) => <Content>{children}</Content>;
 
 export default Layout;
