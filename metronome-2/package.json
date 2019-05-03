@@ -7,6 +7,7 @@
     "@types/node": "11.13.9",
     "@types/react": "16.8.15",
     "@types/react-dom": "16.8.4",
+    "ramda": "^0.26.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-scripts": "3.0.0",
@@ -35,6 +36,8 @@
     ]
   },
   "devDependencies": {
-    "@types/styled-components": "^4.1.14"
+    "@types/ramda": "^0.26.8",
+    "@types/styled-components": "^4.1.14",
+    "prettier": "^1.17.0"
   }
 }

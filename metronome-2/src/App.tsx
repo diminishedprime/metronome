@@ -1,94 +1,123 @@
-import React from 'react';
-import { useState } from 'react';
-import styled from 'styled-components';
+import React from 'react'
+import {useState, useEffect} from 'react'
+import styled from 'styled-components'
+import {over, set} from 'ramda'
+import * as R from 'ramda'
 
-const scheduleNote = (audioContext: AudioContext, noteLength: number) => (time: number) => {
-  var osc = audioContext.createOscillator();
-  osc.connect(audioContext.destination);
-  osc.frequency.value = 440.0;
-  osc.start(time);
-  osc.stop(time + noteLength);
+interface SchedulerState {
+  bpm: number
+  audioContext: AudioContext
 }
 
-const thunk = () => {
-  const audioContext = new AudioContext();
-  let noteLength = 0.05;
-  const noteScheduler = scheduleNote(audioContext, noteLength);
+interface State {
+  playing: boolean
+  timerId: undefined | number
+  schedulerState: SchedulerState
+}
 
-  let nextNoteTime = 0.0;
-  let tempo = 120;
-  let current16thNote = 0;
-  let scheduleAheadTime = 0.1;
+interface Beat {
+  time: number
+  pitch: number
+}
 
-  const scheduler = () => {
+const scheduleNote = (
+  audioContext: AudioContext,
+  noteLength: number = 0.05
+) => ({time, pitch}: Beat) => {
+  var osc = audioContext.createOscillator()
+  osc.connect(audioContext.destination)
+  osc.frequency.value = pitch
+  osc.start(time)
+  osc.stop(time + noteLength)
+}
+
+const makeScheduler = (
+  state: SchedulerState,
+  scheduleAheadTime: number = 0.1
+) => {
+  let nextNoteTime = 0.0
+  let current16thNote = 0
+  const {audioContext, bpm} = state
+  const noteScheduler = scheduleNote(audioContext)
+  const secondsPerBeat = 60.0 / bpm
+  const secondsPer16th = 0.25 * secondsPerBeat
+  return () => {
     while (nextNoteTime < audioContext.currentTime + scheduleAheadTime) {
-      noteScheduler(nextNoteTime);
-      var secondsPerBeat = 60.0 / tempo;
-      nextNoteTime += 0.25 * secondsPerBeat;
-      current16thNote++; 
+      noteScheduler({time: nextNoteTime, pitch: 440})
+      nextNoteTime += secondsPer16th
+      current16thNote++
       if (current16thNote === 16) {
-        current16thNote = 0;
+        current16thNote = 0
       }
     }
   }
-
-  let timerId: undefined | number;
-  const start = () => {
-    timerId = setInterval(() => {
-      scheduler();
-    }, 100);
-  }
-
-  const stop = () => {
-    if (timerId !== undefined) {
-      clearInterval(timerId);
-    }
-  }
-
-  return {start, stop};
 }
 
-const IndexPage = () => {
-  const [state, setState] = useState(() => ({ bpm: 90, playing: false, mCtx: thunk() }));
+const bpmL = R.lensPath(['schedulerState', 'bpm'])
+const playingL = R.lensPath(['playing'])
+const timerIdL = R.lensPath(['timerId'])
 
-  const changeBPM = (diff: number) => () =>
-    setState(oldState => ({ ...oldState, bpm: oldState.bpm + diff }));
-  const start = () => {
-    setState(oldState => {
-      const isPlaying = oldState.playing;
-      if (isPlaying) {
-        oldState.mCtx.stop();
-      } else {
-        oldState.mCtx.start();
-      }
-      return ({ ...oldState, playing: !oldState.playing })
-    });
-  }
+const makeInitialState = (): State => ({
+  playing: false,
+  timerId: undefined,
+  schedulerState: {
+    bpm: 120,
+    audioContext: new AudioContext(),
+  },
+})
+
+const Metronome = () => {
+  const [
+    {
+      timerId,
+      playing,
+      schedulerState,
+      schedulerState: {bpm},
+    },
+    setState,
+  ] = useState(makeInitialState)
+
+  useEffect(() => {
+    clearInterval(timerId)
+    if (playing) {
+      const scheduler = makeScheduler(schedulerState)
+      const newTimer = setInterval(() => {
+        scheduler()
+      }, 100)
+      setState(set(timerIdL, newTimer))
+    }
+  }, [playing, schedulerState])
+
+  const changeBPM = (diff: number) => () => setState(over(bpmL, R.add(diff)))
+
+  const toggleStart = () => setState(over(playingL, R.not))
 
   return (
     <>
-      <div>bpm: {state.bpm}</div>
-      <div>playing: {state.playing + ''}</div>
+      <div>bpm: {bpm}</div>
+      <div>playing: {playing + ''}</div>
       <div>
-        <button onClick={start}>{state.playing ? 'Stop' : 'Start'}</button>
-        <button onClick={changeBPM(10)}>+10</button>
         <button onClick={changeBPM(-10)}>-10</button>
+        <button onClick={changeBPM(10)}>+10</button>
+      </div>
+      <div>
+        <button onClick={toggleStart}>{playing ? 'Stop' : 'Start'}</button>
       </div>
     </>
-  );
-};
+  )
+}
 
 const Layout = styled.div`
   margin: 0 auto;
   max-width: 40em;
-`;
+`
 
 const App: React.FC = () => {
   return (
     <Layout>
-      <IndexPage />
+      <Metronome />
     </Layout>
-  );
+  )
 }
 
-export default App;
+export default App
