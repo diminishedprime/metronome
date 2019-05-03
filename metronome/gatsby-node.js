@@ -5,3 +5,21 @@
  */
 
 // You can delete this file if you're not using it
+exports.onCreateWebpackConfig = ({
+    stage,
+    rules,
+    loaders,
+    plugins,
+    actions,
+}) => {
+    actions.setWebpackConfig({
+        module: {
+            rules: [
+                {
+                    test: /\.worker\.js$/,
+                    use: { loader: 'worker-loader' }
+                }
+            ]
+        },
+    })
+}

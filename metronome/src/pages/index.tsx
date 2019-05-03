@@ -1,13 +1,24 @@
 import * as React from 'react';
 import { useState } from 'react';
 import Layout from '../components/layout';
+import Worker from 'worker-loader!./timer.worker.js';
+
+const w = new Worker();
 
 const IndexPage = () => {
-  const [state, setState] = useState({ bpm: 90, playing: false });
+  let worker = undefined;
+  // try {
+  //   worker = new Worker();
+  // } catch (e) {
+  //   console.log('no worker for you.')
+  // }
+  const [state, setState] = useState({ bpm: 90, playing: false, timer: worker });
   const changeBPM = diff => () =>
     setState(oldState => ({ ...oldState, bpm: oldState.bpm + diff }));
-  const start = () =>
-    setState(oldState => ({ ...oldState, playing: !oldState.playing }));
+  const start = () => {
+    state.timer.postMessage({type: 'start', interval: 100});
+    return setState(oldState => ({ ...oldState, playing: !oldState.playing }));
+  };
   return (
     <Layout>
       <div>bpm: {state.bpm}</div>
