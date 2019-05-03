@@ -5,31 +5,18 @@
  * See: https://www.gatsbyjs.org/docs/static-query/
  */
 
-import React from "react"
-import { Link } from "gatsby"
+import * as React from 'react';
+import styled from 'styled-components';
 
-import "./layout.css"
+const Content = styled.div`
+  margin: 0 auto;
+  max-width: 20em;
+`;
 
 const Layout = ({ children }) => (
-  <>
-    <header>
-      <div>
-        <h1>
-          <Link to="/" >
-            Metronome
-          </Link>
-        </h1>
-      </div>
-    </header>
-    <div>
-      <main>{children}</main>
-      <footer>
-        © {new Date().getFullYear()}, Built with
-        {` `}
-        <a href="https://www.gatsbyjs.org">Gatsby</a>
-      </footer>
-    </div>
-  </>
-)
+  <Content>
+    <main>{children}</main>
+  </Content>
+);
 
-export default Layout
+export default Layout;
