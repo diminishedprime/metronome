@@ -12,6 +12,7 @@ interface SchedulerState {
 interface State {
   playing: boolean
   timerId: undefined | number
+  tapTimes: number[]
   schedulerState: SchedulerState
 }
 
@@ -56,15 +57,32 @@ const makeScheduler = (
 const bpmL = R.lensPath(['schedulerState', 'bpm'])
 const playingL = R.lensPath(['playing'])
 const timerIdL = R.lensPath(['timerId'])
+const tapTimesL = R.lensPath(['tapTimes'])
+const topL = R.lensPath([])
 
 const makeInitialState = (): State => ({
   playing: false,
   timerId: undefined,
+  tapTimes: [],
   schedulerState: {
     bpm: 120,
     audioContext: new AudioContext(),
   },
 })
+
+const calculateBPM: (tapTimes: number[]) => number = R.pipe(
+  (tapTimes: number[]) => R.aperture(2, tapTimes),
+  R.map(([a, b]: [number, number]) => a - b),
+  R.mean,
+  R.divide(60000),
+  Math.trunc
+)
+
+const addNow = (tapTimes: number[]) =>
+  R.pipe(
+    R.prepend(performance.now()),
+    R.take(5)
+  )(tapTimes)
 
 const Metronome = () => {
   const [
@@ -72,6 +90,7 @@ const Metronome = () => {
       timerId,
       playing,
       schedulerState,
+      tapTimes,
       schedulerState: {bpm},
     },
     setState,
@@ -88,14 +107,39 @@ const Metronome = () => {
     }
   }, [playing, schedulerState])
 
-  const changeBPM = (diff: number) => () => setState(over(bpmL, R.add(diff)))
+  const changeBPM = (diff: number) => () =>
+    setState(
+      R.pipe(
+        over(bpmL, R.add(diff)),
+        set(tapTimesL, [])
+      )
+    )
 
   const toggleStart = () => setState(over(playingL, R.not))
+
+  const tapTimesBasedBPM = (state: State) => {
+    const {tapTimes} = state
+    if (tapTimes.length < 2) {
+      return state
+    } else {
+      return set(bpmL, calculateBPM(tapTimes), state)
+    }
+  }
+  const onTap = () =>
+    setState(
+      R.pipe(
+        over(tapTimesL, addNow),
+        over(topL, tapTimesBasedBPM)
+      )
+    )
 
   return (
     <>
       <div>bpm: {bpm}</div>
       <div>playing: {playing + ''}</div>
+      <div>
+        <button onClick={onTap}>Tap</button>
+      </div>
       <div>
         <button onClick={changeBPM(-10)}>-10</button>
         <button onClick={changeBPM(10)}>+10</button>
