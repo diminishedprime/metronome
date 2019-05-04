@@ -3,10 +3,12 @@ import {useState, useEffect} from 'react'
 import styled from 'styled-components'
 import {over, set} from 'ramda'
 import * as R from 'ramda'
+import TempoMarking from './TempoMarking'
 
 interface SchedulerState {
   bpm: number
   audioContext: AudioContext
+  scheduleAheadTimeSeconds: number
 }
 
 interface State {
@@ -32,10 +34,7 @@ const scheduleNote = (
   osc.stop(time + noteLength)
 }
 
-const makeScheduler = (
-  state: SchedulerState,
-  scheduleAheadTime: number = 0.1
-) => {
+const makeScheduler = (state: SchedulerState) => {
   let nextNoteTime = 0.0
   let current16thNote = 0
   const {audioContext, bpm} = state
@@ -43,7 +42,10 @@ const makeScheduler = (
   const secondsPerBeat = 60.0 / bpm
   const secondsPer16th = 0.25 * secondsPerBeat
   return () => {
-    while (nextNoteTime < audioContext.currentTime + scheduleAheadTime) {
+    while (
+      nextNoteTime <
+      audioContext.currentTime + state.scheduleAheadTimeSeconds
+    ) {
       noteScheduler({time: nextNoteTime, pitch: 440})
       nextNoteTime += secondsPer16th
       current16thNote++
@@ -67,6 +69,7 @@ const makeInitialState = (): State => ({
   schedulerState: {
     bpm: 120,
     audioContext: new AudioContext(),
+    scheduleAheadTimeSeconds: 0.1,
   },
 })
 
@@ -90,7 +93,6 @@ const Metronome = () => {
       timerId,
       playing,
       schedulerState,
-      tapTimes,
       schedulerState: {bpm},
     },
     setState,
@@ -100,9 +102,10 @@ const Metronome = () => {
     clearInterval(timerId)
     if (playing) {
       const scheduler = makeScheduler(schedulerState)
+      scheduler()
       const newTimer = setInterval(() => {
         scheduler()
-      }, 100)
+      }, schedulerState.scheduleAheadTimeSeconds * 1000)
       setState(set(timerIdL, newTimer))
     }
   }, [playing, schedulerState])
@@ -110,7 +113,13 @@ const Metronome = () => {
   const changeBPM = (diff: number) => () =>
     setState(
       R.pipe(
-        over(bpmL, R.add(diff)),
+        over(
+          bpmL,
+          R.pipe(
+            R.add(diff),
+            R.clamp(1, 250)
+          )
+        ),
         set(tapTimesL, [])
       )
     )
@@ -141,12 +150,15 @@ const Metronome = () => {
         <button onClick={onTap}>Tap</button>
       </div>
       <div>
+        <button onClick={changeBPM(-1)}>-1</button>
         <button onClick={changeBPM(-10)}>-10</button>
         <button onClick={changeBPM(10)}>+10</button>
+        <button onClick={changeBPM(1)}>+1</button>
       </div>
       <div>
         <button onClick={toggleStart}>{playing ? 'Stop' : 'Start'}</button>
       </div>
+      <TempoMarking bpm={bpm} />
     </>
   )
 }
