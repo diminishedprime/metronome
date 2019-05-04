@@ -36,22 +36,16 @@ const scheduleNote = (
 
 const makeScheduler = (state: SchedulerState) => {
   let nextNoteTime = 0.0
-  let current16thNote = 0
   const {audioContext, bpm} = state
   const noteScheduler = scheduleNote(audioContext)
   const secondsPerBeat = 60.0 / bpm
-  const secondsPer16th = 0.25 * secondsPerBeat
   return () => {
     while (
       nextNoteTime <
       audioContext.currentTime + state.scheduleAheadTimeSeconds
     ) {
       noteScheduler({time: nextNoteTime, pitch: 440})
-      nextNoteTime += secondsPer16th
-      current16thNote++
-      if (current16thNote === 16) {
-        current16thNote = 0
-      }
+      nextNoteTime += secondsPerBeat
     }
   }
 }
