@@ -1,10 +1,11 @@
 import React from 'react'
-import {useState, useEffect, useRef, useLayoutEffect} from 'react'
+import {useState, useEffect, useRef} from 'react'
 import styled from 'styled-components'
 import {over, set} from 'ramda'
 import * as R from 'ramda'
 import TempoMarking from './TempoMarking'
 import TimeSignature, {Signature} from './TimeSignature'
+import useRaf from '@rooks/use-raf';
 
 interface SubDivision {
   on: boolean
@@ -137,31 +138,6 @@ const addNow = (tapTimes: number[]) =>
     R.take(5)
   )(tapTimes)
 
-const useMutationEffect = useLayoutEffect
-
-const useAnimationFrame = (callback: Function, shouldStart: boolean) => {
-  const callbackRef = useRef(callback)
-  // I don't know if this is actually safe...
-  const frameRef = useRef(0)
-
-  useMutationEffect(() => {
-    callbackRef.current = callback
-  }, [callback])
-
-  const loop = () => {
-    frameRef.current = requestAnimationFrame(loop)
-    const cb = callbackRef.current
-    cb()
-  }
-
-  useLayoutEffect(() => {
-    if (shouldStart) {
-      frameRef.current = requestAnimationFrame(loop)
-    }
-    return () => cancelAnimationFrame(frameRef.current)
-  }, [shouldStart])
-}
-
 type SetState = (prevState: State) => State
 
 const Metronome = () => {
@@ -223,7 +199,7 @@ const Metronome = () => {
     }
   }
 
-  useAnimationFrame(draw, playing)
+  useRaf(draw, playing)
 
   const changeBPM = (diff: number) => () =>
     setState(
