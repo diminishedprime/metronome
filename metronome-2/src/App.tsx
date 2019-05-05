@@ -15,12 +15,12 @@ interface State {
 
 const subDivisionsL = (division: string) =>
   R.lensPath(['schedulerState', 'subDivisions', division, 'on'])
+
 const bpmL = R.lensPath(['schedulerState', 'bpm'])
 
 const makeInitialState = (): State => ({
   schedulerState: {
     bpm: 63,
-    scheduleAheadTimeSeconds: 0.1,
     signature: {
       numerator: 5,
       denominator: 4,

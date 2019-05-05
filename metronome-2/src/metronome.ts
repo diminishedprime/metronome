@@ -17,7 +17,8 @@ const scheduleNote = (audioContext: AudioContext) => ({time, pitch}: Beat) => {
 const makeScheduler = (
   state: SchedulerState,
   nextBeat: (time: number) => void,
-  audioContext: AudioContext
+  audioContext: AudioContext,
+  scheduleAhead: number
 ) => {
   let nextNoteTime = 0.0
   const {bpm, subDivisions} = state
@@ -32,10 +33,7 @@ const makeScheduler = (
     }
   }
   return () => {
-    while (
-      nextNoteTime <
-      audioContext.currentTime + state.scheduleAheadTimeSeconds
-    ) {
+    while (nextNoteTime < audioContext.currentTime + scheduleAhead) {
       // Quarter Note
       noteScheduler({time: nextNoteTime, pitch: 440})
       nextBeat(nextNoteTime)
@@ -53,9 +51,11 @@ export const useMetronome = (
   nextBeat: (time: number) => void,
   updateCurrentBeat: Function
 ) => {
+  const scheduleAhead = 0.2
+
   const audioContext = useRef<AudioContext>(new AudioContext())
   const scheduler = useRef(
-    makeScheduler(schedulerState, nextBeat, audioContext.current)
+    makeScheduler(schedulerState, nextBeat, audioContext.current, scheduleAhead)
   )
   useEffect(() => {
     console.log('audioContext effect')
@@ -70,13 +70,14 @@ export const useMetronome = (
       scheduler.current = makeScheduler(
         schedulerState,
         nextBeat,
-        audioContext.current
+        audioContext.current,
+        scheduleAhead
       )
     }
   }, [schedulerState, playing])
 
-  // schedule ahead 100 ms at a time.
-  const delay = playing ? 100 : undefined
+  // We want the setInterval to overlap with the scheduler.
+  const delay = playing ? (scheduleAhead * 1000) / 2 : undefined
   useInterval(scheduler.current, delay)
 
   const draw = () => {

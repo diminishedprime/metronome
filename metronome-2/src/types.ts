@@ -22,7 +22,6 @@ export interface Signature {
 
 export interface SchedulerState {
   bpm: number
-  scheduleAheadTimeSeconds: number
   subDivisions: SubDivisions
   signature: Signature
 }
