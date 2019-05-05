@@ -7,20 +7,17 @@ import TempoMarking from './TempoMarking'
 import TimeSignature from './TimeSignature'
 import {SchedulerState, SubDivisions} from './types'
 import {useMetronome} from './metronome'
+import TapIn from './TapIn'
 
 interface State {
-  tapTimes: number[]
   schedulerState: SchedulerState
 }
 
 const subDivisionsL = (division: string) =>
   R.lensPath(['schedulerState', 'subDivisions', division, 'on'])
 const bpmL = R.lensPath(['schedulerState', 'bpm'])
-const tapTimesL = R.lensPath(['tapTimes'])
-const topL = R.lensPath([])
 
 const makeInitialState = (): State => ({
-  tapTimes: [],
   schedulerState: {
     bpm: 63,
     scheduleAheadTimeSeconds: 0.1,
@@ -39,22 +36,6 @@ const makeInitialState = (): State => ({
     },
   },
 })
-
-const calculateBPM: (tapTimes: number[]) => number = R.pipe(
-  (tapTimes: number[]) => R.aperture(2, tapTimes),
-  R.map(([a, b]: [number, number]) => a - b),
-  R.mean,
-  R.divide(60000),
-  Math.trunc
-)
-
-const addNow = (tapTimes: number[]) =>
-  R.pipe(
-    R.prepend(performance.now()),
-    R.take(5)
-  )(tapTimes)
-
-type SetState = (prevState: State) => State
 
 const Metronome = () => {
   const [playing, setPlaying] = useState(false)
@@ -83,17 +64,18 @@ const Metronome = () => {
 
   const changeBPM = (diff: number) => () =>
     setState(
-      R.pipe(
-        over(
-          bpmL,
-          R.pipe(
-            R.add(diff),
-            R.clamp(1, 250)
-          )
-        ),
-        set(tapTimesL, [])
+      over(
+        bpmL,
+        R.pipe(
+          R.add(diff),
+          R.clamp(1, 250)
+        )
       )
     )
+
+  const setBPM = (bpm: number) => {
+    setState(set(bpmL, R.clamp(1, 250, bpm)))
+  }
 
   const toggleSubDivision = (division: string) => () => {
     setState(over(subDivisionsL(division), R.not))
@@ -106,22 +88,6 @@ const Metronome = () => {
     }
     setPlaying(R.not)
   }
-
-  const tapTimesBasedBPM = (state: State) => {
-    const {tapTimes} = state
-    if (tapTimes.length < 2) {
-      return state
-    } else {
-      return set(bpmL, calculateBPM(tapTimes), state)
-    }
-  }
-  const onTap = () =>
-    setState(
-      R.pipe(
-        over(tapTimesL, addNow),
-        over(topL, tapTimesBasedBPM)
-      )
-    )
 
   useMetronome(playing, schedulerState, nextBeats, nextBeat, updateCurrentBeat)
 
@@ -144,7 +110,7 @@ const Metronome = () => {
       <div>bpm: {bpm}</div>
       <div>playing: {playing + ''}</div>
       <div>
-        <button onClick={onTap}>Tap</button>
+        <TapIn setBPM={setBPM} />
       </div>
       <div>
         {Object.keys(subDivisions).map((key) => {
