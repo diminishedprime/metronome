@@ -5,7 +5,8 @@ import {over, set} from 'ramda'
 import * as R from 'ramda'
 import TempoMarking from './TempoMarking'
 import TimeSignature, {Signature} from './TimeSignature'
-import useRaf from '@rooks/use-raf';
+import useRaf from '@rooks/use-raf'
+import {useInterval} from './custom-hooks'
 
 interface SubDivision {
   on: boolean
@@ -32,11 +33,9 @@ interface SchedulerState {
 }
 
 interface State {
-  audioContext: AudioContext
   currentBeat: number
   nextBeats: number[]
   playing: boolean
-  timerId: undefined | number
   tapTimes: number[]
   schedulerState: SchedulerState
 }
@@ -94,17 +93,14 @@ const subDivisionsL = (division: string) =>
   R.lensPath(['schedulerState', 'subDivisions', division, 'on'])
 const bpmL = R.lensPath(['schedulerState', 'bpm'])
 const playingL = R.lensPath(['playing'])
-const timerIdL = R.lensPath(['timerId'])
 const tapTimesL = R.lensPath(['tapTimes'])
 const topL = R.lensPath([])
 
 const makeInitialState = (): State => ({
   playing: false,
-  timerId: undefined,
   tapTimes: [],
   currentBeat: 0,
   nextBeats: [],
-  audioContext: new AudioContext(),
   schedulerState: {
     bpm: 63,
     scheduleAheadTimeSeconds: 0.1,
@@ -143,7 +139,6 @@ type SetState = (prevState: State) => State
 const Metronome = () => {
   const [
     {
-      timerId,
       playing,
       schedulerState,
       currentBeat,
@@ -158,33 +153,47 @@ const Metronome = () => {
     setState,
   ] = useState(makeInitialState)
 
-  const audioContext = useRef(new AudioContext())
-
   const nextBeat = (time: number) => {
     setState(over(nextBeatsL, R.append(time)))
   }
 
+  const audioContext = useRef(new AudioContext())
   useEffect(() => {
     if (playing) {
       audioContext.current = new AudioContext()
     }
   }, [playing])
 
+  const scheduler = useRef(
+    makeScheduler(schedulerState, nextBeat, audioContext.current)
+  )
   useEffect(() => {
-    clearInterval(timerId)
     if (playing) {
-      const scheduler = makeScheduler(
+      scheduler.current = makeScheduler(
         schedulerState,
         nextBeat,
         audioContext.current
       )
-      scheduler()
-      const newTimer = setInterval(() => {
-        scheduler()
-      }, schedulerState.scheduleAheadTimeSeconds * 1000)
-      setState(set(timerIdL, newTimer))
     }
-  }, [playing, schedulerState])
+  }, [schedulerState, playing])
+
+  useInterval(
+    () => {
+      scheduler.current()
+    },
+    playing ? schedulerState.scheduleAheadTimeSeconds * 1000 : undefined
+  )
+
+  // useEffect(() => {
+  //   clearInterval(timerId)
+  //   if (playing) {
+  //     scheduler.current()
+  //     const newTimer = setInterval(() => {
+  //       scheduler.current()
+  //     }, schedulerState.scheduleAheadTimeSeconds * 1000)
+  //     setState(set(timerIdL, newTimer))
+  //   }
+  // }, [playing, schedulerState.scheduleAheadTimeSeconds])
 
   const draw = () => {
     const now = audioContext.current.currentTime
