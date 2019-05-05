@@ -73,9 +73,7 @@ const Metronome = () => {
       )
     )
 
-  const setBPM = (bpm: number) => {
-    setState(set(bpmL, R.clamp(1, 250, bpm)))
-  }
+  const setBPM = (bpm: number) => setState(set(bpmL, R.clamp(1, 250, bpm)))
 
   const toggleSubDivision = (division: string) => () => {
     setState(over(subDivisionsL(division), R.not))

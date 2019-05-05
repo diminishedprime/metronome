@@ -21,7 +21,7 @@ const TapIn = ({setBPM}: Props) => {
     setTaps((taps) => {
       const newTaps = R.append(now, taps).filter((tap) => now - tap < 3000)
       console.log(newTaps)
-      if (newTaps.length > 2) {
+      if (newTaps.length > 1) {
         const bpm = calculateBPM(newTaps)
         console.log(bpm)
         setBPM(bpm)
