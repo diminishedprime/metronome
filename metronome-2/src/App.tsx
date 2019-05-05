@@ -9,14 +9,10 @@ import {SchedulerState, SubDivisions} from './types'
 import {useMetronome} from './metronome'
 
 interface State {
-  currentBeat: number
-  nextBeats: number[]
   tapTimes: number[]
   schedulerState: SchedulerState
 }
 
-const nextBeatsL = R.lensPath(['nextBeats'])
-const currentBeatL = R.lensPath(['currentBeat'])
 const subDivisionsL = (division: string) =>
   R.lensPath(['schedulerState', 'subDivisions', division, 'on'])
 const bpmL = R.lensPath(['schedulerState', 'bpm'])
@@ -25,8 +21,6 @@ const topL = R.lensPath([])
 
 const makeInitialState = (): State => ({
   tapTimes: [],
-  currentBeat: 0,
-  nextBeats: [],
   schedulerState: {
     bpm: 63,
     scheduleAheadTimeSeconds: 0.1,
@@ -64,11 +58,11 @@ type SetState = (prevState: State) => State
 
 const Metronome = () => {
   const [playing, setPlaying] = useState(false)
+  const [currentBeat, setBeat] = useState(0)
+  const [nextBeats, setNextBeats] = useState([])
   const [
     {
       schedulerState,
-      currentBeat,
-      nextBeats,
       schedulerState: {
         bpm,
         subDivisions,
@@ -80,15 +74,12 @@ const Metronome = () => {
   ] = useState(makeInitialState)
 
   const nextBeat = (time: number) => {
-    setState(over(nextBeatsL, R.append(time)))
+    setNextBeats(R.append(time))
   }
-  const updateCurrentBeat = (now: number, pastBeats: number[]) =>
-    setState(
-      R.pipe(
-        over(currentBeatL, (beat) => (beat + pastBeats.length) % numerator),
-        over(nextBeatsL, R.dropWhile((time) => time < now))
-      )
-    )
+  const updateCurrentBeat = (now: number, pastBeats: number[]) => {
+    setBeat((beat) => (beat + pastBeats.length) % numerator)
+    setNextBeats(R.dropWhile((time) => time < now))
+  }
 
   const changeBPM = (diff: number) => () =>
     setState(
@@ -110,9 +101,8 @@ const Metronome = () => {
 
   const toggleStart = () => {
     if (!playing) {
-      const fns = [set(nextBeatsL, []), set(currentBeatL, 0)]
-      const applied = (R.apply(R.pipe, fns) as unknown) as SetState
-      setState(applied)
+      setNextBeats([])
+      setBeat(0)
     }
     setPlaying(R.not)
   }
