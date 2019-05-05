@@ -11,7 +11,6 @@ import {useMetronome} from './metronome'
 interface State {
   currentBeat: number
   nextBeats: number[]
-  playing: boolean
   tapTimes: number[]
   schedulerState: SchedulerState
 }
@@ -21,12 +20,10 @@ const currentBeatL = R.lensPath(['currentBeat'])
 const subDivisionsL = (division: string) =>
   R.lensPath(['schedulerState', 'subDivisions', division, 'on'])
 const bpmL = R.lensPath(['schedulerState', 'bpm'])
-const playingL = R.lensPath(['playing'])
 const tapTimesL = R.lensPath(['tapTimes'])
 const topL = R.lensPath([])
 
 const makeInitialState = (): State => ({
-  playing: false,
   tapTimes: [],
   currentBeat: 0,
   nextBeats: [],
@@ -66,9 +63,9 @@ const addNow = (tapTimes: number[]) =>
 type SetState = (prevState: State) => State
 
 const Metronome = () => {
+  const [playing, setPlaying] = useState(false)
   const [
     {
-      playing,
       schedulerState,
       currentBeat,
       nextBeats,
@@ -112,14 +109,12 @@ const Metronome = () => {
   }
 
   const toggleStart = () => {
-    let fns: Array<(prevState: State) => State> = []
     if (!playing) {
-      fns.push(set(nextBeatsL, []))
-      fns.push(set(currentBeatL, 0))
+      const fns = [set(nextBeatsL, []), set(currentBeatL, 0)]
+      const applied = (R.apply(R.pipe, fns) as unknown) as SetState
+      setState(applied)
     }
-    fns.push(over(playingL, R.not))
-    const applied = (R.apply(R.pipe, fns) as unknown) as SetState
-    setState(applied)
+    setPlaying(R.not)
   }
 
   const tapTimesBasedBPM = (state: State) => {
