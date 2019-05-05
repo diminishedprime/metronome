@@ -5,10 +5,28 @@ import {over, set} from 'ramda'
 import * as R from 'ramda'
 import TempoMarking from './TempoMarking'
 
+interface SubDivision {
+  on: boolean
+  pitch: number
+  divisions: number
+  label: string
+}
+
+interface SubDivisions {
+    _2: SubDivision
+    _3: SubDivision
+    _4: SubDivision
+    _5: SubDivision
+    _6: SubDivision
+    _7: SubDivision
+    _8: SubDivision
+}
+
 interface SchedulerState {
   bpm: number
   audioContext: AudioContext
   scheduleAheadTimeSeconds: number
+  subDivisions: SubDivisions
 }
 
 interface State {
@@ -36,20 +54,33 @@ const scheduleNote = (
 
 const makeScheduler = (state: SchedulerState) => {
   let nextNoteTime = 0.0
-  const {audioContext, bpm} = state
+  const {audioContext, bpm, subDivisions} = state
   const noteScheduler = scheduleNote(audioContext)
   const secondsPerBeat = 60.0 / bpm
+  const scheduleSubDivisions = ({divisions, on, pitch}: SubDivision) => {
+    if (on) {
+      const noteOffset = secondsPerBeat / divisions
+      R.range(1, divisions).map((division) =>
+        noteScheduler({time: nextNoteTime + division * noteOffset, pitch})
+      )
+    }
+  }
   return () => {
     while (
       nextNoteTime <
       audioContext.currentTime + state.scheduleAheadTimeSeconds
     ) {
+      // Quarter Note
       noteScheduler({time: nextNoteTime, pitch: 440})
+      // Eigth Note
+      R.mapObjIndexed(scheduleSubDivisions, subDivisions)
       nextNoteTime += secondsPerBeat
     }
   }
 }
 
+const subDivisionsL = (division: string) =>
+  R.lensPath(['schedulerState', 'subDivisions', division, 'on'])
 const bpmL = R.lensPath(['schedulerState', 'bpm'])
 const playingL = R.lensPath(['playing'])
 const timerIdL = R.lensPath(['timerId'])
@@ -61,9 +92,18 @@ const makeInitialState = (): State => ({
   timerId: undefined,
   tapTimes: [],
   schedulerState: {
-    bpm: 120,
+    bpm: 60,
     audioContext: new AudioContext(),
     scheduleAheadTimeSeconds: 0.1,
+    subDivisions: {
+      _2: {on: false, pitch: 880, divisions: 2, label: '8th'},
+      _3: {on: false, pitch: 880, divisions: 3, label: 'triplet'},
+      _4: {on: false, pitch: 880, divisions: 4, label: '16th'},
+      _5: {on: false, pitch: 880, divisions: 5, label: 'fiveple'},
+      _6: {on: false, pitch: 880, divisions: 6, label: 'sixlet'},
+      _7: {on: false, pitch: 880, divisions: 7, label: 'sevenple'},
+      _8: {on: false, pitch: 880, divisions: 8, label: '32nd'},
+    },
   },
 })
 
@@ -87,7 +127,10 @@ const Metronome = () => {
       timerId,
       playing,
       schedulerState,
-      schedulerState: {bpm},
+      schedulerState: {
+        bpm,
+        subDivisions,
+      },
     },
     setState,
   ] = useState(makeInitialState)
@@ -118,6 +161,10 @@ const Metronome = () => {
       )
     )
 
+  const toggleSubDivision = (division: string) => () => {
+    setState(over(subDivisionsL(division), R.not))
+  }
+
   const toggleStart = () => setState(over(playingL, R.not))
 
   const tapTimesBasedBPM = (state: State) => {
@@ -143,6 +190,18 @@ const Metronome = () => {
       <div>
         <button onClick={onTap}>Tap</button>
       </div>
+      <div>
+        {Object.keys(subDivisions).map((key) => {
+          const division = key as keyof SubDivisions;
+          const {label, on} = subDivisions[division];
+          return (
+            <div key={division}>
+              <label>{label}</label>
+              <input type="checkbox" checked={on} onChange={toggleSubDivision(division)} />
+            </div>
+          )
+        })}
+        </div>
       <div>
         <button onClick={changeBPM(-1)}>-1</button>
         <button onClick={changeBPM(-10)}>-10</button>
