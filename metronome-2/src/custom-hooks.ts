@@ -7,7 +7,10 @@ export const useInterval = (cb: Function, delay: number | undefined) => {
   })
   useEffect(() => {
     if (delay !== undefined) {
-      const id = setInterval(savedCallback.current, delay)
+      const tick = () => {
+        savedCallback.current!()
+      }
+      const id = setInterval(tick, delay)
       return () => clearInterval(id)
     }
   }, [delay])

@@ -26,3 +26,8 @@ export interface SchedulerState {
   subDivisions: SubDivisions
   signature: Signature
 }
+
+export interface Beat {
+  time: number
+  pitch: number
+}

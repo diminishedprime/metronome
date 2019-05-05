@@ -1,13 +1,12 @@
 import React from 'react'
-import {useState, useEffect, useRef} from 'react'
+import {useState} from 'react'
 import styled from 'styled-components'
 import {over, set} from 'ramda'
 import * as R from 'ramda'
 import TempoMarking from './TempoMarking'
 import TimeSignature from './TimeSignature'
-import useRaf from '@rooks/use-raf'
-import {useInterval} from './custom-hooks'
-import {SchedulerState, SubDivision, SubDivisions, Signature} from './types'
+import {SchedulerState, SubDivisions} from './types'
+import {useMetronome} from './metronome'
 
 interface State {
   currentBeat: number
@@ -15,53 +14,6 @@ interface State {
   playing: boolean
   tapTimes: number[]
   schedulerState: SchedulerState
-}
-
-interface Beat {
-  time: number
-  pitch: number
-}
-
-const noteLength = 0.05
-
-const scheduleNote = (audioContext: AudioContext) => ({time, pitch}: Beat) => {
-  var osc = audioContext.createOscillator()
-  osc.connect(audioContext.destination)
-  osc.frequency.value = pitch
-  osc.start(time)
-  osc.stop(time + noteLength)
-}
-
-const makeScheduler = (
-  state: SchedulerState,
-  nextBeat: (time: number) => void,
-  audioContext: AudioContext
-) => {
-  let nextNoteTime = 0.0
-  const {bpm, subDivisions} = state
-  const noteScheduler = scheduleNote(audioContext)
-  const secondsPerBeat = 60.0 / bpm
-  const scheduleSubDivisions = ({divisions, on, pitch}: SubDivision) => {
-    if (on) {
-      const noteOffset = secondsPerBeat / divisions
-      R.range(1, divisions).map((division) =>
-        noteScheduler({time: nextNoteTime + division * noteOffset, pitch})
-      )
-    }
-  }
-  return () => {
-    while (
-      nextNoteTime <
-      audioContext.currentTime + state.scheduleAheadTimeSeconds
-    ) {
-      // Quarter Note
-      noteScheduler({time: nextNoteTime, pitch: 440})
-      nextBeat(nextNoteTime)
-      // Eigth Note
-      R.mapObjIndexed(scheduleSubDivisions, subDivisions)
-      nextNoteTime += secondsPerBeat
-    }
-  }
 }
 
 const nextBeatsL = R.lensPath(['nextBeats'])
@@ -133,48 +85,13 @@ const Metronome = () => {
   const nextBeat = (time: number) => {
     setState(over(nextBeatsL, R.append(time)))
   }
-
-  const audioContext = useRef(new AudioContext())
-  useEffect(() => {
-    if (playing) {
-      audioContext.current = new AudioContext()
-    }
-  }, [playing])
-
-  const scheduler = useRef(
-    makeScheduler(schedulerState, nextBeat, audioContext.current)
-  )
-  useEffect(() => {
-    if (playing) {
-      scheduler.current = makeScheduler(
-        schedulerState,
-        nextBeat,
-        audioContext.current
+  const updateCurrentBeat = (now: number, pastBeats: number[]) =>
+    setState(
+      R.pipe(
+        over(currentBeatL, (beat) => (beat + pastBeats.length) % numerator),
+        over(nextBeatsL, R.dropWhile((time) => time < now))
       )
-    }
-  }, [schedulerState, playing])
-
-  useInterval(
-    () => {
-      scheduler.current()
-    },
-    playing ? schedulerState.scheduleAheadTimeSeconds * 1000 : undefined
-  )
-
-  const draw = () => {
-    const now = audioContext.current.currentTime
-    const pastBeats = nextBeats.filter((time) => time < now && time !== 0)
-    if (pastBeats.length > 0) {
-      setState(
-        R.pipe(
-          over(currentBeatL, (beat) => (beat + pastBeats.length) % numerator),
-          over(nextBeatsL, R.dropWhile((time) => time < now))
-        )
-      )
-    }
-  }
-
-  useRaf(draw, playing)
+    )
 
   const changeBPM = (diff: number) => () =>
     setState(
@@ -220,6 +137,8 @@ const Metronome = () => {
         over(topL, tapTimesBasedBPM)
       )
     )
+
+  useMetronome(playing, schedulerState, nextBeats, nextBeat, updateCurrentBeat)
 
   return (
     <>
