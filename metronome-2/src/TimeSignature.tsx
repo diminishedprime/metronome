@@ -1,10 +1,6 @@
 import React, {useRef, useEffect} from 'react'
 import {Flow as VF} from 'vexflow'
-
-export interface Signature {
-  numerator: number
-  denominator: number
-}
+import {Signature} from './types'
 
 interface Props {
   signature: Signature

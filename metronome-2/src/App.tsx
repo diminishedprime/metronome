@@ -4,33 +4,10 @@ import styled from 'styled-components'
 import {over, set} from 'ramda'
 import * as R from 'ramda'
 import TempoMarking from './TempoMarking'
-import TimeSignature, {Signature} from './TimeSignature'
+import TimeSignature from './TimeSignature'
 import useRaf from '@rooks/use-raf'
 import {useInterval} from './custom-hooks'
-
-interface SubDivision {
-  on: boolean
-  pitch: number
-  divisions: number
-  label: string
-}
-
-interface SubDivisions {
-  _2: SubDivision
-  _3: SubDivision
-  _4: SubDivision
-  _5: SubDivision
-  _6: SubDivision
-  _7: SubDivision
-  _8: SubDivision
-}
-
-interface SchedulerState {
-  bpm: number
-  scheduleAheadTimeSeconds: number
-  subDivisions: SubDivisions
-  signature: Signature
-}
+import {SchedulerState, SubDivision, SubDivisions, Signature} from './types'
 
 interface State {
   currentBeat: number
@@ -183,17 +160,6 @@ const Metronome = () => {
     },
     playing ? schedulerState.scheduleAheadTimeSeconds * 1000 : undefined
   )
-
-  // useEffect(() => {
-  //   clearInterval(timerId)
-  //   if (playing) {
-  //     scheduler.current()
-  //     const newTimer = setInterval(() => {
-  //       scheduler.current()
-  //     }, schedulerState.scheduleAheadTimeSeconds * 1000)
-  //     setState(set(timerIdL, newTimer))
-  //   }
-  // }, [playing, schedulerState.scheduleAheadTimeSeconds])
 
   const draw = () => {
     const now = audioContext.current.currentTime
