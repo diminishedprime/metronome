@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useCallback} from 'react'
 import {useState} from 'react'
 import styled from 'styled-components'
 import {over, set} from 'ramda'
@@ -79,14 +79,17 @@ const Metronome = () => {
     setPlaying(R.not)
   }
 
-  const incCurrentBeat = () =>
-    setCurrentBeat((oldBeat) => {
-      let newBeat = oldBeat + 1
-      if (oldBeat >= numerator) {
-        newBeat = 1
-      }
-      return newBeat
-    })
+  const incCurrentBeat = useCallback(
+    () =>
+      setCurrentBeat((oldBeat) => {
+        let newBeat = oldBeat + 1
+        if (oldBeat >= numerator) {
+          newBeat = 1
+        }
+        return newBeat
+      }),
+    [numerator]
+  )
 
   useMetronome(playing, schedulerState, incCurrentBeat)
 

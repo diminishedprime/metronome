@@ -121,13 +121,22 @@ export const useMetronome = (
 
   const {audioContext} = schedulerState
   // TODO - don't update if the tab is in the background
+  const nextBeatTimeRef = useRef<number | undefined>(undefined)
+
+  useLayoutEffect(() => {
+    nextBeatTimeRef.current = nextBeatTime
+  }, [nextBeatTime])
+
   useLayoutEffect(() => {
     let animationFrame: number
 
     function tick() {
       loop()
       const now = audioContext.currentTime
-      if (nextBeatTime !== undefined && now <= nextBeatTime) {
+      if (
+        nextBeatTimeRef.current !== undefined &&
+        now <= nextBeatTimeRef.current
+      ) {
         setNextBeatTime(undefined)
         incCurrentBeat()
       }
@@ -143,5 +152,5 @@ export const useMetronome = (
         cancelAnimationFrame(animationFrame)
       }
     }
-  }, [playing, audioContext, nextBeatTime, incCurrentBeat])
+  }, [playing, audioContext, incCurrentBeat])
 }
