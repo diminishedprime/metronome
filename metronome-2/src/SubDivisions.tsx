@@ -26,7 +26,7 @@ const Control = styled(({on, label, idx, toggle, ...props}: ControlProps) => (
 const SubDivisions = styled(({subDivisions, toggle, ...props}: Props) => (
   <div {...props}>
     {subDivisions.map((subDivision, idx) => (
-      <Control {...subDivision} idx={idx} toggle={toggle} />
+      <Control key={idx} {...subDivision} idx={idx} toggle={toggle} />
     ))}
   </div>
 ))`

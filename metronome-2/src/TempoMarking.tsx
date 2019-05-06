@@ -64,8 +64,8 @@ const TempoMarking = styled(({bpm, ...props}: Props) => {
   const markings = fromBPM(bpm)
   return (
     <div {...props}>
-      {markings.map((props) => (
-        <Tempo {...props} />
+      {markings.map((props, idx) => (
+        <Tempo key={idx} {...props} />
       ))}
     </div>
   )
