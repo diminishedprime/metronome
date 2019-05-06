@@ -105,7 +105,7 @@ const Metronome = () => {
   return (
     <>
       <TimeSignature signature={signature} currentBeat={currentBeat} />
-      <div>bpm: {bpm}</div>
+      <BPM>{bpm}</BPM>
       <div>playing: {playing + ''}</div>
       <div>
         <TapIn setBPM={setBPM} />
@@ -135,6 +135,11 @@ const Metronome = () => {
     </>
   )
 }
+
+const BPM = styled.div`
+  text-align: center;
+  font-size: 12vh;
+`
 
 const Layout = styled.div`
   margin: 0 auto;
