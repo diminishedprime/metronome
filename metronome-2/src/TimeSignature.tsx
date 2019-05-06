@@ -1,14 +1,52 @@
-import React, {useRef, useEffect} from 'react'
+import React, {useRef, useEffect, ReactChildren} from 'react'
 import {Flow as VF} from 'vexflow'
 import {Signature} from './types'
+import * as R from 'ramda'
+import styled, {StyledProps} from 'styled-components'
 
 interface Props {
   signature: Signature
+  currentBeat: number
 }
 
-const TimeSignature = ({signature: {numerator, denominator}}: Props) => {
-  const ref = useRef<HTMLDivElement>(null)
+const BeatContainer = styled.div`
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+`
 
+interface BeatProps {
+  active: boolean
+}
+
+const BeatBase = ({active, ...props}: BeatProps) => <div {...props} />
+
+const Beat = styled(BeatBase)`
+  height: 10px;
+  width: 10px;
+  margin: 10px;
+  background-color: ${({active}: BeatProps) => (active ? 'green' : 'black')};
+`
+
+const Beats = ({signature: {numerator}, currentBeat}: Props) => {
+  return (
+    <BeatContainer>
+      {R.range(0, numerator).map((beat) => (
+        <Beat key={beat} active={beat + 1 === currentBeat} />
+      ))}
+    </BeatContainer>
+  )
+}
+
+const TimeSignatureWrapper = styled.div`
+  display: flex;
+`
+
+const TimeSignature = (props: Props) => {
+  const {
+    signature: {numerator, denominator},
+  } = props
+  const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (ref.current != null) {
       // @ts-ignore
@@ -25,7 +63,12 @@ const TimeSignature = ({signature: {numerator, denominator}}: Props) => {
     }
   }, [ref, denominator, numerator])
 
-  return <div ref={ref} />
+  return (
+    <TimeSignatureWrapper>
+      <div ref={ref} />
+      <Beats {...props} />
+    </TimeSignatureWrapper>
+  )
 }
 
 export default TimeSignature

@@ -104,20 +104,7 @@ const Metronome = () => {
 
   return (
     <>
-      <div style={{display: 'flex'}}>
-        <TimeSignature signature={signature} />
-        {R.range(0, signature.numerator).map((beat) => (
-          <div
-            key={beat}
-            style={{
-              height: 10,
-              width: 10,
-              margin: 10,
-              backgroundColor: beat + 1 === currentBeat ? 'green' : 'black',
-            }}
-          />
-        ))}
-      </div>
+      <TimeSignature signature={signature} currentBeat={currentBeat} />
       <div>bpm: {bpm}</div>
       <div>playing: {playing + ''}</div>
       <div>
