@@ -1,4 +1,5 @@
 import React from 'react'
+import styled from 'styled-components'
 
 interface Marking {
   range: [number, number]
@@ -38,17 +39,40 @@ interface Props {
   bpm: number
 }
 
-const TempoMarking = ({bpm}: Props) => {
+const Name = styled.div`
+  font-size: 3vh;
+  margin-right: 1vh;
+`
+
+const Range = styled(({range, ...props}: {range: [number, number]}) => (
+  <div {...props}>
+    {range[0]} - {range[1]}
+  </div>
+))``
+
+const Tempo = styled(({name, range, ...props}: Marking) => (
+  <div {...props}>
+    <Name>{name}</Name>
+    <Range range={range} />
+  </div>
+))`
+  display: flex;
+  align-items: baseline;
+`
+
+const TempoMarking = styled(({bpm, ...props}: Props) => {
   const markings = fromBPM(bpm)
   return (
-    <>
-      {markings.map(({name, range}) => (
-        <div key={name}>
-          {name} {range[0]} - {range[1]}
-        </div>
+    <div {...props}>
+      {markings.map((props) => (
+        <Tempo {...props} />
       ))}
-    </>
+    </div>
   )
-}
+})`
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+`
 
 export default TempoMarking
