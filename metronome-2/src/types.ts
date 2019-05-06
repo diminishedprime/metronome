@@ -24,6 +24,7 @@ export interface SchedulerState {
   bpm: number
   subDivisions: SubDivisions
   signature: Signature
+  audioContext: AudioContext
 }
 
 export interface Beat {
