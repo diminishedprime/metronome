@@ -7,36 +7,43 @@ const baseNoteLength = 0.05
 // a third of the base length comes from
 // https://developer.mozilla.org/en-US/docs/Web/API/AudioParam/setTargetAtTime
 const gainLength = baseNoteLength / 3
-const scheduleNote = (audioContext: AudioContext, {time, pitch}: Beat) => {
+const scheduleNote = (
+  audioContext: AudioContext,
+  {time, pitch, gain}: Beat
+) => {
   // For additional details on why the gain node is needed, see this:
   // http://alemangui.github.io/blog//2015/12/26/ramp-to-value.html
   const osc = audioContext.createOscillator()
-  const gain = audioContext.createGain()
+  const deClip = audioContext.createGain()
+  const volume = audioContext.createGain()
 
-  osc.connect(gain)
-  gain.connect(audioContext.destination)
+  osc.connect(deClip)
+  deClip.connect(volume)
+  volume.connect(audioContext.destination)
 
   // This is necessary or there's lots of clicking when the signal ends abruptly.
   // I haven't tested this auditorally yet. I might want to do
   // time + baseNoteLength - gainLength
   const gainStartTime = time + baseNoteLength
-  gain.gain.setTargetAtTime(0, gainStartTime, gainLength)
+  deClip.gain.setTargetAtTime(0, gainStartTime, gainLength)
+
+  volume.gain.value = gain
 
   osc.frequency.value = pitch
   osc.start(time)
   osc.stop(time + baseNoteLength)
 }
 
-const beatsForSubDivision = (
+const beatsFor = (
   startOfBeatTime: number,
   secondsPerBeat: number,
-  {divisions, on, pitch}: SubDivision
-) => {
+  {divisions, on, pitch, gain}: SubDivision
+): Array<Beat> => {
   if (on) {
     const noteOffset = secondsPerBeat / divisions
     return R.range(1, divisions).map((division) => {
       const time = startOfBeatTime + division * noteOffset
-      return {time, pitch}
+      return {time, pitch, gain}
     })
   }
   return []
@@ -47,7 +54,6 @@ const makeScheduler = (
   nextBeat: (time: number) => void,
   scheduleAhead: number
 ) => {
-  // base the starting noteTime on the current audioContext time. This way we can only use one audioContext.
   const {bpm, subDivisions, audioContext} = state
   let nextNoteTime = audioContext.currentTime
   const secondsPerBeat = 60.0 / bpm
@@ -57,22 +63,12 @@ const makeScheduler = (
   return () => {
     while (nextNoteTime < audioContext.currentTime + scheduleAhead) {
       // Quarter Note
-      scheduleNote(audioContext, {time: nextNoteTime, pitch: 440})
+      scheduleNote(audioContext, {time: nextNoteTime, pitch: 440, gain: 1.0})
       // Adds the scheduled note so the gui can refresh at the right time.
       nextBeat(nextNoteTime)
-
-      // TODO - subDivisions could just be an array for the values that are set.
-      // That would be simplier than needing to do all this fancy keys.map
-      // stuff.
-      // Go through the subDivisions and schedule them.
-      for (const subDivision of Object.values(subDivisions) as Array<
-        SubDivision
-      >) {
-        const beats = beatsForSubDivision(
-          nextNoteTime,
-          secondsPerBeat,
-          subDivision
-        )
+      // Subdivisions
+      for (const subDivision of subDivisions) {
+        const beats = beatsFor(nextNoteTime, secondsPerBeat, subDivision)
         beats.forEach(schedule)
       }
       nextNoteTime += secondsPerBeat

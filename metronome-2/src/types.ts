@@ -3,16 +3,7 @@ export interface SubDivision {
   pitch: number
   divisions: number
   label: string
-}
-
-export interface SubDivisions {
-  _2: SubDivision
-  _3: SubDivision
-  _4: SubDivision
-  _5: SubDivision
-  _6: SubDivision
-  _7: SubDivision
-  _8: SubDivision
+  gain: number
 }
 
 export interface Signature {
@@ -22,7 +13,7 @@ export interface Signature {
 
 export interface SchedulerState {
   bpm: number
-  subDivisions: SubDivisions
+  subDivisions: Array<SubDivision>
   signature: Signature
   audioContext: AudioContext
 }
@@ -30,4 +21,5 @@ export interface SchedulerState {
 export interface Beat {
   time: number
   pitch: number
+  gain: number
 }

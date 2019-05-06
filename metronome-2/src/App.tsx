@@ -5,7 +5,7 @@ import {over, set} from 'ramda'
 import * as R from 'ramda'
 import TempoMarking from './TempoMarking'
 import TimeSignature from './TimeSignature'
-import {SchedulerState, SubDivisions} from './types'
+import {SchedulerState} from './types'
 import {useMetronome} from './metronome'
 import TapIn from './TapIn'
 
@@ -13,8 +13,8 @@ interface State {
   schedulerState: SchedulerState
 }
 
-const subDivisionsL = (division: string) =>
-  R.lensPath(['schedulerState', 'subDivisions', division, 'on'])
+const subDivisionsL = (idx: number) =>
+  R.lensPath(['schedulerState', 'subDivisions', idx, 'on'])
 
 const bpmL = R.lensPath(['schedulerState', 'bpm'])
 
@@ -26,15 +26,15 @@ const makeInitialState = (): State => ({
       numerator: 5,
       denominator: 4,
     },
-    subDivisions: {
-      _2: {on: false, pitch: 880, divisions: 2, label: '2'},
-      _3: {on: false, pitch: 880, divisions: 3, label: '3'},
-      _4: {on: false, pitch: 880, divisions: 4, label: '4'},
-      _5: {on: false, pitch: 880, divisions: 5, label: '5'},
-      _6: {on: false, pitch: 880, divisions: 6, label: '6'},
-      _7: {on: false, pitch: 880, divisions: 7, label: '7'},
-      _8: {on: false, pitch: 880, divisions: 8, label: '8'},
-    },
+    subDivisions: [
+      {on: false, pitch: 880, divisions: 2, label: '2', gain: 1.0},
+      {on: false, pitch: 880, divisions: 3, label: '3', gain: 1.0},
+      {on: false, pitch: 880, divisions: 4, label: '4', gain: 1.0},
+      {on: false, pitch: 880, divisions: 5, label: '5', gain: 1.0},
+      {on: false, pitch: 880, divisions: 6, label: '6', gain: 1.0},
+      {on: false, pitch: 880, divisions: 7, label: '7', gain: 1.0},
+      {on: false, pitch: 880, divisions: 8, label: '8', gain: 1.0},
+    ],
   },
 })
 
@@ -59,6 +59,7 @@ const Metronome = () => {
     setNextBeats(R.append(time))
   }
   const updateCurrentBeat = (now: number, pastBeats: number[]) => {
+    console.log('update current beat called')
     setBeat((beat) => (beat + pastBeats.length) % numerator)
     setNextBeats(R.dropWhile((time) => time < now))
   }
@@ -76,8 +77,8 @@ const Metronome = () => {
 
   const setBPM = (bpm: number) => setState(set(bpmL, R.clamp(1, 250, bpm)))
 
-  const toggleSubDivision = (division: string) => () => {
-    setState(over(subDivisionsL(division), R.not))
+  const toggleSubDivision = (divisionIdx: number) => () => {
+    setState(over(subDivisionsL(divisionIdx), R.not))
   }
 
   const toggleStart = () => {
@@ -112,20 +113,16 @@ const Metronome = () => {
         <TapIn setBPM={setBPM} />
       </div>
       <div>
-        {Object.keys(subDivisions).map((key) => {
-          const division = key as keyof SubDivisions
-          const {label, on} = subDivisions[division]
-          return (
-            <div key={division}>
-              <label>{label}</label>
-              <input
-                type="checkbox"
-                checked={on}
-                onChange={toggleSubDivision(division)}
-              />
-            </div>
-          )
-        })}
+        {subDivisions.map(({label, on}, idx) => (
+          <div key={label}>
+            <label>{label}</label>
+            <input
+              type="checkbox"
+              checked={on}
+              onChange={toggleSubDivision(idx)}
+            />
+          </div>
+        ))}
       </div>
       <div>
         <button onClick={changeBPM(-1)}>-1</button>
