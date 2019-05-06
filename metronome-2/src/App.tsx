@@ -42,7 +42,6 @@ const makeInitialState = (): State => ({
 const Metronome = () => {
   const [playing, setPlaying] = useState(false)
   const [currentBeat, setCurrentBeat] = useState(0)
-  const [nextBeats, setNextBeats] = useState([])
   const [
     {
       schedulerState,
@@ -55,20 +54,6 @@ const Metronome = () => {
     },
     setState,
   ] = useState(makeInitialState)
-
-  const addBeatTime = (time: number) => {
-    setNextBeats(R.append(time))
-  }
-  const updateCurrentBeat = (now: number, pastBeats: number[]) => {
-    setCurrentBeat((beat: number) => {
-      let next = beat + pastBeats.length
-      if (next > numerator) {
-        next = next % numerator
-      }
-      return next
-    })
-    setNextBeats(R.dropWhile((time) => time < now))
-  }
 
   const changeBPM = (diff: number) => () =>
     setState(
@@ -89,19 +74,21 @@ const Metronome = () => {
 
   const toggleStart = () => {
     if (playing) {
-      setNextBeats([])
       setCurrentBeat(0)
     }
     setPlaying(R.not)
   }
 
-  useMetronome(
-    playing,
-    schedulerState,
-    nextBeats,
-    addBeatTime,
-    updateCurrentBeat
-  )
+  const incCurrentBeat = () =>
+    setCurrentBeat((oldBeat) => {
+      let newBeat = oldBeat + 1
+      if (oldBeat >= numerator) {
+        newBeat = 1
+      }
+      return newBeat
+    })
+
+  useMetronome(playing, schedulerState, incCurrentBeat)
 
   return (
     <>

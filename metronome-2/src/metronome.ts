@@ -1,4 +1,4 @@
-import {useEffect, useRef, useLayoutEffect} from 'react'
+import {useEffect, useRef, useLayoutEffect, useState} from 'react'
 import {Beat, SchedulerState, SubDivision} from './types'
 import * as R from 'ramda'
 
@@ -50,8 +50,8 @@ const beatsFor = (
 
 const makeScheduler = (
   state: SchedulerState,
-  nextBeat: (time: number) => void,
-  scheduleAhead: number
+  scheduleAhead: number,
+  setNextBeatTime: (time: number) => void
 ) => {
   const {bpm, subDivisions, audioContext} = state
   let nextNoteTime = audioContext.currentTime
@@ -62,8 +62,8 @@ const makeScheduler = (
   return () => {
     while (nextNoteTime < audioContext.currentTime + scheduleAhead) {
       // Quarter Note
-      nextBeat(nextNoteTime)
       scheduleNote(audioContext, {time: nextNoteTime, pitch: 440, gain: 1.0})
+      setNextBeatTime(nextNoteTime)
       // Adds the scheduled note so the gui can refresh at the right time.
       // Subdivisions
       for (const subDivision of subDivisions) {
@@ -78,9 +78,7 @@ const makeScheduler = (
 export const useMetronome = (
   playing: boolean,
   schedulerState: SchedulerState,
-  nextBeats: number[],
-  nextBeat: (time: number) => void,
-  updateCurrentBeat: Function
+  incCurrentBeat: Function
 ) => {
   const scheduleAhead = 0.2
   // TODO - research if it really matters if useRef is passed nothing or an
@@ -92,18 +90,16 @@ export const useMetronome = (
   // theres a better way to do this.
   // I think this doc has the answer, but can't check because I'm on a plane.
   // https://reactjs.org/docs/hooks-faq.html#is-it-safe-to-omit-functions-from-the-list-of-dependencies
-  const nextBeatRef = useRef(nextBeat)
-
-  useEffect(() => {
-    nextBeatRef.current = nextBeat
-  }, [nextBeat])
+  const [nextBeatTime, setNextBeatTime] = useState<number | undefined>(
+    undefined
+  )
 
   useEffect(() => {
     if (playing) {
       scheduler.current = makeScheduler(
         schedulerState,
-        nextBeatRef.current,
-        scheduleAhead
+        scheduleAhead,
+        setNextBeatTime
       )
     }
   }, [schedulerState, playing])
@@ -131,9 +127,9 @@ export const useMetronome = (
     function tick() {
       loop()
       const now = audioContext.currentTime
-      const pastBeats = nextBeats.filter((time) => time <= now && time !== 0)
-      if (pastBeats.length > 0) {
-        updateCurrentBeat(now, pastBeats)
+      if (nextBeatTime !== undefined && now <= nextBeatTime) {
+        setNextBeatTime(undefined)
+        incCurrentBeat()
       }
     }
 
@@ -147,5 +143,5 @@ export const useMetronome = (
         cancelAnimationFrame(animationFrame)
       }
     }
-  }, [playing, audioContext, nextBeats, updateCurrentBeat])
+  }, [playing, audioContext, nextBeatTime, incCurrentBeat])
 }
