@@ -106,34 +106,52 @@ const Metronome = () => {
   return (
     <>
       <TimeSignature signature={signature} currentBeat={currentBeat} />
-      <BPM>{bpm}</BPM>
-      <div>playing: {playing + ''}</div>
-      <div>
-        <TapIn setBPM={setBPM} />
-      </div>
+      <BPMWrapper>
+        <BPM>{bpm}</BPM>
+        <ButtonWrapper>
+          <ChangeButton onClick={changeBPM(10)}>+10</ChangeButton>
+          <ChangeButton onClick={changeBPM(1)}>+1</ChangeButton>
+          <ChangeButton onClick={changeBPM(-1)}>-1</ChangeButton>
+          <ChangeButton onClick={changeBPM(-10)}>-10</ChangeButton>
+        </ButtonWrapper>
+      </BPMWrapper>
       <SubDivisions subDivisions={subDivisions} toggle={toggleSubDivision} />
       <div>
-        <button onClick={changeBPM(-1)}>-1</button>
-        <button onClick={changeBPM(-10)}>-10</button>
-        <button onClick={changeBPM(10)}>+10</button>
-        <button onClick={changeBPM(1)}>+1</button>
-      </div>
-      <div>
         <button onClick={toggleStart}>{playing ? 'Stop' : 'Start'}</button>
+        <TapIn setBPM={setBPM} />
       </div>
       <TempoMarking bpm={bpm} />
     </>
   )
 }
 
+const ChangeButton = styled.button`
+  margin-top: 3px;
+  margin-bottom: 3px;
+  width: 6vh;
+  font-size: 2.5vh;
+`
+
+const ButtonWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  margin-bottom: auto;
+`
+
+const BPMWrapper = styled.div`
+  display: flex;
+`
+
 const BPM = styled.div`
   text-align: center;
   font-size: 12vh;
+  width: 100%;
 `
 
 const Layout = styled.div`
   margin: 0 auto;
-  max-width: 40em;
+  max-width: 500px;
 `
 
 const App: React.FC = () => {
