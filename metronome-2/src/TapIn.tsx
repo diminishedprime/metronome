@@ -14,20 +14,16 @@ const calculateBPM = R.pipe(
 )
 
 const TapIn = ({setBPM}: Props) => {
-  const [, setTaps] = useState<number[]>([])
+  const [taps, setTaps] = useState<number[]>([])
 
   const onTap = () => {
     const now = performance.now()
-    setTaps((taps) => {
-      const newTaps = R.append(now, taps).filter((tap) => now - tap < 3000)
-      console.log(newTaps)
-      if (newTaps.length > 1) {
-        const bpm = calculateBPM(newTaps)
-        console.log(bpm)
-        setBPM(bpm)
-      }
-      return newTaps
-    })
+    const newTaps = R.append(now, taps).filter((tap) => now - tap < 3000)
+    if (newTaps.length > 1) {
+      const bpm = calculateBPM(newTaps)
+      setBPM(bpm)
+    }
+    setTaps(newTaps)
   }
 
   return <button onClick={onTap}>Tap</button>
