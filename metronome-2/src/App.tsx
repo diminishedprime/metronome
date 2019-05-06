@@ -8,6 +8,7 @@ import TimeSignature from './TimeSignature'
 import {SchedulerState} from './types'
 import {useMetronome} from './metronome'
 import TapIn from './TapIn'
+import SubDivisions from './SubDivisions'
 
 interface State {
   schedulerState: SchedulerState
@@ -82,7 +83,7 @@ const Metronome = () => {
 
   const setBPM = (bpm: number) => setState(set(bpmL, R.clamp(1, 250, bpm)))
 
-  const toggleSubDivision = (divisionIdx: number) => () => {
+  const toggleSubDivision = (divisionIdx: number) => {
     setState(over(subDivisionsL(divisionIdx), R.not))
   }
 
@@ -110,18 +111,7 @@ const Metronome = () => {
       <div>
         <TapIn setBPM={setBPM} />
       </div>
-      <div>
-        {subDivisions.map(({label, on}, idx) => (
-          <div key={label}>
-            <label>{label}</label>
-            <input
-              type="checkbox"
-              checked={on}
-              onChange={toggleSubDivision(idx)}
-            />
-          </div>
-        ))}
-      </div>
+      <SubDivisions subDivisions={subDivisions} toggle={toggleSubDivision} />
       <div>
         <button onClick={changeBPM(-1)}>-1</button>
         <button onClick={changeBPM(-10)}>-10</button>
