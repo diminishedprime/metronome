@@ -59,8 +59,13 @@ const Metronome = () => {
     setNextBeats(R.append(time))
   }
   const updateCurrentBeat = (now: number, pastBeats: number[]) => {
-    console.log('update current beat called')
-    setBeat((beat) => (beat + pastBeats.length) % numerator)
+    setBeat((beat: number) => {
+      let next = beat + 1
+      if (beat >= numerator) {
+        next = 1
+      }
+      return next
+    })
     setNextBeats(R.dropWhile((time) => time < now))
   }
 
@@ -82,7 +87,7 @@ const Metronome = () => {
   }
 
   const toggleStart = () => {
-    if (!playing) {
+    if (playing) {
       setNextBeats([])
       setBeat(0)
     }
@@ -102,7 +107,7 @@ const Metronome = () => {
               height: 10,
               width: 10,
               margin: 10,
-              backgroundColor: beat === currentBeat ? 'green' : 'black',
+              backgroundColor: beat + 1 === currentBeat ? 'green' : 'black',
             }}
           />
         ))}

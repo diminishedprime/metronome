@@ -1,5 +1,4 @@
-import {useEffect, useRef} from 'react'
-import useRaf from '@rooks/use-raf'
+import {useEffect, useRef, useLayoutEffect} from 'react'
 import {Beat, SchedulerState, SubDivision} from './types'
 import * as R from 'ramda'
 
@@ -63,9 +62,9 @@ const makeScheduler = (
   return () => {
     while (nextNoteTime < audioContext.currentTime + scheduleAhead) {
       // Quarter Note
+      nextBeat(nextNoteTime)
       scheduleNote(audioContext, {time: nextNoteTime, pitch: 440, gain: 1.0})
       // Adds the scheduled note so the gui can refresh at the right time.
-      nextBeat(nextNoteTime)
       // Subdivisions
       for (const subDivision of subDivisions) {
         const beats = beatsFor(nextNoteTime, secondsPerBeat, subDivision)
@@ -81,7 +80,6 @@ export const useMetronome = (
   schedulerState: SchedulerState,
   nextBeats: number[],
   nextBeat: (time: number) => void,
-  // TODO - make sure this gets called when we stop. Otherwise there's a weird sync-up behavior.
   updateCurrentBeat: Function
 ) => {
   const scheduleAhead = 0.2
@@ -101,9 +99,7 @@ export const useMetronome = (
   }, [nextBeat])
 
   useEffect(() => {
-    console.log('scheduler effect')
     if (playing) {
-      console.log('updating scheduler.current')
       scheduler.current = makeScheduler(
         schedulerState,
         nextBeatRef.current,
@@ -115,9 +111,7 @@ export const useMetronome = (
   // We want the setInterval to overlap with the scheduler.
   const delay = playing ? (scheduleAhead * 1000) / 2 : undefined
   useEffect(() => {
-    console.log('setInterval effect')
     if (delay !== undefined) {
-      console.log('subscribed to setInterval')
       const tick = () => {
         // TODO - this force shouldn't be necessary.
         scheduler.current!()
@@ -125,21 +119,33 @@ export const useMetronome = (
       const id = setInterval(tick, delay)
       return () => {
         clearInterval(id)
-        console.log('clearing interval')
       }
     }
   }, [delay])
 
   const {audioContext} = schedulerState
-  const draw = () => {
-    const now = audioContext.currentTime
-    const pastBeats = nextBeats.filter((time) => time < now && time !== 0)
-    if (pastBeats.length > 0) {
-      updateCurrentBeat(now, pastBeats)
+  // TODO - don't update if the tab is in the background
+  useLayoutEffect(() => {
+    let animationFrame: number
+
+    function tick() {
+      loop()
+      const now = audioContext.currentTime
+      const pastBeats = nextBeats.filter((time) => time <= now && time !== 0)
+      if (pastBeats.length > 0) {
+        updateCurrentBeat(now, pastBeats)
+      }
     }
-  }
-  // TODO - replace this with custom version since I need to do different checks for re-renders.
-  // TODO - this seems to not work because of something with audioContext always being the old one.
-  // TODO - I don't want to expensively draw if the tab is in the background
-  useRaf(draw, playing)
+
+    function loop() {
+      animationFrame = requestAnimationFrame(tick)
+    }
+
+    if (playing) {
+      loop()
+      return () => {
+        cancelAnimationFrame(animationFrame)
+      }
+    }
+  }, [playing, audioContext, nextBeats, updateCurrentBeat])
 }
