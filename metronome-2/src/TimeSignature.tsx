@@ -1,8 +1,8 @@
-import React, {useRef, useEffect, ReactChildren} from 'react'
+import React, {useRef, useEffect} from 'react'
 import {Flow as VF} from 'vexflow'
 import {Signature} from './types'
 import * as R from 'ramda'
-import styled, {StyledProps} from 'styled-components'
+import styled from 'styled-components'
 
 interface Props {
   signature: Signature
