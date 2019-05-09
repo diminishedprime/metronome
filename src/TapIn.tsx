@@ -1,8 +1,8 @@
-import React, {useState} from 'react'
-import * as R from 'ramda'
+import React, { useState } from "react";
+import * as R from "ramda";
 
 interface Props {
-  setBPM: (bpm: number) => void
+  setBPM: (bpm: number) => void;
 }
 
 const calculateBPM = R.pipe(
@@ -11,22 +11,22 @@ const calculateBPM = R.pipe(
   R.mean,
   R.divide(60000),
   Math.trunc
-)
+);
 
-const TapIn = ({setBPM}: Props) => {
-  const [taps, setTaps] = useState<number[]>([])
+const TapIn = ({ setBPM }: Props) => {
+  const [taps, setTaps] = useState<number[]>([]);
 
   const onTap = () => {
-    const now = performance.now()
-    const newTaps = R.append(now, taps).filter((tap) => now - tap < 3000)
+    const now = performance.now();
+    const newTaps = R.append(now, taps).filter(tap => now - tap < 3000);
     if (newTaps.length > 1) {
-      const bpm = calculateBPM(newTaps)
-      setBPM(bpm)
+      const bpm = calculateBPM(newTaps);
+      setBPM(bpm);
     }
-    setTaps(newTaps)
-  }
+    setTaps(newTaps);
+  };
 
-  return <button onClick={onTap}>Tap</button>
-}
+  return <button onClick={onTap}>Tap</button>;
+};
 
-export default TapIn
+export default TapIn;

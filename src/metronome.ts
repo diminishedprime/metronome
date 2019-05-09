@@ -1,156 +1,153 @@
-import {useEffect, useRef, useLayoutEffect, useState} from 'react'
-import {Beat, SchedulerState, SubDivision} from './types'
-import * as R from 'ramda'
+import {
+  useEffect,
+  useRef,
+  useLayoutEffect,
+  useState,
+  MutableRefObject
+} from "react";
+import { Beat, SchedulerState, SubDivision } from "./types";
+import * as R from "ramda";
 
-const baseNoteLength = 0.05
+const baseNoteLength = 0.05;
 // a third of the base length comes from
 // https://developer.mozilla.org/en-US/docs/Web/API/AudioParam/setTargetAtTime
-const gainLength = baseNoteLength / 3
 const scheduleNote = (
   audioContext: AudioContext,
-  {time, pitch, gain}: Beat
+  { time, pitch, gain }: Beat
 ) => {
   // For additional details on why the gain node is needed, see this:
   // http://alemangui.github.io/blog//2015/12/26/ramp-to-value.html
-  const osc = audioContext.createOscillator()
-  const deClip = audioContext.createGain()
-  const volume = audioContext.createGain()
+  const osc = audioContext.createOscillator();
+  const deClip = audioContext.createGain();
+  const volume = audioContext.createGain();
 
-  osc.connect(deClip)
-  deClip.connect(volume)
-  volume.connect(audioContext.destination)
+  osc.connect(deClip);
+  deClip.connect(volume);
+  volume.connect(audioContext.destination);
 
-  // This is necessary or there's lots of clicking when the signal ends abruptly.
-  // I haven't tested this auditorally yet. I might want to do
-  // time + baseNoteLength - gainLength
-  const gainStartTime = time + baseNoteLength
-  deClip.gain.setTargetAtTime(0, gainStartTime, gainLength)
+  const noteLength = Math.floor(pitch * baseNoteLength) * (1 / pitch);
+  deClip.gain.exponentialRampToValueAtTime(0.1, time + noteLength * 2);
+  osc.type = "triangle";
 
-  volume.gain.value = gain
+  volume.gain.value = gain;
 
-  osc.frequency.value = pitch
-  osc.start(time)
-  osc.stop(time + baseNoteLength)
-}
+  osc.frequency.value = pitch;
+  osc.start(time);
+  osc.stop(time + noteLength);
+};
 
 const beatsFor = (
   startOfBeatTime: number,
   secondsPerBeat: number,
-  {divisions, on, pitch, gain}: SubDivision
+  { divisions, on, pitch, gain }: SubDivision
 ): Array<Beat> => {
   if (on) {
-    const noteOffset = secondsPerBeat / divisions
-    return R.range(1, divisions).map((division) => {
-      const time = startOfBeatTime + division * noteOffset
-      return {time, pitch, gain}
-    })
+    const noteOffset = secondsPerBeat / divisions;
+    return R.range(1, divisions).map(division => {
+      const time = startOfBeatTime + division * noteOffset;
+      return { time, pitch, gain };
+    });
   }
-  return []
-}
+  return [];
+};
 
+// TODO - this could probably be a 'useScheduler' effect.
 const makeScheduler = (
-  state: SchedulerState,
+  state: MutableRefObject<SchedulerState>,
   scheduleAhead: number,
   setNextBeatTime: (time: number) => void
 ) => {
-  const {bpm, subDivisions, audioContext} = state
-  let nextNoteTime = audioContext.currentTime
-  const secondsPerBeat = 60.0 / bpm
-  const schedule = (beat: Beat) => {
-    scheduleNote(audioContext, beat)
-  }
+  let nextNoteTime = state.current.audioContext.currentTime;
   return () => {
+    const { bpm, subDivisions, audioContext } = state.current;
+    const secondsPerBeat = 60.0 / bpm;
+    const schedule = (beat: Beat) => {
+      scheduleNote(audioContext, beat);
+    };
     while (nextNoteTime < audioContext.currentTime + scheduleAhead) {
       // Quarter Note
-      scheduleNote(audioContext, {time: nextNoteTime, pitch: 440, gain: 1.0})
-      setNextBeatTime(nextNoteTime)
+      scheduleNote(audioContext, { time: nextNoteTime, pitch: 440, gain: 1.0 });
+      setNextBeatTime(nextNoteTime);
       // Adds the scheduled note so the gui can refresh at the right time.
       // Subdivisions
       for (const subDivision of subDivisions) {
-        const beats = beatsFor(nextNoteTime, secondsPerBeat, subDivision)
-        beats.forEach(schedule)
+        const beats = beatsFor(nextNoteTime, secondsPerBeat, subDivision);
+        beats.forEach(schedule);
       }
-      nextNoteTime += secondsPerBeat
+      nextNoteTime += secondsPerBeat;
     }
-  }
-}
+  };
+};
 
 export const useMetronome = (
   playing: boolean,
   schedulerState: SchedulerState,
   incCurrentBeat: Function
 ) => {
-  const scheduleAhead = 0.2
-  // TODO - research if it really matters if useRef is passed nothing or an
-  // initial value. It makes type-checking easier, but I'm not sure if one or
-  // the other is considered idomatic.
-  const scheduler = useRef<() => void>()
-  // TODO - I have to do this in order to make the lint check work for
-  // setEffect, but this doesn't seem to actually change any behavior. Check if
-  // theres a better way to do this.
-  // I think this doc has the answer, but can't check because I'm on a plane.
-  // https://reactjs.org/docs/hooks-faq.html#is-it-safe-to-omit-functions-from-the-list-of-dependencies
-  const [nextBeatTime, setNextBeatTime] = useState<number | undefined>(
-    undefined
-  )
+  // TODO - scheduleAhead should be at least 1 second if tab is blurred.
+  const scheduleAhead = 0.2;
 
+  const schedulerStateRef = useRef(schedulerState);
   useEffect(() => {
-    if (playing) {
-      scheduler.current = makeScheduler(
-        schedulerState,
-        scheduleAhead,
-        setNextBeatTime
-      )
-    }
-  }, [schedulerState, playing])
+    schedulerStateRef.current = schedulerState;
+  }, [schedulerState]);
+
+  const [nextBeatTime, setNextBeatTime] = useState<number>();
+
+  const schedulerRef = useRef<() => void>();
+  useEffect(() => {
+    console.log("make scheduler effect");
+    schedulerRef.current = makeScheduler(
+      schedulerStateRef,
+      scheduleAhead,
+      setNextBeatTime
+    );
+  }, [setNextBeatTime]);
 
   // We want the setInterval to overlap with the scheduler.
-  const delay = playing ? (scheduleAhead * 1000) / 2 : undefined
+  // TODO - we want to change the
+  const delay = playing ? (scheduleAhead * 1000) / 2 : undefined;
   useEffect(() => {
     if (delay !== undefined) {
-      const tick = () => {
-        // TODO - this force shouldn't be necessary.
-        scheduler.current!()
-      }
-      const id = setInterval(tick, delay)
+      const id = setInterval(schedulerRef.current, delay);
       return () => {
-        clearInterval(id)
-      }
+        clearInterval(id);
+      };
     }
-  }, [delay])
+  }, [delay]);
 
-  const {audioContext} = schedulerState
+  const { audioContext } = schedulerState;
   // TODO - don't update if the tab is in the background
-  const nextBeatTimeRef = useRef<number | undefined>(undefined)
+  const nextBeatTimeRef = useRef<number>();
 
   useLayoutEffect(() => {
-    nextBeatTimeRef.current = nextBeatTime
-  }, [nextBeatTime])
+    nextBeatTimeRef.current = nextBeatTime;
+  }, [nextBeatTime]);
 
   useLayoutEffect(() => {
-    let animationFrame: number
+    let animationFrame: number;
 
     function tick() {
-      loop()
-      const now = audioContext.currentTime
+      loop();
+      const now = audioContext.currentTime;
       if (
         nextBeatTimeRef.current !== undefined &&
         now <= nextBeatTimeRef.current
       ) {
-        setNextBeatTime(undefined)
-        incCurrentBeat()
+        setNextBeatTime(undefined);
+        incCurrentBeat();
       }
     }
 
     function loop() {
-      animationFrame = requestAnimationFrame(tick)
+      animationFrame = requestAnimationFrame(tick);
     }
 
     if (playing) {
-      loop()
+      loop();
       return () => {
-        cancelAnimationFrame(animationFrame)
-      }
+        cancelAnimationFrame(animationFrame);
+      };
     }
-  }, [playing, audioContext, incCurrentBeat])
-}
+  }, [playing, audioContext, incCurrentBeat]);
+};
