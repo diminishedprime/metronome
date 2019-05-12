@@ -3,7 +3,10 @@ import {
   useRef,
   useLayoutEffect,
   useState,
-  MutableRefObject
+  useCallback,
+  MutableRefObject,
+  Dispatch,
+  SetStateAction
 } from "react";
 import { Beat, SchedulerState, SubDivision } from "./types";
 import * as R from "ramda";
@@ -64,7 +67,7 @@ const scheduleGroup = (
     scheduleNote(audioContext, {
       time: nextNoteTime.current,
       pitch: 0,
-      gain: 1.0,
+      gain: 0.5,
       buffer: buffer!
     });
     setNextBeatTime(nextNoteTime.current);
@@ -183,12 +186,27 @@ const useDisplayUpdater = (
 
 export const useMetronome = (
   playing: boolean,
-  schedulerState: SchedulerState,
-  incCurrentBeat: () => void
-) => {
+  schedulerState: SchedulerState
+): [number, Dispatch<SetStateAction<number>>] => {
   // TODO - don't update if the tab is in the background
   const { audioContext } = schedulerState;
   const [nextBeatTime, setNextBeatTime] = useState<number>();
+  const [currentBeat, setCurrentBeat] = useState(0);
+  const {
+    signature: { numerator }
+  } = schedulerState;
+
+  const incCurrentBeat = useCallback(
+    () =>
+      setCurrentBeat(oldBeat => {
+        let newBeat = oldBeat + 1;
+        if (oldBeat >= numerator) {
+          newBeat = 1;
+        }
+        return newBeat;
+      }),
+    [numerator]
+  );
 
   useScheduleAhead(playing, schedulerState, setNextBeatTime);
   useDisplayUpdater(
@@ -198,4 +216,6 @@ export const useMetronome = (
     setNextBeatTime,
     incCurrentBeat
   );
+
+  return [currentBeat, setCurrentBeat];
 };

@@ -42,7 +42,6 @@ const makeInitialState = (): State => ({
 
 const Metronome = () => {
   const [playing, setPlaying] = useState(false);
-  const [currentBeat, setCurrentBeat] = useState(0);
   const [
     {
       schedulerState,
@@ -73,26 +72,13 @@ const Metronome = () => {
     setState(over(subDivisionsL(divisionIdx), R.not));
   };
 
+  const [currentBeat, setCurrentBeat] = useMetronome(playing, schedulerState);
   const toggleStart = () => {
     if (playing) {
       setCurrentBeat(0);
     }
     setPlaying(R.not);
   };
-
-  const incCurrentBeat = useCallback(
-    () =>
-      setCurrentBeat(oldBeat => {
-        let newBeat = oldBeat + 1;
-        if (oldBeat >= numerator) {
-          newBeat = 1;
-        }
-        return newBeat;
-      }),
-    [numerator]
-  );
-
-  useMetronome(playing, schedulerState, incCurrentBeat);
 
   return (
     <>
