@@ -95,6 +95,22 @@ const useAudioBuffer = (url: string): AudioBuffer | undefined => {
   return buffer;
 };
 
+const useMutableLayout = <T>(dep: T): MutableRefObject<T> => {
+  const mutableRef = useRef<T>(dep);
+  useLayoutEffect(() => {
+    mutableRef.current = dep;
+  }, [dep]);
+  return mutableRef;
+};
+
+const useMutable = <T>(dep: T): MutableRefObject<T> => {
+  const mutableRef = useRef<T>(dep);
+  useEffect(() => {
+    mutableRef.current = dep;
+  }, [dep]);
+  return mutableRef;
+};
+
 export const useMetronome = (
   playing: boolean,
   schedulerState: SchedulerState,
@@ -103,14 +119,10 @@ export const useMetronome = (
   // TODO - don't update if the tab is in the background
   const { audioContext, scheduleAhead } = schedulerState;
   const [nextBeatTime, setNextBeatTime] = useState<number>();
-  const nextBeatTimeRef = useRef<number>();
+  const nextBeatTimeRef = useMutableLayout(nextBeatTime);
   const nextNoteTimeRef = useRef<number>(0);
   const buffer = useAudioBuffer(click);
-
-  const schedulerStateRef = useRef(schedulerState);
-  useEffect(() => {
-    schedulerStateRef.current = schedulerState;
-  }, [schedulerState]);
+  const schedulerStateRef = useMutable(schedulerState);
 
   const delay = playing ? (scheduleAhead * 1000) / 2 : undefined;
   useEffect(() => {
@@ -131,10 +143,6 @@ export const useMetronome = (
       };
     }
   }, [delay, buffer]);
-
-  useLayoutEffect(() => {
-    nextBeatTimeRef.current = nextBeatTime;
-  }, [nextBeatTime]);
 
   useLayoutEffect(() => {
     let animationFrame: number;
