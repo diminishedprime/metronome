@@ -51,7 +51,8 @@ const makeScheduler = (
   setNextBeatTime: (time: number) => void,
   buffer: MutableRefObject<AudioBuffer | undefined>
 ) => {
-  let nextNoteTime = state.current.audioContext.currentTime;
+  // This slight offset makes the timing better.
+  let nextNoteTime = state.current.audioContext.currentTime + 0.1;
   console.log({ nextNoteTime });
   return () => {
     const { bpm, subDivisions, audioContext } = state.current;
@@ -91,6 +92,7 @@ export const useMetronome = (
 ) => {
   // TODO - scheduleAhead should be at least 1 second if tab is blurred.
   const scheduleAhead = 0.2;
+  const { audioContext } = schedulerState;
 
   const schedulerStateRef = useRef(schedulerState);
   useEffect(() => {
@@ -101,43 +103,34 @@ export const useMetronome = (
 
   const bufferRef = useRef<AudioBuffer | undefined>();
   useEffect(() => {
-    console.log("buffer effect");
     var request = new XMLHttpRequest();
     request.open("GET", click, true);
     request.responseType = "arraybuffer";
-    request.onload = function() {
+    request.onload = () => {
       var audioData = request.response;
-      audioContext.decodeAudioData(audioData, function(buffer) {
+      audioContext.decodeAudioData(audioData, buffer => {
         bufferRef.current = buffer;
-        console.log("setting buffer");
       });
     };
     request.send();
-  }, []);
+  }, [audioContext]);
 
-  const schedulerRef = useRef<() => void>();
-  useEffect(() => {
-    schedulerRef.current = makeScheduler(
-      schedulerStateRef,
-      scheduleAhead,
-      setNextBeatTime,
-      bufferRef
-    );
-  }, [setNextBeatTime]);
-
-  // We want the setInterval to overlap with the scheduler.
-  // TODO - we want to change the
   const delay = playing ? (scheduleAhead * 1000) / 2 : undefined;
   useEffect(() => {
     if (delay !== undefined) {
-      const id = setInterval(schedulerRef.current, delay);
+      const scheduler = makeScheduler(
+        schedulerStateRef,
+        scheduleAhead,
+        setNextBeatTime,
+        bufferRef
+      );
+      const id = setInterval(scheduler, delay);
       return () => {
         clearInterval(id);
       };
     }
   }, [delay]);
 
-  const { audioContext } = schedulerState;
   // TODO - don't update if the tab is in the background
   const nextBeatTimeRef = useRef<number>();
 
