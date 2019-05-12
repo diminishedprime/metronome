@@ -22,4 +22,5 @@ export interface Beat {
   time: number;
   pitch: number;
   gain: number;
+  buffer: AudioBuffer;
 }

@@ -28,13 +28,13 @@ const makeInitialState = (): State => ({
       denominator: 4
     },
     subDivisions: [
-      { on: false, pitch: 880, divisions: 2, label: "2", gain: 1.0 },
-      { on: false, pitch: 880, divisions: 3, label: "3", gain: 1.0 },
-      { on: false, pitch: 880, divisions: 4, label: "4", gain: 1.0 },
-      { on: false, pitch: 880, divisions: 5, label: "5", gain: 1.0 },
-      { on: false, pitch: 880, divisions: 6, label: "6", gain: 1.0 },
-      { on: false, pitch: 880, divisions: 7, label: "7", gain: 1.0 },
-      { on: false, pitch: 880, divisions: 8, label: "8", gain: 1.0 }
+      { on: false, pitch: 100, divisions: 2, label: "2", gain: 1.0 },
+      { on: false, pitch: 200, divisions: 3, label: "3", gain: 1.0 },
+      { on: false, pitch: 300, divisions: 4, label: "4", gain: 1.0 },
+      { on: false, pitch: 400, divisions: 5, label: "5", gain: 1.0 },
+      { on: false, pitch: 500, divisions: 6, label: "6", gain: 1.0 },
+      { on: false, pitch: 600, divisions: 7, label: "7", gain: 1.0 },
+      { on: false, pitch: 700, divisions: 8, label: "8", gain: 1.0 }
     ]
   }
 });

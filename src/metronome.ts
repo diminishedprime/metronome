@@ -7,45 +7,38 @@ import {
 } from "react";
 import { Beat, SchedulerState, SubDivision } from "./types";
 import * as R from "ramda";
+const click = require("./click.wav");
 
-const baseNoteLength = 0.05;
-// a third of the base length comes from
-// https://developer.mozilla.org/en-US/docs/Web/API/AudioParam/setTargetAtTime
 const scheduleNote = (
   audioContext: AudioContext,
-  { time, pitch, gain }: Beat
+  { time, gain, buffer, pitch }: Beat
 ) => {
-  // For additional details on why the gain node is needed, see this:
-  // http://alemangui.github.io/blog//2015/12/26/ramp-to-value.html
-  const osc = audioContext.createOscillator();
-  const deClip = audioContext.createGain();
+  const sound = audioContext.createBufferSource();
+  sound.buffer = buffer;
+  sound.detune.value = pitch;
+
   const volume = audioContext.createGain();
-
-  osc.connect(deClip);
-  deClip.connect(volume);
-  volume.connect(audioContext.destination);
-
-  const noteLength = Math.floor(pitch * baseNoteLength) * (1 / pitch);
-  deClip.gain.exponentialRampToValueAtTime(0.1, time + noteLength * 2);
-  osc.type = "triangle";
-
   volume.gain.value = gain;
 
-  osc.frequency.value = pitch;
-  osc.start(time);
-  osc.stop(time + noteLength);
+  sound.connect(volume);
+  volume.connect(audioContext.destination);
+
+  sound.start(time);
+  console.log({ time });
 };
 
 const beatsFor = (
   startOfBeatTime: number,
   secondsPerBeat: number,
-  { divisions, on, pitch, gain }: SubDivision
+  { divisions, on, pitch, gain }: SubDivision,
+  buffer: AudioBuffer
 ): Array<Beat> => {
   if (on) {
     const noteOffset = secondsPerBeat / divisions;
+
     return R.range(1, divisions).map(division => {
       const time = startOfBeatTime + division * noteOffset;
-      return { time, pitch, gain };
+      return { time, pitch, gain, buffer };
     });
   }
   return [];
@@ -55,9 +48,11 @@ const beatsFor = (
 const makeScheduler = (
   state: MutableRefObject<SchedulerState>,
   scheduleAhead: number,
-  setNextBeatTime: (time: number) => void
+  setNextBeatTime: (time: number) => void,
+  buffer: MutableRefObject<AudioBuffer | undefined>
 ) => {
   let nextNoteTime = state.current.audioContext.currentTime;
+  console.log({ nextNoteTime });
   return () => {
     const { bpm, subDivisions, audioContext } = state.current;
     const secondsPerBeat = 60.0 / bpm;
@@ -66,12 +61,22 @@ const makeScheduler = (
     };
     while (nextNoteTime < audioContext.currentTime + scheduleAhead) {
       // Quarter Note
-      scheduleNote(audioContext, { time: nextNoteTime, pitch: 440, gain: 1.0 });
+      scheduleNote(audioContext, {
+        time: nextNoteTime,
+        pitch: 0,
+        gain: 1.0,
+        buffer: buffer.current!
+      });
       setNextBeatTime(nextNoteTime);
       // Adds the scheduled note so the gui can refresh at the right time.
       // Subdivisions
       for (const subDivision of subDivisions) {
-        const beats = beatsFor(nextNoteTime, secondsPerBeat, subDivision);
+        const beats = beatsFor(
+          nextNoteTime,
+          secondsPerBeat,
+          subDivision,
+          buffer.current!
+        );
         beats.forEach(schedule);
       }
       nextNoteTime += secondsPerBeat;
@@ -94,13 +99,29 @@ export const useMetronome = (
 
   const [nextBeatTime, setNextBeatTime] = useState<number>();
 
+  const bufferRef = useRef<AudioBuffer | undefined>();
+  useEffect(() => {
+    console.log("buffer effect");
+    var request = new XMLHttpRequest();
+    request.open("GET", click, true);
+    request.responseType = "arraybuffer";
+    request.onload = function() {
+      var audioData = request.response;
+      audioContext.decodeAudioData(audioData, function(buffer) {
+        bufferRef.current = buffer;
+        console.log("setting buffer");
+      });
+    };
+    request.send();
+  }, []);
+
   const schedulerRef = useRef<() => void>();
   useEffect(() => {
-    console.log("make scheduler effect");
     schedulerRef.current = makeScheduler(
       schedulerStateRef,
       scheduleAhead,
-      setNextBeatTime
+      setNextBeatTime,
+      bufferRef
     );
   }, [setNextBeatTime]);
 
