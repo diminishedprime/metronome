@@ -15,7 +15,7 @@ const scheduleNote = (
 ) => {
   const sound = audioContext.createBufferSource();
   sound.buffer = buffer;
-  sound.detune.value = pitch;
+  sound.detune.value = -pitch;
 
   const volume = audioContext.createGain();
   volume.gain.value = gain;
