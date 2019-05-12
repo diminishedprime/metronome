@@ -111,24 +111,22 @@ const useMutable = <T>(dep: T): MutableRefObject<T> => {
   return mutableRef;
 };
 
-export const useMetronome = (
+const useScheduleAhead = (
   playing: boolean,
   schedulerState: SchedulerState,
-  incCurrentBeat: Function
+  setNextBeatTime: (time: number) => void
 ) => {
-  // TODO - don't update if the tab is in the background
-  const { audioContext, scheduleAhead } = schedulerState;
-  const [nextBeatTime, setNextBeatTime] = useState<number>();
-  const nextBeatTimeRef = useMutableLayout(nextBeatTime);
-  const nextNoteTimeRef = useRef<number>(0);
+  const { scheduleAhead } = schedulerState;
   const buffer = useAudioBuffer(click);
+  const nextNoteTimeRef = useRef<number>(0);
   const schedulerStateRef = useMutable(schedulerState);
-
   const delay = playing ? (scheduleAhead * 1000) / 2 : undefined;
+
   useEffect(() => {
     if (delay !== undefined) {
-      nextNoteTimeRef.current =
+      const initialTime =
         schedulerStateRef.current.audioContext.currentTime + 0.1;
+      nextNoteTimeRef.current = initialTime;
       const tick = () => {
         scheduleGroup(
           nextNoteTimeRef,
@@ -142,26 +140,37 @@ export const useMetronome = (
         clearInterval(id);
       };
     }
-  }, [delay, buffer]);
+  }, [delay, buffer, schedulerStateRef, setNextBeatTime]);
+};
+
+const useDisplayUpdater = (
+  playing: boolean,
+  audioContext: AudioContext,
+  nextBeatTime: number | undefined,
+  setNextBeatTime: (time: number | undefined) => void,
+  incCurrentBeat: () => void
+) => {
+  const nextBeatTimeRef = useMutableLayout(nextBeatTime);
 
   useLayoutEffect(() => {
     let animationFrame: number;
+    // We special case the first beat since we don't want to start with the UI on beat one.
+    let firstBeat = true;
 
-    function tick() {
+    const tick = () => {
       loop();
       const now = audioContext.currentTime;
-      if (
-        nextBeatTimeRef.current !== undefined &&
-        now <= nextBeatTimeRef.current
-      ) {
+      const nextBeat = nextBeatTimeRef.current;
+      if ((nextBeat !== undefined && now <= nextBeat) || firstBeat) {
         setNextBeatTime(undefined);
         incCurrentBeat();
+        firstBeat = false;
       }
-    }
+    };
 
-    function loop() {
+    const loop = () => {
       animationFrame = requestAnimationFrame(tick);
-    }
+    };
 
     if (playing) {
       loop();
@@ -169,5 +178,24 @@ export const useMetronome = (
         cancelAnimationFrame(animationFrame);
       };
     }
-  }, [playing, audioContext, incCurrentBeat]);
+  }, [playing, audioContext, incCurrentBeat, nextBeatTimeRef, setNextBeatTime]);
+};
+
+export const useMetronome = (
+  playing: boolean,
+  schedulerState: SchedulerState,
+  incCurrentBeat: () => void
+) => {
+  // TODO - don't update if the tab is in the background
+  const { audioContext } = schedulerState;
+  const [nextBeatTime, setNextBeatTime] = useState<number>();
+
+  useScheduleAhead(playing, schedulerState, setNextBeatTime);
+  useDisplayUpdater(
+    playing,
+    audioContext,
+    nextBeatTime,
+    setNextBeatTime,
+    incCurrentBeat
+  );
 };
