@@ -16,6 +16,7 @@ export interface SchedulerState {
   subDivisions: Array<SubDivision>;
   signature: Signature;
   audioContext: AudioContext;
+  scheduleAhead: number;
 }
 
 export interface Beat {

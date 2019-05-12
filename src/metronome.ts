@@ -24,7 +24,6 @@ const scheduleNote = (
   volume.connect(audioContext.destination);
 
   sound.start(time);
-  console.log({ time });
 };
 
 const beatsFor = (
@@ -44,45 +43,56 @@ const beatsFor = (
   return [];
 };
 
-// TODO - this could probably be a 'useScheduler' effect.
-const makeScheduler = (
-  state: MutableRefObject<SchedulerState>,
-  scheduleAhead: number,
-  setNextBeatTime: (time: number) => void,
-  buffer: MutableRefObject<AudioBuffer | undefined>
+const scheduleGroup = (
+  nextNoteTime: MutableRefObject<number>,
+  schedulerState: MutableRefObject<SchedulerState>,
+  buffer: AudioBuffer | undefined,
+  setNextBeatTime: (time: number) => void
 ) => {
-  // This slight offset makes the timing better.
-  let nextNoteTime = state.current.audioContext.currentTime + 0.1;
-  console.log({ nextNoteTime });
-  return () => {
-    const { bpm, subDivisions, audioContext } = state.current;
-    const secondsPerBeat = 60.0 / bpm;
-    const schedule = (beat: Beat) => {
-      scheduleNote(audioContext, beat);
-    };
-    while (nextNoteTime < audioContext.currentTime + scheduleAhead) {
-      // Quarter Note
-      scheduleNote(audioContext, {
-        time: nextNoteTime,
-        pitch: 0,
-        gain: 1.0,
-        buffer: buffer.current!
-      });
-      setNextBeatTime(nextNoteTime);
-      // Adds the scheduled note so the gui can refresh at the right time.
-      // Subdivisions
-      for (const subDivision of subDivisions) {
-        const beats = beatsFor(
-          nextNoteTime,
-          secondsPerBeat,
-          subDivision,
-          buffer.current!
-        );
-        beats.forEach(schedule);
-      }
-      nextNoteTime += secondsPerBeat;
-    }
+  const {
+    bpm,
+    subDivisions,
+    audioContext,
+    scheduleAhead
+  } = schedulerState.current;
+  const secondsPerBeat = 60.0 / bpm;
+  const schedule = (beat: Beat) => {
+    scheduleNote(audioContext, beat);
   };
+  while (nextNoteTime.current < audioContext.currentTime + scheduleAhead) {
+    // Quarter Note
+    scheduleNote(audioContext, {
+      time: nextNoteTime.current,
+      pitch: 0,
+      gain: 1.0,
+      buffer: buffer!
+    });
+    setNextBeatTime(nextNoteTime.current);
+    // Adds the scheduled note so the gui can refresh at the right time.
+    // Subdivisions
+    for (const subDivision of subDivisions) {
+      const beats = beatsFor(
+        nextNoteTime.current,
+        secondsPerBeat,
+        subDivision,
+        buffer!
+      );
+      beats.forEach(schedule);
+    }
+    nextNoteTime.current += secondsPerBeat;
+  }
+};
+
+const useAudioBuffer = (url: string): AudioBuffer | undefined => {
+  const [buffer, updateBuffer] = useState<AudioBuffer>();
+  useEffect(() => {
+    const audioContext = new AudioContext();
+    fetch(url)
+      .then(response => response.arrayBuffer())
+      .then(buffer => audioContext.decodeAudioData(buffer))
+      .then(updateBuffer);
+  }, [url]);
+  return buffer;
 };
 
 export const useMetronome = (
@@ -90,49 +100,37 @@ export const useMetronome = (
   schedulerState: SchedulerState,
   incCurrentBeat: Function
 ) => {
-  // TODO - scheduleAhead should be at least 1 second if tab is blurred.
-  const scheduleAhead = 0.2;
-  const { audioContext } = schedulerState;
+  // TODO - don't update if the tab is in the background
+  const { audioContext, scheduleAhead } = schedulerState;
+  const [nextBeatTime, setNextBeatTime] = useState<number>();
+  const nextBeatTimeRef = useRef<number>();
+  const nextNoteTimeRef = useRef<number>(0);
+  const buffer = useAudioBuffer(click);
 
   const schedulerStateRef = useRef(schedulerState);
   useEffect(() => {
     schedulerStateRef.current = schedulerState;
   }, [schedulerState]);
 
-  const [nextBeatTime, setNextBeatTime] = useState<number>();
-
-  const bufferRef = useRef<AudioBuffer | undefined>();
-  useEffect(() => {
-    var request = new XMLHttpRequest();
-    request.open("GET", click, true);
-    request.responseType = "arraybuffer";
-    request.onload = () => {
-      var audioData = request.response;
-      audioContext.decodeAudioData(audioData, buffer => {
-        bufferRef.current = buffer;
-      });
-    };
-    request.send();
-  }, [audioContext]);
-
   const delay = playing ? (scheduleAhead * 1000) / 2 : undefined;
   useEffect(() => {
     if (delay !== undefined) {
-      const scheduler = makeScheduler(
-        schedulerStateRef,
-        scheduleAhead,
-        setNextBeatTime,
-        bufferRef
-      );
-      const id = setInterval(scheduler, delay);
+      nextNoteTimeRef.current =
+        schedulerStateRef.current.audioContext.currentTime + 0.1;
+      const tick = () => {
+        scheduleGroup(
+          nextNoteTimeRef,
+          schedulerStateRef,
+          buffer,
+          setNextBeatTime
+        );
+      };
+      const id = setInterval(tick, delay);
       return () => {
         clearInterval(id);
       };
     }
-  }, [delay]);
-
-  // TODO - don't update if the tab is in the background
-  const nextBeatTimeRef = useRef<number>();
+  }, [delay, buffer]);
 
   useLayoutEffect(() => {
     nextBeatTimeRef.current = nextBeatTime;

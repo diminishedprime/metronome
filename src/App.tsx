@@ -21,6 +21,7 @@ const bpmL = R.lensPath(["schedulerState", "bpm"]);
 
 const makeInitialState = (): State => ({
   schedulerState: {
+    scheduleAhead: 0.2,
     audioContext: new AudioContext(),
     bpm: 120,
     signature: {
