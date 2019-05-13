@@ -4,12 +4,62 @@ import styled from "styled-components";
 
 interface Props {}
 
+const noteIdx: { [note: number]: string } = {
+  0: "A",
+  1: "Bb",
+  2: "B",
+  3: "C",
+  4: "Db",
+  5: "D",
+  6: "Eb",
+  7: "E",
+  8: "F",
+  9: "Gb",
+  10: "G",
+  11: "Ab"
+};
+
+const A4 = 440;
+const notes: Array<{ octave: number; note: string; frequency: number }> = [];
+for (let i = -4; i < 4; i++) {
+  for (let j = 0; j < 12; j++) {
+    const frequency = A4 * Math.pow(2, i) * Math.pow(2, j / 12);
+    const octave = i + 4;
+    const note = noteIdx[j];
+    notes.push({ octave, note, frequency });
+  }
+}
+
+const freqToPitch = (freq: number) => {
+  let low = 0;
+  for (let i = 0; i < notes.length; i++) {
+    let note = notes[i];
+    if (note.frequency >= freq) {
+      low = i;
+      break;
+    }
+  }
+  const high = low + 1;
+  const lowPitch = notes[low];
+  const highPitch = notes[high];
+  const average = (lowPitch.frequency + highPitch.frequency) / 2;
+  let note = notes[high];
+  let difference = note.frequency - freq;
+  if (freq < average) {
+    note = notes[low];
+    difference = note.frequency - freq;
+  }
+  return Object.assign(note, { originalFrequency: freq, difference });
+};
+
+console.log(freqToPitch(447));
 const Tuner = styled(({ ...props }: Props) => {
   // TODO - this should default to false.
   const [on, setOn] = useState(true);
   const [analyser, setAnalyser] = useState<AnalyserNode>();
   const [dataArray, setDataArray] = useState();
   const [sampleRate, setSampleRate] = useState<number>();
+  const [freq, setFreq] = useState<number>();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -19,14 +69,14 @@ const Tuner = styled(({ ...props }: Props) => {
 
   useEffect(() => {
     if (on) {
-      const audioContext = new AudioContext();
+      const audioContext = new AudioContext({ sampleRate: 8192 });
       setSampleRate(audioContext.sampleRate);
       navigator.mediaDevices
         .getUserMedia({ audio: true })
         .then((thing: MediaStream) => {
           const analyser = audioContext.createAnalyser();
           // If this isn't  big, I don't have very good frequency accuracy, and I can't change the sample rate because web audio sucks.
-          analyser.fftSize = 32768;
+          analyser.fftSize = 8192;
           const mic = audioContext.createMediaStreamSource(thing);
           mic.connect(analyser);
           setAnalyser(analyser);
@@ -66,9 +116,7 @@ const Tuner = styled(({ ...props }: Props) => {
 
       const resolution = sampleRate! / analyser!.fftSize;
       const freq = resolution * maxIdx;
-
-      // Hi Jordan, this is my janky way to see if it's working.
-      console.log({ maxIdx, resolution, freq });
+      setFreq(freq);
 
       for (var i = 0; i < bufferLength; i++) {
         var v = -dataArray[i];
@@ -100,10 +148,20 @@ const Tuner = styled(({ ...props }: Props) => {
     }
   }, [on, analyser, sampleRate]);
 
+  const { octave, note, difference } = freqToPitch(freq || 0);
   return (
     <div {...props}>
       <button onClick={toggleOn}>{on ? "Stop Tuner" : "Start Tuner"}</button>
       <canvas width={650} height={100} ref={canvasRef} />
+      <div>
+        <div>Frequency: {freq}</div>
+        <div>
+          {note + octave} {difference}
+        </div>
+        <div>Sample Rate: {sampleRate}</div>
+        <div>FFT Size: {analyser && analyser!.fftSize}</div>
+        <div>Resolution: {analyser && sampleRate! / analyser!.fftSize}</div>
+      </div>
     </div>
   );
 })``;

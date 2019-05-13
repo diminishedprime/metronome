@@ -73,35 +73,35 @@ const Metronome = () => {
     setState(over(subDivisionsL(divisionIdx), R.not));
   };
 
-    const [currentBeat, setCurrentBeat] = useMetronome(playing, schedulerState);
-    const toggleStart = () => {
-        if (playing) {
-            setCurrentBeat(0);
-        }
-        setPlaying(R.not);
-    };
+  const [currentBeat, setCurrentBeat] = useMetronome(playing, schedulerState);
+  const toggleStart = () => {
+    if (playing) {
+      setCurrentBeat(0);
+    }
+    setPlaying(R.not);
+  };
 
-    return (
-        <>
-            <Tuner />
-            <TimeSignature signature={signature} currentBeat={currentBeat} />
-            <BPMWrapper>
-                <BPM>{bpm}</BPM>
-                <ButtonWrapper>
-                    <ChangeButton onClick={changeBPM(10)}>+10</ChangeButton>
-                    <ChangeButton onClick={changeBPM(1)}>+1</ChangeButton>
-                    <ChangeButton onClick={changeBPM(-1)}>-1</ChangeButton>
-                    <ChangeButton onClick={changeBPM(-10)}>-10</ChangeButton>
-                </ButtonWrapper>
-            </BPMWrapper>
-            <SubDivisions subDivisions={subDivisions} toggle={toggleSubDivision} />
-            <div>
-                <button onClick={toggleStart}>{playing ? "Stop" : "Start"}</button>
-                <TapIn setBPM={setBPM} />
-            </div>
-            <TempoMarking bpm={bpm} />
-            </>
-    );
+  return (
+    <>
+      <Tuner />
+      <TimeSignature signature={signature} currentBeat={currentBeat} />
+      <BPMWrapper>
+        <BPM>{bpm}</BPM>
+        <ButtonWrapper>
+          <ChangeButton onClick={changeBPM(10)}>+10</ChangeButton>
+          <ChangeButton onClick={changeBPM(1)}>+1</ChangeButton>
+          <ChangeButton onClick={changeBPM(-1)}>-1</ChangeButton>
+          <ChangeButton onClick={changeBPM(-10)}>-10</ChangeButton>
+        </ButtonWrapper>
+      </BPMWrapper>
+      <SubDivisions subDivisions={subDivisions} toggle={toggleSubDivision} />
+      <div>
+        <button onClick={toggleStart}>{playing ? "Stop" : "Start"}</button>
+        <TapIn setBPM={setBPM} />
+      </div>
+      <TempoMarking bpm={bpm} />
+    </>
+  );
 };
 
 const ChangeButton = styled.button`
