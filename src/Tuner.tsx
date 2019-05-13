@@ -25,7 +25,7 @@ const Tuner = styled(({ ...props }: Props) => {
         .getUserMedia({ audio: true })
         .then((thing: MediaStream) => {
           const analyser = audioContext.createAnalyser();
-          // If this isn't  big, I don't have very good frequency accuracy.
+          // If this isn't  big, I don't have very good frequency accuracy, and I can't change the sample rate because web audio sucks.
           analyser.fftSize = 32768;
           const mic = audioContext.createMediaStreamSource(thing);
           mic.connect(analyser);
@@ -67,25 +67,25 @@ const Tuner = styled(({ ...props }: Props) => {
       const resolution = sampleRate! / analyser!.fftSize;
       const freq = resolution * maxIdx;
 
-        // Hi Jordan, this is my janky way to see if it's working.
-        console.log({ maxIdx, resolution, freq });
+      // Hi Jordan, this is my janky way to see if it's working.
+      console.log({ maxIdx, resolution, freq });
 
-        for (var i = 0; i < bufferLength; i++) {
-            var v = -dataArray[i];
-            var y = v;
+      for (var i = 0; i < bufferLength; i++) {
+        var v = -dataArray[i];
+        var y = v;
 
-            if (i === 0) {
-                canvasCtx.moveTo(x, y);
-            } else {
-                canvasCtx.lineTo(x, y);
-            }
-
-            x += sliceWidth;
+        if (i === 0) {
+          canvasCtx.moveTo(x, y);
+        } else {
+          canvasCtx.lineTo(x, y);
         }
-        canvasCtx.lineTo(canvas.width, canvas.height / 2);
-        canvasCtx.stroke();
 
-        loop();
+        x += sliceWidth;
+      }
+      canvasCtx.lineTo(canvas.width, canvas.height / 2);
+      canvasCtx.stroke();
+
+      loop();
     };
 
     const loop = () => {
