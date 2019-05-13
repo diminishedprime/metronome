@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import styled from "styled-components";
 import { over, set } from "ramda";
@@ -9,6 +9,7 @@ import { SchedulerState } from "./types";
 import { useMetronome } from "./metronome";
 import TapIn from "./TapIn";
 import SubDivisions from "./SubDivisions";
+import Tuner from "./Tuner";
 
 interface State {
   schedulerState: SchedulerState;
@@ -72,34 +73,35 @@ const Metronome = () => {
     setState(over(subDivisionsL(divisionIdx), R.not));
   };
 
-  const [currentBeat, setCurrentBeat] = useMetronome(playing, schedulerState);
-  const toggleStart = () => {
-    if (playing) {
-      setCurrentBeat(0);
-    }
-    setPlaying(R.not);
-  };
+    const [currentBeat, setCurrentBeat] = useMetronome(playing, schedulerState);
+    const toggleStart = () => {
+        if (playing) {
+            setCurrentBeat(0);
+        }
+        setPlaying(R.not);
+    };
 
-  return (
-    <>
-      <TimeSignature signature={signature} currentBeat={currentBeat} />
-      <BPMWrapper>
-        <BPM>{bpm}</BPM>
-        <ButtonWrapper>
-          <ChangeButton onClick={changeBPM(10)}>+10</ChangeButton>
-          <ChangeButton onClick={changeBPM(1)}>+1</ChangeButton>
-          <ChangeButton onClick={changeBPM(-1)}>-1</ChangeButton>
-          <ChangeButton onClick={changeBPM(-10)}>-10</ChangeButton>
-        </ButtonWrapper>
-      </BPMWrapper>
-      <SubDivisions subDivisions={subDivisions} toggle={toggleSubDivision} />
-      <div>
-        <button onClick={toggleStart}>{playing ? "Stop" : "Start"}</button>
-        <TapIn setBPM={setBPM} />
-      </div>
-      <TempoMarking bpm={bpm} />
-    </>
-  );
+    return (
+        <>
+            <Tuner />
+            <TimeSignature signature={signature} currentBeat={currentBeat} />
+            <BPMWrapper>
+                <BPM>{bpm}</BPM>
+                <ButtonWrapper>
+                    <ChangeButton onClick={changeBPM(10)}>+10</ChangeButton>
+                    <ChangeButton onClick={changeBPM(1)}>+1</ChangeButton>
+                    <ChangeButton onClick={changeBPM(-1)}>-1</ChangeButton>
+                    <ChangeButton onClick={changeBPM(-10)}>-10</ChangeButton>
+                </ButtonWrapper>
+            </BPMWrapper>
+            <SubDivisions subDivisions={subDivisions} toggle={toggleSubDivision} />
+            <div>
+                <button onClick={toggleStart}>{playing ? "Stop" : "Start"}</button>
+                <TapIn setBPM={setBPM} />
+            </div>
+            <TempoMarking bpm={bpm} />
+            </>
+    );
 };
 
 const ChangeButton = styled.button`
