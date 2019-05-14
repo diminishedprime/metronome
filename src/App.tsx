@@ -83,7 +83,6 @@ const Metronome = () => {
 
   return (
     <>
-      <Tuner />
       <TimeSignature signature={signature} currentBeat={currentBeat} />
       <BPMWrapper>
         <BPM>{bpm}</BPM>
@@ -100,6 +99,7 @@ const Metronome = () => {
         <TapIn setBPM={setBPM} />
       </div>
       <TempoMarking bpm={bpm} />
+      <Tuner />
     </>
   );
 };

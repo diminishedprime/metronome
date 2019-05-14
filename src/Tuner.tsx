@@ -47,19 +47,17 @@ const freqToPitch = (freq: number) => {
   let difference = note.frequency - freq;
   if (freq < average) {
     note = notes[low];
-    difference = note.frequency - freq;
+    difference = freq - note.frequency;
   }
   return Object.assign(note, { originalFrequency: freq, difference });
 };
 
-console.log(freqToPitch(447));
 const Tuner = styled(({ ...props }: Props) => {
-  // TODO - this should default to false.
-  const [on, setOn] = useState(true);
+  const [on, setOn] = useState(false);
   const [analyser, setAnalyser] = useState<AnalyserNode>();
   const [dataArray, setDataArray] = useState();
   const [sampleRate, setSampleRate] = useState<number>();
-  const [freq, setFreq] = useState<number>();
+  const [freq, setFreq] = useState<number>(440);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -69,7 +67,7 @@ const Tuner = styled(({ ...props }: Props) => {
 
   useEffect(() => {
     if (on) {
-      const audioContext = new AudioContext({ sampleRate: 8192 });
+      const audioContext = new AudioContext();
       setSampleRate(audioContext.sampleRate);
       navigator.mediaDevices
         .getUserMedia({ audio: true })
@@ -95,7 +93,7 @@ const Tuner = styled(({ ...props }: Props) => {
 
       const canvas = canvasRef.current!;
       const canvasCtx = canvas.getContext("2d")!;
-      const WIDTH = 650;
+      const WIDTH = 411;
       const HEIGHT = 100;
 
       canvasCtx.fillStyle = "rgb(200, 200, 200)";
@@ -130,7 +128,6 @@ const Tuner = styled(({ ...props }: Props) => {
 
         x += sliceWidth;
       }
-      canvasCtx.lineTo(canvas.width, canvas.height / 2);
       canvasCtx.stroke();
 
       loop();
@@ -151,19 +148,27 @@ const Tuner = styled(({ ...props }: Props) => {
   const { octave, note, difference } = freqToPitch(freq || 0);
   return (
     <div {...props}>
-      <button onClick={toggleOn}>{on ? "Stop Tuner" : "Start Tuner"}</button>
-      <canvas width={650} height={100} ref={canvasRef} />
       <div>
-        <div>Frequency: {freq}</div>
-        <div>
-          {note + octave} {difference}
-        </div>
-        <div>Sample Rate: {sampleRate}</div>
-        <div>FFT Size: {analyser && analyser!.fftSize}</div>
-        <div>Resolution: {analyser && sampleRate! / analyser!.fftSize}</div>
+        <Note>{note + octave}</Note>
+        <Freq>{freq} Hz</Freq>
       </div>
+      <button onClick={toggleOn}>{on ? "Stop Tuner" : "Start Tuner"}</button>
+      {on && <canvas width={"100%"} height={"100"} ref={canvasRef} />}
     </div>
   );
-})``;
+})`
+  display: flex;
+  flex-direction: column;
+`;
+
+const Note = styled.div`
+  font-size: 4em;
+  text-align: center;
+`;
+
+const Freq = styled.div`
+  font-size: 1em;
+  text-align: center;
+`;
 
 export default Tuner;
