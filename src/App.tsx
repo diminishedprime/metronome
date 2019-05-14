@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useState } from "react";
 import styled from "styled-components";
 import { over, set } from "ramda";
@@ -10,6 +10,7 @@ import { useMetronome } from "./metronome";
 import TapIn from "./TapIn";
 import SubDivisions from "./SubDivisions";
 import Tuner from "./Tuner";
+import Dial from "./Dial";
 
 interface State {
   schedulerState: SchedulerState;
@@ -46,12 +47,7 @@ const Metronome = () => {
   const [
     {
       schedulerState,
-      schedulerState: {
-        bpm,
-        subDivisions,
-        signature,
-        signature: { numerator }
-      }
+      schedulerState: { bpm, subDivisions, signature }
     },
     setState
   ] = useState(makeInitialState);
@@ -84,6 +80,7 @@ const Metronome = () => {
   return (
     <>
       <TimeSignature signature={signature} currentBeat={currentBeat} />
+      <Dial value={bpm} setValue={setBPM} />
       <BPMWrapper>
         <BPM>{bpm}</BPM>
         <ButtonWrapper>
