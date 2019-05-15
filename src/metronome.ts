@@ -50,14 +50,10 @@ const scheduleGroup = (
   nextNoteTime: MutableRefObject<number>,
   schedulerState: MutableRefObject<SchedulerState>,
   buffer: AudioBuffer | undefined,
-  setNextBeatTime: (time: number) => void
+  setNextBeatTime: (time: number) => void,
+  audioContext: AudioContext
 ) => {
-  const {
-    bpm,
-    subDivisions,
-    audioContext,
-    scheduleAhead
-  } = schedulerState.current;
+  const { bpm, subDivisions, scheduleAhead } = schedulerState.current;
   const secondsPerBeat = 60.0 / bpm;
   const schedule = (beat: Beat) => {
     scheduleNote(audioContext, beat);
@@ -117,7 +113,8 @@ const useMutable = <T>(dep: T): MutableRefObject<T> => {
 const useScheduleAhead = (
   playing: boolean,
   schedulerState: SchedulerState,
-  setNextBeatTime: (time: number) => void
+  setNextBeatTime: (time: number) => void,
+  audioContext: AudioContext
 ) => {
   const { scheduleAhead } = schedulerState;
   const buffer = useAudioBuffer(click);
@@ -127,15 +124,15 @@ const useScheduleAhead = (
 
   useEffect(() => {
     if (delay !== undefined) {
-      const initialTime =
-        schedulerStateRef.current.audioContext.currentTime + 0.1;
+      const initialTime = audioContext.currentTime + 0.1;
       nextNoteTimeRef.current = initialTime;
       const tick = () => {
         scheduleGroup(
           nextNoteTimeRef,
           schedulerStateRef,
           buffer,
-          setNextBeatTime
+          setNextBeatTime,
+          audioContext
         );
       };
       const id = setInterval(tick, delay);
@@ -143,7 +140,7 @@ const useScheduleAhead = (
         clearInterval(id);
       };
     }
-  }, [delay, buffer, schedulerStateRef, setNextBeatTime]);
+  }, [delay, buffer, schedulerStateRef, setNextBeatTime, audioContext]);
 };
 
 const useDisplayUpdater = (
@@ -186,10 +183,10 @@ const useDisplayUpdater = (
 
 export const useMetronome = (
   playing: boolean,
-  schedulerState: SchedulerState
+  schedulerState: SchedulerState,
+  audioContext: AudioContext
 ): [number, Dispatch<SetStateAction<number>>] => {
   // TODO - don't update if the tab is in the background
-  const { audioContext } = schedulerState;
   const [nextBeatTime, setNextBeatTime] = useState<number>();
   const [currentBeat, setCurrentBeat] = useState(0);
   const {
@@ -208,7 +205,7 @@ export const useMetronome = (
     [numerator]
   );
 
-  useScheduleAhead(playing, schedulerState, setNextBeatTime);
+  useScheduleAhead(playing, schedulerState, setNextBeatTime, audioContext);
   useDisplayUpdater(
     playing,
     audioContext,

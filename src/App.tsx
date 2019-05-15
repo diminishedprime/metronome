@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import styled from "styled-components";
 import { over, set } from "ramda";
@@ -12,6 +12,7 @@ import SubDivisions from "./SubDivisions";
 import Tuner from "./Tuner";
 import Dial from "./Dial";
 import Scales from "./Scales";
+import { useLocalStorage } from "./hooks";
 
 interface State {
   schedulerState: SchedulerState;
@@ -25,7 +26,6 @@ const bpmL = R.lensPath(["schedulerState", "bpm"]);
 const makeInitialState = (): State => ({
   schedulerState: {
     scheduleAhead: 0.2,
-    audioContext: new AudioContext(),
     bpm: 120,
     signature: {
       numerator: 5,
@@ -45,6 +45,14 @@ const makeInitialState = (): State => ({
 
 const Metronome = () => {
   const [playing, setPlaying] = useState(false);
+  const [audioContext, setAudioContext] = useState(() => new AudioContext());
+
+  useEffect(() => {
+    if (playing) {
+      setAudioContext(new AudioContext());
+    }
+  }, [playing]);
+
   const [showTuner, setShowTuner] = useState(false);
   const [
     {
@@ -52,7 +60,7 @@ const Metronome = () => {
       schedulerState: { bpm, subDivisions, signature }
     },
     setState
-  ] = useState(makeInitialState);
+  ] = useLocalStorage("@mjh/metronome/schedulerState", makeInitialState);
 
   const changeBPM = (diff: number) => () =>
     setState(
@@ -71,7 +79,11 @@ const Metronome = () => {
     setState(over(subDivisionsL(divisionIdx), R.not));
   };
 
-  const [currentBeat, setCurrentBeat] = useMetronome(playing, schedulerState);
+  const [currentBeat, setCurrentBeat] = useMetronome(
+    playing,
+    schedulerState,
+    audioContext
+  );
   const toggleStart = () => {
     if (playing) {
       setCurrentBeat(0);

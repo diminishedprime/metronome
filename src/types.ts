@@ -15,7 +15,6 @@ export interface SchedulerState {
   bpm: number;
   subDivisions: Array<SubDivision>;
   signature: Signature;
-  audioContext: AudioContext;
   scheduleAhead: number;
 }
 
