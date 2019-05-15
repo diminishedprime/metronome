@@ -11,6 +11,7 @@ import TapIn from "./TapIn";
 import SubDivisions from "./SubDivisions";
 import Tuner from "./Tuner";
 import Dial from "./Dial";
+import Scales from "./Scales";
 
 interface State {
   schedulerState: SchedulerState;
@@ -31,19 +32,20 @@ const makeInitialState = (): State => ({
       denominator: 4
     },
     subDivisions: [
-      { on: false, pitch: 100, divisions: 2, label: "2", gain: 1.0 },
-      { on: false, pitch: 200, divisions: 3, label: "3", gain: 1.0 },
-      { on: false, pitch: 300, divisions: 4, label: "4", gain: 1.0 },
-      { on: false, pitch: 400, divisions: 5, label: "5", gain: 1.0 },
-      { on: false, pitch: 500, divisions: 6, label: "6", gain: 1.0 },
-      { on: false, pitch: 600, divisions: 7, label: "7", gain: 1.0 },
-      { on: false, pitch: 700, divisions: 8, label: "8", gain: 1.0 }
+      { on: false, pitch: 10, divisions: 2, label: "2", gain: 1.0 },
+      { on: false, pitch: 20, divisions: 3, label: "3", gain: 1.0 },
+      { on: false, pitch: 30, divisions: 4, label: "4", gain: 1.0 },
+      { on: false, pitch: 40, divisions: 5, label: "5", gain: 1.0 },
+      { on: false, pitch: 50, divisions: 6, label: "6", gain: 1.0 },
+      { on: false, pitch: 60, divisions: 7, label: "7", gain: 1.0 },
+      { on: false, pitch: 70, divisions: 8, label: "8", gain: 1.0 }
     ]
   }
 });
 
 const Metronome = () => {
   const [playing, setPlaying] = useState(false);
+  const [showTuner, setShowTuner] = useState(false);
   const [
     {
       schedulerState,
@@ -77,10 +79,19 @@ const Metronome = () => {
     setPlaying(R.not);
   };
 
+  const startMetronome = (bpm: number) => {
+    setBPM(bpm);
+    setPlaying(true);
+  };
+
+  const stopMetronome = () => {
+    setPlaying(false);
+  };
+
   return (
     <>
       <TimeSignature signature={signature} currentBeat={currentBeat} />
-      <Dial value={bpm} setValue={setBPM} />
+      {false && <Dial value={bpm} setValue={setBPM} />}
       <BPMWrapper>
         <BPM>{bpm}</BPM>
         <ButtonWrapper>
@@ -95,8 +106,9 @@ const Metronome = () => {
         <button onClick={toggleStart}>{playing ? "Stop" : "Start"}</button>
         <TapIn setBPM={setBPM} />
       </div>
-      <TempoMarking bpm={bpm} />
-      <Tuner />
+      {false && <TempoMarking bpm={bpm} />}
+      <Scales startMetronome={startMetronome} stopMetronome={stopMetronome} />
+      {showTuner && <Tuner />}
     </>
   );
 };
