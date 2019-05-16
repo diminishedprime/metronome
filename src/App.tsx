@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, Props } from "react";
 import { useState } from "react";
 import styled from "styled-components";
 import { over, set } from "ramda";
@@ -62,67 +62,59 @@ const Metronome = () => {
     setState
   ] = useLocalStorage("@mjh/metronome/schedulerState", makeInitialState);
 
-  const changeBPM = (diff: number) => () =>
-    setState(
-      over(
-        bpmL,
-        R.pipe(
-          R.add(diff),
-          R.clamp(1, 250)
-        )
-      )
-    );
+    const addDiff = (diff: number) => setState(over(bpmL, R.pipe(R.add(diff), R.clamp(1, 250))))
+    const changeBPM = (diff: number) => () => addDiff(diff)
 
-  const setBPM = (bpm: number) => setState(set(bpmL, R.clamp(1, 250, bpm)));
+    const setBPM = (bpm: number) => setState(set(bpmL, R.clamp(1, 250, bpm)));
 
-  const toggleSubDivision = (divisionIdx: number) => {
-    setState(over(subDivisionsL(divisionIdx), R.not));
-  };
+    const toggleSubDivision = (divisionIdx: number) => {
+        setState(over(subDivisionsL(divisionIdx), R.not));
+        };
 
-  const [currentBeat, setCurrentBeat] = useMetronome(
-    playing,
-    schedulerState,
-    audioContext
-  );
-  const toggleStart = () => {
-    if (playing) {
-      setCurrentBeat(0);
-    }
-    setPlaying(R.not);
-  };
+        const [currentBeat, setCurrentBeat] = useMetronome(
+            playing,
+            schedulerState,
+            audioContext
+        );
+        const toggleStart = () => {
+            if (playing) {
+                setCurrentBeat(0);
+            }
+            setPlaying(R.not);
+        };
 
-  const startMetronome = (bpm: number) => {
-    setBPM(bpm);
-    setPlaying(true);
-  };
+        const startMetronome = (bpm: number) => {
+            setBPM(bpm);
+            setPlaying(true);
+        };
 
-  const stopMetronome = () => {
-    setPlaying(false);
-  };
+        const stopMetronome = () => {
+            setPlaying(false);
+        };
 
-  return (
-    <>
-      <TimeSignature signature={signature} currentBeat={currentBeat} />
-      {false && <Dial value={bpm} setValue={setBPM} />}
-      <BPMWrapper>
-        <BPM>{bpm}</BPM>
-        <ButtonWrapper>
-          <ChangeButton onClick={changeBPM(10)}>+10</ChangeButton>
-          <ChangeButton onClick={changeBPM(1)}>+1</ChangeButton>
-          <ChangeButton onClick={changeBPM(-1)}>-1</ChangeButton>
-          <ChangeButton onClick={changeBPM(-10)}>-10</ChangeButton>
-        </ButtonWrapper>
-      </BPMWrapper>
-      <SubDivisions subDivisions={subDivisions} toggle={toggleSubDivision} />
-      <div>
-        <button onClick={toggleStart}>{playing ? "Stop" : "Start"}</button>
-        <TapIn setBPM={setBPM} />
-      </div>
-      {false && <TempoMarking bpm={bpm} />}
-      <Scales startMetronome={startMetronome} stopMetronome={stopMetronome} />
-      {showTuner && <Tuner />}
-    </>
-  );
+        return (
+            <>
+                <TimeSignature signature={signature} currentBeat={currentBeat} />
+                <Dial value={bpm} addDiff={addDiff} />
+                <BPMWrapper>
+                    <BPM>{bpm}</BPM>
+                    <ButtonWrapper>
+                        <ChangeButton onClick={changeBPM(10)}>+10</ChangeButton>
+                        <ChangeButton onClick={changeBPM(1)}>+1</ChangeButton>
+                        <ChangeButton onClick={changeBPM(-1)}>-1</ChangeButton>
+                        <ChangeButton onClick={changeBPM(-10)}>-10</ChangeButton>
+                    </ButtonWrapper>
+                </BPMWrapper>
+                <SubDivisions subDivisions={subDivisions} toggle={toggleSubDivision} />
+                <div>
+                    <button onClick={toggleStart}>{playing ? "Stop" : "Start"}</button>
+                    <TapIn setBPM={setBPM} />
+                </div>
+                {false && <TempoMarking bpm={bpm} />}
+                <Scales startMetronome={startMetronome} stopMetronome={stopMetronome} />
+                {showTuner && <Tuner />}
+            </>
+        );
 };
 
 const ChangeButton = styled.button`

@@ -7,7 +7,7 @@ export const useLocalStorage = <T>(
   const [value, setValue] = useState(() => {
     let firstValue;
     const fromLocal = localStorage.getItem(key);
-    if (fromLocal !== null) {
+    if (fromLocal !== null && fromLocal !== undefined) {
       firstValue = JSON.parse(fromLocal);
     } else {
       firstValue =
@@ -20,10 +20,12 @@ export const useLocalStorage = <T>(
   const setNewValue: Dispatch<SetStateAction<T>> = (
     valueAction: SetStateAction<T>
   ) => {
-    const newValue =
-      valueAction instanceof Function ? valueAction(value) : valueAction;
-    setValue(newValue);
-    window.localStorage.setItem(key, JSON.stringify(newValue));
+    setValue((oldValue: T) => {
+      const newValue =
+        valueAction instanceof Function ? valueAction(oldValue) : valueAction;
+      window.localStorage.setItem(key, JSON.stringify(newValue));
+      return newValue;
+    });
   };
 
   return [value, setNewValue];

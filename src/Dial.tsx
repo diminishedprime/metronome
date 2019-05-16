@@ -1,146 +1,96 @@
-import React, {
-  SyntheticEvent,
-  useState,
-  useEffect,
-  useRef,
-  TouchEvent,
-  Touch
-} from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import styled from "styled-components";
 
-/* const totalDiffPath = R.lensPath(["totalDiff"]);
- * const radiansPath = R.lensPath(["radians"]);
- * const mouseDownPath = R.lensPath(["mouse down"]);
- *  */
-/* class InfiniKnob extends React.Component {
- *   constructor() {
- *     super();
- *     this.state = R.compose(
- *       R.set(totalDiffPath, 0),
- *       R.set(radiansPath, Math.PI),
- *       R.set(mouseDownPath, false)
- *     )({});
- *     this.addToBuffer = this.addToBuffer.bind(this);
- *     this.onTouchMove = this.onTouchMove.bind(this);
- *     this.onMouseDown = this.onMouseDown.bind(this);
- *     this.moveKnob = this.moveKnob.bind(this);
- *     this.mouseUp = this.mouseUp.bind(this);
- *     this.mouseMove = this.mouseMove.bind(this);
- *   }
- *
- *
- *   moveKnob(e) {
- *     const { clientX, clientY } = e;
- *
- *     const box = this.knobContainer.getBoundingClientRect();
- *     const boxCenter = {
- *       x: box.left + box.width / 2,
- *       y: box.top + box.height / 2
- *     };
- *     const y = -(boxCenter.y - clientY);
- *     const x = -(boxCenter.x - clientX);
- *     const radians = Math.atan2(y, x);
- *     const currentRadians = R.view(radiansPath, this.state);
- *     let diff = currentRadians - radians;
- *     if (diff < -Math.PI) {
- *       diff = -currentRadians - radians;
- *     } else if (diff > Math.PI) {
- *       diff = currentRadians - -radians;
- *     }
- *     this.addToBuffer(diff);
- *     this.setState(R.set(radiansPath, radians));
- *   }
- *
- *   addToBuffer(diff) {
- *     const totalDiff = this.state.totalDiff;
- *     const threshold = this.props.theshold || 0.1;
- *     if (Math.abs(totalDiff) < threshold) {
- *       this.setState(R.over(totalDiffPath, R.add(diff)));
- *     } else {
- *       const emitDelta = this.props.emitDelta;
- *       if (emitDelta) {
- *         const delta = totalDiff > 0 ? -1 : 1;
- *         emitDelta(delta);
- *       } else {
- *         // eslint-disable-next-line no-console
- *         console.log("Don't forget to add an emitDelta prop");
- *       }
- *       this.setState(R.set(totalDiffPath, 0));
- *     }
- *   }
- *
- *   onTouchMove(e) {
- *     const t = e.changedTouches;
- *     const t0 = t[0];
- *     this.moveKnob(t0);
- *   }
- *
- *   render() {
- *     return (
- *       <div style={style}>
- *         <div
- *           style={outerCircleStyle}
- *           ref={me => {
- *             this.knobContainer = me;
- *           }}
- *         >
- *           <div
- *             onMouseDown={this.onMouseDown}
- *             onTouchMove={this.onTouchMove}
- *             style={InnerCircleStyle}
- *           />
- *           <div style={lilNubStyle(Math.PI)} />
- *           <div style={lilNubStyle(Math.PI * (1 / 2))} />
- *           <div style={lilNubStyle(Math.PI * (1 / 4))} />
- *           <div style={lilNubStyle(Math.PI * (3 / 4))} />
- *           <div style={lilNubStyle(Math.PI * -(1 / 2))} />
- *           <div style={lilNubStyle(Math.PI * -(1 / 4))} />
- *           <div style={lilNubStyle(Math.PI * -(3 / 4))} />
- *         </div>
- *       </div>
- *     );
- *   }
- * } */
+const Outer = styled.div`
+  background-color: #ffd700;
+  background-image: radial-gradient(
+    circle farthest-corner at 75px 75px,
+    #ffd700 0%,
+    #bfa100 100%
+  );
+  position: relative;
+  height: 300px;
+  width: 300px;
+  border-radius: 300px;
+  display: flex;
+`;
+
+const Inner = styled.div`
+  background-color: #bfa100;
+  background-image: radial-gradient(
+    circle farthest-corner at 75px 75px,
+    #bfa100 0%,
+    #ffd700 100%
+  );
+  width: 100px;
+  height: 100px;
+  border-radius: 100px;
+  position: absolute;
+`;
+
+const Text = styled.div`
+  z-index: 1;
+  justify-self: center;
+  align-self: center;
+  text-align: center;
+  width: 100%;
+  font-size: 5em;
+`;
 
 interface Props {
   value: number;
-  setValue: (value: number) => void;
+  addDiff: (diff: number) => void;
+  size?: number;
 }
 
-const Dial = styled(({ value, setValue, ...props }: Props) => {
+const InfiniKnob = ({ size = 300, value, addDiff }: Props) => {
+  const [radians, setRadions] = useState((Math.PI * 3) / 2);
+  const radiansRef = useRef(Math.PI);
+  useEffect(() => {
+    radiansRef.current = radians;
+  }, [radians]);
+
   const [mouseDown, setMouseDown] = useState(false);
-  const [radians, setRadians] = useState(0);
+  const mouseDownRef = useRef(false);
+  useEffect(() => {
+    mouseDownRef.current = mouseDown;
+  }, [mouseDown]);
+
+  const [totalDiff, setTotalDiff] = useState(0);
+  const totalDiffRef = useRef(0);
+  useEffect(() => {
+    totalDiffRef.current = totalDiff;
+  }, [totalDiff]);
 
   const knobContainer = useRef<HTMLDivElement>(null);
 
-  const onMouseDown = (e: SyntheticEvent) => {
-    console.log("hi mouse down");
+  const onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     setMouseDown(true);
     e.preventDefault();
   };
 
-  const onTouchMove = (e: TouchEvent<HTMLDivElement>) => {
-    const t = e.changedTouches;
-    const t0 = t[0];
-    moveKnob(t0);
-  };
-
-  /* *   onTouchMove(e) {
-   *     *     const t = e.changedTouches;
-   *     *     const t0 = t[0];
-   *     *     this.moveKnob(t0);
-   *     *   } */
-
-  const mouseUp = (e: MouseEvent) => {
-    console.log("hi mouse up");
+  const onMouseUp = useCallback((_: MouseEvent) => {
     setMouseDown(false);
-    e.preventDefault();
-  };
+  }, []);
 
-  const moveKnob = (e: Touch) => {
-    const { clientX, clientY } = e;
-    if (knobContainer.current) {
-      const box = knobContainer.current.getBoundingClientRect();
+  const addToBuffer = useCallback(
+    (diff: number) => {
+      const threshold = 0.2;
+      if (Math.abs(totalDiffRef.current) < threshold) {
+        setTotalDiff(oldDiff => oldDiff + diff);
+      } else {
+        addDiff(totalDiffRef.current > 0 ? -1 : 1);
+        setTotalDiff(0);
+      }
+    },
+    [addDiff]
+  );
+
+  const moveKnob = useCallback(
+    (e: React.Touch | React.MouseEvent | MouseEvent) => {
+      const { clientX, clientY } = e;
+      const box = knobContainer.current!.getBoundingClientRect();
+
       const boxCenter = {
         x: box.left + box.width / 2,
         y: box.top + box.height / 2
@@ -148,73 +98,73 @@ const Dial = styled(({ value, setValue, ...props }: Props) => {
       const y = -(boxCenter.y - clientY);
       const x = -(boxCenter.x - clientX);
       const newRadians = Math.atan2(y, x);
-      let diff = radians - newRadians;
+      let diff = radiansRef.current - newRadians;
       if (diff < -Math.PI) {
-        diff = -radians - newRadians;
-      } else {
-        diff = radians - -newRadians;
+        diff = -radiansRef.current - newRadians;
+      } else if (diff > Math.PI) {
+        diff = radiansRef.current - -newRadians;
       }
-      addToBuffer(diff);
-      setRadians(newRadians);
-    }
-  };
+      // Todo - do something with this.
+      /* emitDelta(diff) */
+      if (diff !== 0) {
+        addToBuffer(diff);
+      }
+      const same = newRadians === radiansRef.current;
+      if (!same) {
+        setRadions(newRadians);
+      }
+    },
+    [addToBuffer]
+  );
 
-  const addToBuffer = (diff: number) => {
-    setValue(value + diff);
-  };
-
-  const mouseMove = (e: MouseEvent) => {
-    if (mouseDown) {
-      /* moveKnob(e); */
-    }
-  };
-
-  /* *   addToBuffer(diff) {
-   *     *     const totalDiff = this.state.totalDiff;
-   *     *     const threshold = this.props.theshold || 0.1;
-   *     *     if (Math.abs(totalDiff) < threshold) {
-   *         *       this.setState(R.over(totalDiffPath, R.add(diff)));
-   *         *     } else {
-   *             *       const emitDelta = this.props.emitDelta;
-   *             *       if (emitDelta) {
-   *                 *         const delta = totalDiff > 0 ? -1 : 1;
-   *                 *         emitDelta(delta);
-   *                 *       } else {
-   *                     *         // eslint-disable-next-line no-console
-   *                     *         console.log("Don't forget to add an emitDelta prop");
-   *                     *       }
-   *             *       this.setState(R.set(totalDiffPath, 0));
-   *             *     }
-   *     *   }
-   */
+  const onMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement> | MouseEvent) => {
+      if (mouseDownRef.current) {
+        moveKnob(e);
+      }
+    },
+    [moveKnob]
+  );
 
   useEffect(() => {
-    console.log("mouse up evvect");
-    window.addEventListener("mouseup", mouseUp);
-    window.addEventListener("mousemove", mouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    window.addEventListener("mousemove", onMouseMove);
     return () => {
-      window.removeEventListener("mouseup", mouseUp);
-      window.removeEventListener("mousemove", mouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener("mousemove", onMouseMove);
     };
-  }, []);
+  }, [onMouseMove, onMouseUp]);
+
+  const onTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    const t = e.changedTouches;
+    const t0 = t[0];
+    moveKnob(t0);
+  };
+
+  const top =
+    size / 2 +
+    Math.sin(radians) * (size / 4) +
+    (Math.sin(radians) * size) / 16 -
+    size / 6;
+  const left =
+    size / 2 +
+    Math.cos(radians) * (size / 4) +
+    (Math.cos(radians) * size) / 16 -
+    size / 6;
 
   return (
-    <div ref={knobContainer} {...props}>
-      <InnerCircle onMouseDown={onMouseDown} onTouchMove={onTouchMove} />
-    </div>
+    <Outer ref={knobContainer}>
+      <Inner
+        onMouseDown={onMouseDown}
+        onTouchMove={onTouchMove}
+        style={{
+          top,
+          left
+        }}
+      />
+      <Text>{value}</Text>
+    </Outer>
   );
-})`
-  width: 100px;
-  height: 100px;
-  background-color: #c0ffee;
-  border-radius: 100%;
-`;
+};
 
-const InnerCircle = styled.div`
-  width: 10px;
-  height: 10px;
-  border-radius: 100%;
-  background-color: green;
-`;
-
-export default Dial;
+export default InfiniKnob;
