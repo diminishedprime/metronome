@@ -40,7 +40,7 @@ const beatsFor = (
 
     return R.range(1, divisions).map(division => {
       const time = startOfBeatTime + division * noteOffset;
-      return { time, pitch, gain, buffer };
+      return { time, pitch, gain: gain * 0.5, buffer };
     });
   }
   return [];
