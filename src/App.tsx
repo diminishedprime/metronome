@@ -94,17 +94,8 @@ const Metronome = () => {
 
         return (
             <>
-                <TimeSignature signature={signature} currentBeat={currentBeat} />
                 <Dial value={bpm} addDiff={addDiff} />
-                <BPMWrapper>
-                    <BPM>{bpm}</BPM>
-                    <ButtonWrapper>
-                        <ChangeButton onClick={changeBPM(10)}>+10</ChangeButton>
-                        <ChangeButton onClick={changeBPM(1)}>+1</ChangeButton>
-                        <ChangeButton onClick={changeBPM(-1)}>-1</ChangeButton>
-                        <ChangeButton onClick={changeBPM(-10)}>-10</ChangeButton>
-                    </ButtonWrapper>
-                </BPMWrapper>
+                <TimeSignature signature={signature} currentBeat={currentBeat} />
                 <SubDivisions subDivisions={subDivisions} toggle={toggleSubDivision} />
                 <div>
                     <button onClick={toggleStart}>{playing ? "Stop" : "Start"}</button>
@@ -117,41 +108,17 @@ const Metronome = () => {
         );
 };
 
-const ChangeButton = styled.button`
-  margin-top: 3px;
-  margin-bottom: 3px;
-  width: 6vh;
-  font-size: 2.5vh;
-`;
-
-const ButtonWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-top: auto;
-  margin-bottom: auto;
-`;
-
-const BPMWrapper = styled.div`
-  display: flex;
-`;
-
-const BPM = styled.div`
-  text-align: center;
-  font-size: 12vh;
-  width: 100%;
-`;
-
 const Layout = styled.div`
-  margin: 0 auto;
-  max-width: 500px;
+    margin: 0 auto;
+    max-width: 500px;
 `;
 
 const App: React.FC = () => {
-  return (
-    <Layout>
-      <Metronome />
-    </Layout>
-  );
+    return (
+        <Layout>
+            <Metronome />
+        </Layout>
+    );
 };
 
 export default App;

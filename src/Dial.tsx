@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import styled from "styled-components";
 
 const Outer = styled.div`
+  margin: auto;
   background-color: #ffd700;
   background-image: radial-gradient(
     circle farthest-corner at 75px 75px,

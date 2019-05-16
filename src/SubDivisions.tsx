@@ -37,6 +37,7 @@ const SubDivisions = styled(({ subDivisions, toggle, ...props }: Props) => (
   display: flex;
   justify-content: space-around;
   width: 100%;
+  margin-top: 5px;
 `;
 
 export default SubDivisions;
