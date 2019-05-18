@@ -26,7 +26,7 @@ const TapIn = ({ setBPM }: Props) => {
     setTaps(newTaps);
   };
 
-  return <button onClick={onTap}>Tap</button>;
+  return <a className='button' onClick={onTap}>Tap</a>;
 };
 
 export default TapIn;

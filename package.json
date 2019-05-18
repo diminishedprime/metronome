@@ -8,6 +8,7 @@
     "@types/react": "16.8.15",
     "@types/react-dom": "16.8.4",
     "@types/vexflow": "^1.2.33",
+    "bulma": "^0.7.4",
     "ramda": "^0.26.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
@@ -40,6 +41,7 @@
   "devDependencies": {
     "@types/ramda": "^0.26.8",
     "@types/styled-components": "^4.1.14",
+    "node-sass": "^4.12.0",
     "prettier": "^1.17.0"
   }
 }

@@ -93,31 +93,28 @@ const Metronome = () => {
         };
 
         return (
-            <>
+            <div className='section' style={{maxWidth: '500px', margin: '0 auto'}}>
                 <Dial value={bpm} addDiff={addDiff} />
                 <TimeSignature signature={signature} currentBeat={currentBeat} />
                 <SubDivisions subDivisions={subDivisions} toggle={toggleSubDivision} />
-                <div>
-                    <button onClick={toggleStart}>{playing ? "Stop" : "Start"}</button>
+                <div className='buttons has-addons'>
+                    <a className={`button ${!playing ? 'is-primary ' : 'is-danger '}`} onClick={toggleStart}>{playing ? "Stop" : "Start"}</a>
                     <TapIn setBPM={setBPM} />
                 </div>
                 {false && <TempoMarking bpm={bpm} />}
                 <Scales startMetronome={startMetronome} stopMetronome={stopMetronome} />
                 {showTuner && <Tuner />}
-            </>
+            </div>
         );
 };
 
 const Layout = styled.div`
-    margin: 0 auto;
     max-width: 500px;
 `;
 
 const App: React.FC = () => {
     return (
-        <Layout>
             <Metronome />
-        </Layout>
     );
 };
 

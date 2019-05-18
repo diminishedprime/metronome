@@ -11,33 +11,20 @@ interface Props {
 
 type ControlProps = SubDivision & { idx: number; toggle: Toggle };
 
-const Control = styled(({ on, label, idx, toggle, ...props }: ControlProps) => (
-  <div key={label} {...props} onClick={() => toggle(idx)}>
+const Control = ({ on, label, idx, toggle, ...props }: ControlProps) => (
+  <button key={label} {...props} onClick={() => toggle(idx)} className={`column button ${on ? 'is-success' : ''}`}>
     {label}
-  </div>
-))`
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  font-size: 4vh;
-  background-color: #c0ffee;
-opacity: ${({ on }) => (on ? 1 : 0.2)}
-  width: 100%;
-  margin-left: 1px;
-  margin-right: 1px;
-`;
+  </button>
+)
 
-const SubDivisions = styled(({ subDivisions, toggle, ...props }: Props) => (
-  <div {...props}>
+const SubDivisions = ({ subDivisions, toggle, ...props }: Props) => (
+  <section className='section'>
+  <div {...props} className='columns is-mobile buttons'>
     {subDivisions.map((subDivision, idx) => (
       <Control key={idx} {...subDivision} idx={idx} toggle={toggle} />
     ))}
   </div>
-))`
-  display: flex;
-  justify-content: space-around;
-  width: 100%;
-  margin-top: 5px;
-`;
+  </section>
+)
 
 export default SubDivisions;

@@ -73,7 +73,7 @@ const Scales = styled(({ startMetronome, stopMetronome, ...props }: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scale]);
   return (
-    <div {...props}>
+    <div {...props} className='box'>
       {scale && (
         <Scale>
           <Column>
@@ -85,9 +85,9 @@ const Scales = styled(({ startMetronome, stopMetronome, ...props }: Props) => {
           <Column>
             <Body>{scale.bpm}</Body>
             <Subtitle>BPM</Subtitle>
-            <div>
-              <button onClick={() => addBpm(-1)}>-</button>
-              <button onClick={() => addBpm(1)}>+</button>
+            <div className='buttons has-addons'>
+              <a className='button' onClick={() => addBpm(-1)}>-</a>
+              <a className='button' onClick={() => addBpm(1)}>+</a>
             </div>
           </Column>
           <Column onClick={toggleKnown}>
@@ -96,8 +96,10 @@ const Scales = styled(({ startMetronome, stopMetronome, ...props }: Props) => {
           </Column>
         </Scale>
       )}
-      <button onClick={nextScale}>Next Scale</button>
-      {scaleIndex !== undefined && <button onClick={reset}>Stop Scales</button>}
+      <div className='buttons has-addons'>
+      <a className='button' onClick={nextScale}>Next Scale</a>
+      {scaleIndex !== undefined && <a className='button is-danger' onClick={reset}>Stop Scales</a>}
+</div>
     </div>
   );
 })``;
