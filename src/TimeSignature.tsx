@@ -22,7 +22,11 @@ const TimeSignature = ({
   };
   return (
     <>
-      <section className="section is-mobile columns" onClick={toggleEdit}>
+      <section
+        style={{ marginTop: "10px" }}
+        className="section is-mobile columns"
+        onClick={toggleEdit}
+      >
         {R.range(0, numerator).map((beat: number) => {
           const bg =
             beat + 1 === currentBeat

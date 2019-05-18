@@ -13,6 +13,7 @@ import Dial from "./Dial";
 import Scales from "./Scales";
 import { useLocalStorage, useToggle } from "./hooks";
 import { Button, Buttons } from "./Common";
+import * as serviceWorker from "./serviceWorker";
 
 interface State {
   schedulerState: SchedulerState;
@@ -108,8 +109,28 @@ const Metronome = () => {
   const [showScales, toggleScales] = useToggle(false);
   const [showTuner, toggleTuner] = useToggle(false);
 
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  useEffect(() => {
+    serviceWorker.register({
+      onUpdate: () => {
+        setUpdateAvailable(true);
+      }
+    });
+  });
+
   return (
     <div style={{ maxWidth: "500px", margin: "0 auto", padding: "10px" }}>
+      {updateAvailable && (
+        <section
+          className="box is-grouped field has-addons"
+          style={{ marginBottom: "10px" }}
+        >
+          <p style={{ alignSelf: "center" }} className="control is-expanded">
+            An Update is Available!
+          </p>
+          <Button onClick={() => window.location.reload()}>Refresh</Button>
+        </section>
+      )}
       <TimeSignature
         setSignature={setSignature}
         signature={signature}
