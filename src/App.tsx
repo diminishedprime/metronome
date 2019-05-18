@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
-import styled from "styled-components";
 import { over, set } from "ramda";
 import * as R from "ramda";
 import TempoMarking from "./TempoMarking";
@@ -72,7 +71,6 @@ const Metronome = () => {
         )
       )
     );
-  const changeBPM = (diff: number) => () => addDiff(diff);
 
   const setBPM = (bpm: number) => setState(set(bpmL, R.clamp(1, 250, bpm)));
 
@@ -128,7 +126,10 @@ const Metronome = () => {
         <Scales startMetronome={startMetronome} stopMetronome={stopMetronome} />
       )}
       {showTuner && <Tuner />}
-      <nav className="navbar is-fixed-bottom buttons">
+      <nav
+        className="navbar is-fixed-bottom buttons is-right"
+        style={{ padding: "10px" }}
+      >
         <Button
           classes={[showScales ? "is-primary" : ""]}
           onClick={toggleScales}
@@ -142,10 +143,6 @@ const Metronome = () => {
     </div>
   );
 };
-
-const Layout = styled.div`
-  max-width: 500px;
-`;
 
 const App: React.FC = () => {
   return <Metronome />;

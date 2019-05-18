@@ -9,23 +9,16 @@ interface Props {
   toggle: Toggle;
 }
 
-type ControlProps = SubDivision & { idx: number; toggle: Toggle };
-
-const Control = ({ on, label, idx, toggle, ...props }: ControlProps) => (
-  <Button
-    key={label}
-    {...props}
-    onClick={() => toggle(idx)}
-    className={`column button ${on ? "is-success" : ""}`}
-  >
-    {label}
-  </Button>
-);
-
-const SubDivisions = ({ subDivisions, toggle, ...props }: Props) => (
+const SubDivisions = ({ subDivisions, toggle }: Props) => (
   <>
-    {subDivisions.map((subDivision, idx) => (
-      <Control key={idx} {...subDivision} idx={idx} toggle={toggle} />
+    {subDivisions.map(({ label, on }, idx) => (
+      <Button
+        classes={[on ? "is-primary" : ""]}
+        key={idx}
+        onClick={() => toggle(idx)}
+      >
+        {label}
+      </Button>
     ))}
   </>
 );
