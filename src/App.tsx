@@ -4,7 +4,7 @@ import { over, set } from "ramda";
 import * as R from "ramda";
 import TempoMarking from "./TempoMarking";
 import TimeSignature from "./TimeSignature";
-import { SchedulerState } from "./types";
+import { SchedulerState, Signature } from "./types";
 import { useMetronome } from "./metronome";
 import TapIn from "./TapIn";
 import SubDivisions from "./SubDivisions";
@@ -22,6 +22,8 @@ const subDivisionsL = (idx: number) =>
   R.lensPath(["schedulerState", "subDivisions", idx, "on"]);
 
 const bpmL = R.lensPath(["schedulerState", "bpm"]);
+
+const signatureL = R.lensPath(["schedulerState", "signature"]);
 
 const makeInitialState = (): State => ({
   schedulerState: {
@@ -99,12 +101,20 @@ const Metronome = () => {
     setPlaying(false);
   };
 
+  const setSignature = (s: Signature) => {
+    setState(set(signatureL, s));
+  };
+
   const [showScales, toggleScales] = useToggle(false);
   const [showTuner, toggleTuner] = useToggle(false);
 
   return (
     <div style={{ maxWidth: "500px", margin: "0 auto", padding: "10px" }}>
-      <TimeSignature signature={signature} currentBeat={currentBeat} />
+      <TimeSignature
+        setSignature={setSignature}
+        signature={signature}
+        currentBeat={currentBeat}
+      />
       <section className="section">
         <Dial addDiff={addDiff}>
           <div className="has-text-centered is-size-1">{bpm}</div>
