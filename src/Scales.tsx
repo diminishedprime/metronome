@@ -48,7 +48,10 @@ const Scales = ({ startMetronome, stopMetronome, ...props }: Props) => {
   const scale = scales[scaleIndex!];
   const addBpm = (diff: number) =>
     setScales(R.over(bpmP(scaleIndex!), R.add(diff)));
-  const reset = () => setScaleIndex(undefined);
+  const reset = () => {
+    setScaleIndex(undefined);
+    stopMetronome();
+  };
   const nextScale = () => {
     setScaleIndex((oldIdx: number | undefined) => {
       if (oldIdx === undefined) {
@@ -64,8 +67,6 @@ const Scales = ({ startMetronome, stopMetronome, ...props }: Props) => {
   useEffect(() => {
     if (scale) {
       startMetronome(scale.bpm);
-    } else {
-      stopMetronome();
     }
     // TODO(mjhamrick) - figure out if there's a clean way to remove the lint
     // error for not including start & stop metronome in the dependencies.
