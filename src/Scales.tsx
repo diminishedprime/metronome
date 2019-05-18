@@ -20,7 +20,6 @@ interface Props {
   stopMetronome: () => void;
 }
 
-const toggleKnownP = (idx: number) => R.lensPath([idx, "know"]);
 const bpmP = (idx: number) => R.lensPath([idx, "bpm"]);
 
 const initialScales: Scale[] = [
@@ -45,7 +44,7 @@ const Scales = ({ startMetronome, stopMetronome, ...props }: Props) => {
     "@mjh/metronome/scales",
     initialScales
   );
-  const [scaleIndex, setScaleIndex] = useState<number | undefined>(0);
+  const [scaleIndex, setScaleIndex] = useState<number>();
   const scale = scales[scaleIndex!];
   const addBpm = (diff: number) =>
     setScales(R.over(bpmP(scaleIndex!), R.add(diff)));
@@ -64,7 +63,7 @@ const Scales = ({ startMetronome, stopMetronome, ...props }: Props) => {
   };
   useEffect(() => {
     if (scale) {
-      /* startMetronome(scale.bpm); */
+      startMetronome(scale.bpm);
     } else {
       stopMetronome();
     }
