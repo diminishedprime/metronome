@@ -12,7 +12,7 @@ import Tuner from "./Tuner";
 import Dial from "./Dial";
 import Scales from "./Scales";
 import { useLocalStorage, useToggle } from "./hooks";
-import { Button } from "./Common";
+import { Button, Buttons } from "./Common";
 
 interface State {
   schedulerState: SchedulerState;
@@ -121,16 +121,21 @@ const Metronome = () => {
           <TempoMarking bpm={bpm} />
         </Dial>
       </section>
-      <section className="section buttons has-addons">
-        <SubDivisions subDivisions={subDivisions} toggle={toggleSubDivision} />
-        <TapIn setBPM={setBPM} />
-        <Button
-          style={{ flexGrow: 1 }}
-          classes={["is-outlined", playing ? "is-danger" : "is-primary"]}
-          onClick={toggleStart}
-        >
-          {playing ? "Stop" : "Start"}
-        </Button>
+      <section className="section">
+        <Buttons>
+          <SubDivisions
+            subDivisions={subDivisions}
+            toggle={toggleSubDivision}
+          />
+          <TapIn setBPM={setBPM} />
+          <Button
+            style={{ flexGrow: 1 }}
+            classes={["is-outlined", playing ? "is-danger" : "is-primary"]}
+            onClick={toggleStart}
+          >
+            {playing ? "Stop" : "Start"}
+          </Button>
+        </Buttons>
       </section>
       {showScales && (
         <Scales startMetronome={startMetronome} stopMetronome={stopMetronome} />
@@ -138,7 +143,7 @@ const Metronome = () => {
       {showTuner && <Tuner />}
       <nav
         className="navbar is-fixed-bottom buttons is-right"
-        style={{ padding: "10px" }}
+        style={{ padding: "10px", margin: "0 auto", maxWidth: "500px" }}
       >
         <Button
           classes={[showScales ? "is-primary" : ""]}

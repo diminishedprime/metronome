@@ -29,7 +29,10 @@ const TimeSignature = ({
               ? "has-background-primary"
               : "has-background-light";
           return (
-            <div className={`column has-text-centered ${bg}`} key={beat}>
+            <div
+              className={`column margin-sm has-text-centered ${bg}`}
+              key={beat}
+            >
               {beat + 1}
             </div>
           );
