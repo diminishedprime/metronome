@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import * as R from "ramda";
+import { Button } from "./Common";
 
 interface Props {
   setBPM: (bpm: number) => void;
@@ -26,7 +27,7 @@ const TapIn = ({ setBPM }: Props) => {
     setTaps(newTaps);
   };
 
-  return <a className='button' onClick={onTap}>Tap</a>;
+  return <Button onClick={onTap}>Tap In</Button>;
 };
 
 export default TapIn;

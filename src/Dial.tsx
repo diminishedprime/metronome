@@ -39,12 +39,19 @@ const Text = styled.div`
 `;
 
 interface Props {
-  value: number;
   addDiff: (diff: number) => void;
   size?: number;
 }
 
-const InfiniKnob = ({ size = 300, value, addDiff }: Props) => {
+const InfiniKnob = ({
+  size = 300,
+  addDiff,
+  children
+}: Props &
+  React.DetailedHTMLProps<
+    React.HTMLAttributes<HTMLDivElement>,
+    HTMLDivElement
+  >) => {
   const [radians, setRadions] = useState((Math.PI * 3) / 2);
   const radiansRef = useRef(Math.PI);
   useEffect(() => {
@@ -163,9 +170,14 @@ const InfiniKnob = ({ size = 300, value, addDiff }: Props) => {
           left
         }}
       />
-      <Text>{value}</Text>
+      <ChildContainer>{children}</ChildContainer>
     </Outer>
   );
 };
+
+const ChildContainer = styled.div`
+  align-self: center;
+  margin: auto;
+`;
 
 export default InfiniKnob;

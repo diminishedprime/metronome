@@ -1,7 +1,8 @@
-import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocalStorage } from "./hooks";
 import * as R from "ramda";
 import styled from "styled-components";
+import { Button } from "./Common";
 
 enum Mode {
   MAJOR = "Major"
@@ -73,7 +74,7 @@ const Scales = styled(({ startMetronome, stopMetronome, ...props }: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scale]);
   return (
-    <div {...props} className='box'>
+    <div {...props} className="box">
       {scale && (
         <Scale>
           <Column>
@@ -85,9 +86,9 @@ const Scales = styled(({ startMetronome, stopMetronome, ...props }: Props) => {
           <Column>
             <Body>{scale.bpm}</Body>
             <Subtitle>BPM</Subtitle>
-            <div className='buttons has-addons'>
-              <a className='button' onClick={() => addBpm(-1)}>-</a>
-              <a className='button' onClick={() => addBpm(1)}>+</a>
+            <div className="buttons has-addons">
+              <Button onClick={() => addBpm(-1)}>-</Button>
+              <Button onClick={() => addBpm(1)}>+</Button>
             </div>
           </Column>
           <Column onClick={toggleKnown}>
@@ -96,10 +97,14 @@ const Scales = styled(({ startMetronome, stopMetronome, ...props }: Props) => {
           </Column>
         </Scale>
       )}
-      <div className='buttons has-addons'>
-      <a className='button' onClick={nextScale}>Next Scale</a>
-      {scaleIndex !== undefined && <a className='button is-danger' onClick={reset}>Stop Scales</a>}
-</div>
+      <div className="buttons has-addons">
+        <Button onClick={nextScale}>Next Scale</Button>
+        {scaleIndex !== undefined && (
+          <Button classes={["is-danger"]} onClick={reset}>
+            Stop Scales
+          </Button>
+        )}
+      </div>
     </div>
   );
 })``;
