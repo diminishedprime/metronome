@@ -12,7 +12,7 @@ import SubDivisions from "./SubDivisions";
 import Tuner from "./Tuner";
 import Dial from "./Dial";
 import Scales from "./Scales";
-import { useLocalStorage } from "./hooks";
+import { useLocalStorage, useToggle } from "./hooks";
 import { Button } from "./Common";
 
 interface State {
@@ -54,7 +54,6 @@ const Metronome = () => {
     }
   }, [playing]);
 
-  const [showTuner, setShowTuner] = useState(false);
   const [
     {
       schedulerState,
@@ -102,6 +101,9 @@ const Metronome = () => {
     setPlaying(false);
   };
 
+  const [showScales, toggleScales] = useToggle(false);
+  const [showTuner, toggleTuner] = useToggle(false);
+
   return (
     <div style={{ maxWidth: "500px", margin: "0 auto", padding: "10px" }}>
       <TimeSignature signature={signature} currentBeat={currentBeat} />
@@ -122,8 +124,21 @@ const Metronome = () => {
           {playing ? "Stop" : "Start"}
         </Button>
       </section>
-      <Scales startMetronome={startMetronome} stopMetronome={stopMetronome} />
-      <Tuner />
+      {showScales && (
+        <Scales startMetronome={startMetronome} stopMetronome={stopMetronome} />
+      )}
+      {showTuner && <Tuner />}
+      <nav className="navbar is-fixed-bottom buttons">
+        <Button
+          classes={[showScales ? "is-primary" : ""]}
+          onClick={toggleScales}
+        >
+          Scales
+        </Button>
+        <Button classes={[showTuner ? "is-primary" : ""]} onClick={toggleTuner}>
+          Tuner
+        </Button>
+      </nav>
     </div>
   );
 };
