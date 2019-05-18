@@ -1,40 +1,52 @@
 {
   "homepage": "https://diminishedprime.github.io/metronome",
   "name": "metronome",
-  "version": "21.0.0",
+  "version": "22.0.0",
   "private": true,
   "dependencies": {
-    "gh-pages": "^1.0.0",
-    "ramda": "^0.24.1",
-    "react": "^15.6.1",
-    "react-dom": "^15.6.1",
-    "react-redux": "^5.0.5",
-    "redux": "^3.7.1",
-    "redux-saga": "^0.15.4"
-  },
-  "devDependencies": {
-    "eslint": "^4.1.1",
-    "eslint-plugin-import": "^2.7.0",
-    "eslint-plugin-react": "^7.1.0",
-    "eslint-plugin-redux-saga": "^0.4.0",
-    "prettier": "^1.12.1",
-    "react-scripts": "1.0.10"
-  },
-  "prettier": {
-    "semi": false,
-    "singleQuote": true,
-    "trailingComma": "es5",
-    "bracketSpacing": false,
-    "arrowParens": "always"
+    "@types/jest": "24.0.12",
+    "@types/node": "11.13.9",
+    "@types/react": "16.8.15",
+    "@types/react-dom": "16.8.4",
+    "@types/vexflow": "^1.2.33",
+    "bulma": "^0.7.4",
+    "ramda": "^0.26.1",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-scripts": "3.0.0",
+    "styled-components": "^4.2.0",
+    "typescript": "3.4.5",
+    "vexflow": "^1.2.89"
   },
   "scripts": {
-    "start": "REACT_APP_VERSION=$npm_package_version react-scripts start",
-    "build": "REACT_APP_VERSION=$npm_package_version react-scripts build",
-    "predeploy": "npm version major && npm run build",
-    "deploy": "gh-pages -d build",
-    "test": "react-scripts test --env=jsdom",
+    "start": "PORT=9999 HOST=0.0.0.0 react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "prettier": "prettier --write 'src/**/*.jsx' 'src/**/*.js' package.json .eslintrc.js",
-    "lint": "eslint . --ignore-path .eslintignore --ext .js --ext .jsx"
+    "predeploy": "yarn build",
+    "deploy": "gh-pages -d build"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/ramda": "^0.26.8",
+    "@types/styled-components": "^4.1.14",
+    "gh-pages": "^2.0.1",
+    "node-sass": "^4.12.0",
+    "prettier": "^1.17.0",
+    "serve": "^11.0.0"
   }
 }
