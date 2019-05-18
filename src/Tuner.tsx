@@ -66,16 +66,18 @@ const Tuner = () => {
   useEffect(() => {
     const audioContext = new AudioContext();
     setSampleRate(audioContext.sampleRate);
-    navigator.mediaDevices
-      .getUserMedia({ audio: true })
-      .then((thing: MediaStream) => {
+    const mediaDevices = navigator.mediaDevices;
+    if (mediaDevices) {
+      mediaDevices.getUserMedia({ audio: true }).then((thing: MediaStream) => {
         const analyser = audioContext.createAnalyser();
-        // If this isn't  big, I don't have very good frequency accuracy, and I can't change the sample rate because web audio sucks.
+        // If this isn't big, I don't have very good frequency accuracy, and I
+        // can't change the sample rate because web audio sucks.
         analyser.fftSize = 8192;
         const mic = audioContext.createMediaStreamSource(thing);
         mic.connect(analyser);
         setAnalyser(analyser);
       });
+    }
     return () => {
       audioContext.close();
     };
