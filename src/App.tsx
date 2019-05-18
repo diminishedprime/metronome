@@ -1,4 +1,4 @@
-import React, { useEffect} from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import styled from "styled-components";
 import { over, set } from "ramda";
@@ -13,7 +13,7 @@ import Tuner from "./Tuner";
 import Dial from "./Dial";
 import Scales from "./Scales";
 import { useLocalStorage } from "./hooks";
-import {Button} from './Common';
+import { Button } from "./Common";
 
 interface State {
   schedulerState: SchedulerState;
@@ -36,10 +36,10 @@ const makeInitialState = (): State => ({
       { on: false, pitch: 10, divisions: 2, label: "2", gain: 1.0 },
       { on: false, pitch: 20, divisions: 3, label: "3", gain: 1.0 },
       { on: false, pitch: 30, divisions: 4, label: "4", gain: 1.0 },
-      { on: false, pitch: 40, divisions: 5, label: "5", gain: 1.0 },
-        /* { on: false, pitch: 50, divisions: 6, label: "6", gain: 1.0 },
-         * { on: false, pitch: 60, divisions: 7, label: "7", gain: 1.0 },
-         * { on: false, pitch: 70, divisions: 8, label: "8", gain: 1.0 } */
+      { on: false, pitch: 40, divisions: 5, label: "5", gain: 1.0 }
+      /* { on: false, pitch: 50, divisions: 6, label: "6", gain: 1.0 },
+       * { on: false, pitch: 60, divisions: 7, label: "7", gain: 1.0 },
+       * { on: false, pitch: 70, divisions: 8, label: "8", gain: 1.0 } */
     ]
   }
 });
@@ -63,68 +63,81 @@ const Metronome = () => {
     setState
   ] = useLocalStorage("@mjh/metronome/schedulerState", makeInitialState);
 
-    const addDiff = (diff: number) => setState(over(bpmL, R.pipe(R.add(diff), R.clamp(1, 250))))
-    const changeBPM = (diff: number) => () => addDiff(diff)
+  const addDiff = (diff: number) =>
+    setState(
+      over(
+        bpmL,
+        R.pipe(
+          R.add(diff),
+          R.clamp(1, 250)
+        )
+      )
+    );
+  const changeBPM = (diff: number) => () => addDiff(diff);
 
-    const setBPM = (bpm: number) => setState(set(bpmL, R.clamp(1, 250, bpm)));
+  const setBPM = (bpm: number) => setState(set(bpmL, R.clamp(1, 250, bpm)));
 
-    const toggleSubDivision = (divisionIdx: number) => {
-        setState(over(subDivisionsL(divisionIdx), R.not));
-        };
+  const toggleSubDivision = (divisionIdx: number) => {
+    setState(over(subDivisionsL(divisionIdx), R.not));
+  };
 
-        const [currentBeat, setCurrentBeat] = useMetronome(
-            playing,
-            schedulerState,
-            audioContext
-        );
-        const toggleStart = () => {
-            if (playing) {
-                setCurrentBeat(0);
-            }
-            setPlaying(R.not);
-        };
+  const [currentBeat, setCurrentBeat] = useMetronome(
+    playing,
+    schedulerState,
+    audioContext
+  );
+  const toggleStart = () => {
+    if (playing) {
+      setCurrentBeat(0);
+    }
+    setPlaying(R.not);
+  };
 
-        const startMetronome = (bpm: number) => {
-            setBPM(bpm);
-            setPlaying(true);
-        };
+  const startMetronome = (bpm: number) => {
+    setBPM(bpm);
+    setPlaying(true);
+  };
 
-        const stopMetronome = () => {
-            setPlaying(false);
-        };
+  const stopMetronome = () => {
+    setPlaying(false);
+  };
 
-        return (
-            <div style={{maxWidth: '500px', margin: '0 auto', padding: '10px'}}>
-                <TimeSignature signature={signature} currentBeat={currentBeat} />
-                <Dial addDiff={addDiff}>
-                    <Centered style={{fontSize: '3em'}}>
-                        {bpm}
-                    </Centered>
-                    <TempoMarking bpm={bpm} />
-                </Dial>
-                <section className='section buttons has-addons'>
-                    <SubDivisions subDivisions={subDivisions} toggle={toggleSubDivision} />
-                    <TapIn setBPM={setBPM} />
-                    <Button style={{flexGrow: 1}} classes={['is-outlined', playing ? 'is-danger' : 'is-primary']} onClick={toggleStart}>
-                        {playing ? "Stop" : "Start"}
-                    </Button>
-                </section>
-                <Scales startMetronome={startMetronome} stopMetronome={stopMetronome} />
-                <Tuner />
-            </div>
-        );
+  return (
+    <div style={{ maxWidth: "500px", margin: "0 auto", padding: "10px" }}>
+      <TimeSignature signature={signature} currentBeat={currentBeat} />
+      <section className="section">
+        <Dial addDiff={addDiff}>
+          <Centered style={{ fontSize: "3em" }}>{bpm}</Centered>
+          <TempoMarking bpm={bpm} />
+        </Dial>
+      </section>
+      <section className="section buttons has-addons">
+        <SubDivisions subDivisions={subDivisions} toggle={toggleSubDivision} />
+        <TapIn setBPM={setBPM} />
+        <Button
+          style={{ flexGrow: 1 }}
+          classes={["is-outlined", playing ? "is-danger" : "is-primary"]}
+          onClick={toggleStart}
+        >
+          {playing ? "Stop" : "Start"}
+        </Button>
+      </section>
+      <Scales startMetronome={startMetronome} stopMetronome={stopMetronome} />
+      <Tuner />
+    </div>
+  );
 };
 
-const Centered = styled.div`text-align: center`;
+const Centered = styled.div`
+  text-align: center;
+`;
 
 const Layout = styled.div`
-max-width: 500px;
-    `;
+  max-width: 500px;
+`;
 
 const App: React.FC = () => {
-    return (
-        <Metronome />
-    );
+  return <Metronome />;
 };
 
 export default App;

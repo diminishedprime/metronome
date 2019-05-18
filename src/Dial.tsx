@@ -3,39 +3,19 @@ import styled from "styled-components";
 
 const Outer = styled.div`
   margin: auto;
-  background-color: #ffd700;
-  background-image: radial-gradient(
-    circle farthest-corner at 75px 75px,
-    #ffd700 0%,
-    #bfa100 100%
-  );
   position: relative;
   height: 300px;
   width: 300px;
   border-radius: 300px;
   display: flex;
+  margin-bottom: 10px;
 `;
 
 const Inner = styled.div`
-  background-color: #bfa100;
-  background-image: radial-gradient(
-    circle farthest-corner at 75px 75px,
-    #bfa100 0%,
-    #ffd700 100%
-  );
   width: 100px;
   height: 100px;
   border-radius: 100px;
   position: absolute;
-`;
-
-const Text = styled.div`
-  z-index: 1;
-  justify-self: center;
-  align-self: center;
-  text-align: center;
-  width: 100%;
-  font-size: 5em;
 `;
 
 interface Props {
@@ -161,8 +141,9 @@ const InfiniKnob = ({
     size / 6;
 
   return (
-    <Outer ref={knobContainer}>
+    <Outer ref={knobContainer} className="has-background-primary">
       <Inner
+        className="has-background-info"
         onMouseDown={onMouseDown}
         onTouchMove={onTouchMove}
         style={{
@@ -178,6 +159,8 @@ const InfiniKnob = ({
 const ChildContainer = styled.div`
   align-self: center;
   margin: auto;
+  z-index: 1;
+  pointer-events: none;
 `;
 
 export default InfiniKnob;
