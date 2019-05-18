@@ -154,7 +154,7 @@ const Metronome = () => {
         <Button classes={[showTuner ? "is-primary" : ""]} onClick={toggleTuner}>
           Tuner
         </Button>
-        <div>{`v${process.env.npm_package_version}`}</div>
+        <div>{`v${process.env.REACT_APP_VERSION}`}</div>
       </nav>
     </div>
   );
