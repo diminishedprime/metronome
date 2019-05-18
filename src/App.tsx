@@ -28,7 +28,7 @@ const makeInitialState = (): State => ({
     scheduleAhead: 0.2,
     bpm: 120,
     signature: {
-      numerator: 5,
+      numerator: 4,
       denominator: 4
     },
     subDivisions: [

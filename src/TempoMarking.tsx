@@ -1,5 +1,4 @@
 import React from "react";
-import styled from "styled-components";
 
 interface Marking {
   range: [number, number];
@@ -17,8 +16,6 @@ export const markings: Array<Marking> = [
   { name: "Marcia moderato", range: [83, 85] },
   { name: "Andante moderato", range: [92, 112] },
   { name: "Moderato", range: [108, 120] },
-  { name: "Allegretto", range: [112, 120] },
-  { name: "Allegro moderato", range: [116, 120] },
   { name: "Allegro", range: [120, 156] },
   { name: "Vivace", range: [156, 176] },
   { name: "Vivacissimo", range: [172, 176] },
@@ -39,40 +36,17 @@ interface Props {
   bpm: number;
 }
 
-const Name = styled.div`
-  font-size: 3vh;
-  margin-right: 1vh;
-`;
-
-const Range = styled(({ range, ...props }: { range: [number, number] }) => (
-  <div {...props}>
-    {range[0]} - {range[1]}
-  </div>
-))``;
-
-const Tempo = styled(({ name, range, ...props }: Marking) => (
-  <div {...props}>
-    <Name>{name}</Name>
-    <Range range={range} />
-  </div>
-))`
-  display: flex;
-  align-items: baseline;
-`;
-
-const TempoMarking = styled(({ bpm, ...props }: Props) => {
+const TempoMarking = ({ bpm }: Props) => {
   const markings = fromBPM(bpm);
   return (
-    <div {...props}>
-      {markings.map((props, idx) => (
-        <Tempo key={idx} {...props} />
+    <div className="columns">
+      {markings.map(({ name, range }, idx) => (
+        <div key={idx} className="has-text-centered">
+          {name} - {range[0]} - {range[1]}
+        </div>
       ))}
     </div>
   );
-})`
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-`;
+};
 
 export default TempoMarking;
