@@ -107,7 +107,7 @@ const Metronome = () => {
       <TimeSignature signature={signature} currentBeat={currentBeat} />
       <section className="section">
         <Dial addDiff={addDiff}>
-          <Centered style={{ fontSize: "3em" }}>{bpm}</Centered>
+          <div className="has-text-centered is-size-1">{bpm}</div>
           <TempoMarking bpm={bpm} />
         </Dial>
       </section>
@@ -127,10 +127,6 @@ const Metronome = () => {
     </div>
   );
 };
-
-const Centered = styled.div`
-  text-align: center;
-`;
 
 const Layout = styled.div`
   max-width: 500px;

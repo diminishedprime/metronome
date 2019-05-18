@@ -92,8 +92,6 @@ const InfiniKnob = ({
       } else if (diff > Math.PI) {
         diff = radiansRef.current - -newRadians;
       }
-      // Todo - do something with this.
-      /* emitDelta(diff) */
       if (diff !== 0) {
         addToBuffer(diff);
       }

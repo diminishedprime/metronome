@@ -38,16 +38,15 @@ const initialScales: Scale[] = [
   { key: "Ab", mode: Mode.MAJOR, know: false, bpm: 80 }
 ];
 
-const Scales = styled(({ startMetronome, stopMetronome, ...props }: Props) => {
+const Scales = ({ startMetronome, stopMetronome, ...props }: Props) => {
   // instead of saving the array, we should store them keyed by a unique
   // identifier so we can have the scales go in any order.
   const [scales, setScales] = useLocalStorage(
     "@mjh/metronome/scales",
     initialScales
   );
-  const [scaleIndex, setScaleIndex] = useState<number>();
+  const [scaleIndex, setScaleIndex] = useState<number | undefined>(0);
   const scale = scales[scaleIndex!];
-  const toggleKnown = () => setScales(R.over(toggleKnownP(scaleIndex!), R.not));
   const addBpm = (diff: number) =>
     setScales(R.over(bpmP(scaleIndex!), R.add(diff)));
   const reset = () => setScaleIndex(undefined);
@@ -65,7 +64,7 @@ const Scales = styled(({ startMetronome, stopMetronome, ...props }: Props) => {
   };
   useEffect(() => {
     if (scale) {
-      startMetronome(scale.bpm);
+      /* startMetronome(scale.bpm); */
     } else {
       stopMetronome();
     }
@@ -73,60 +72,48 @@ const Scales = styled(({ startMetronome, stopMetronome, ...props }: Props) => {
     // error for not including start & stop metronome in the dependencies.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scale]);
+
+  let nextScaleText = `Start Scales`;
+  if (scaleIndex !== undefined && scaleIndex < scales.length - 1) {
+    const { mode, key } = scales[scaleIndex + 1];
+    nextScaleText = `Continue (${key} ${mode})`;
+  }
   return (
     <div {...props} className="box">
       {scale && (
-        <Scale>
-          <Column>
-            <Body>
-              {scale.key} {scale.mode}
-            </Body>
-            <Subtitle>Key</Subtitle>
-          </Column>
-          <Column>
-            <Body>{scale.bpm}</Body>
-            <Subtitle>BPM</Subtitle>
-            <div className="buttons has-addons">
-              <Button onClick={() => addBpm(-1)}>-</Button>
-              <Button onClick={() => addBpm(1)}>+</Button>
-            </div>
-          </Column>
-          <Column onClick={toggleKnown}>
-            <Body>{"" + scale.know}</Body>
-            <Subtitle>Know</Subtitle>
-          </Column>
-        </Scale>
+        <div className="columns is-mobile">
+          <CenterVertical className="column is-size-3">
+            {scale.key} {scale.mode}
+          </CenterVertical>
+          <CenterVertical className="column is-size-5 has-text-right">
+            BPM: {scale.bpm}
+          </CenterVertical>
+        </div>
       )}
-      <div className="buttons has-addons">
-        <Button onClick={nextScale}>Next Scale</Button>
+      <div className="buttons has-addons is-right">
         {scaleIndex !== undefined && (
-          <Button classes={["is-danger"]} onClick={reset}>
-            Stop Scales
-          </Button>
+          <>
+            <Button classes={["is-danger"]} onClick={reset}>
+              Stop
+            </Button>
+            <Button style={{ flexGrow: 1 }} onClick={() => addBpm(-1)}>
+              -
+            </Button>
+            <Button style={{ flexGrow: 1 }} onClick={() => addBpm(1)}>
+              +
+            </Button>
+          </>
         )}
+        <Button classes={["is-right"]} onClick={nextScale}>
+          {nextScaleText}
+        </Button>
       </div>
     </div>
   );
-})``;
+};
 
-const Scale = styled.div`
-  display: flex;
-  justify-content: space-around;
-`;
-
-const Subtitle = styled.div`
-  font-size: 1em;
-`;
-
-const Body = styled.div`
-  font-weight: bold;
-  font-size: 3em;
-`;
-
-const Column = styled.div`
-  display: flex;
-  flex-direction: column;
-  text-align: center;
+const CenterVertical = styled.div`
+  align-self: center;
 `;
 
 export default Scales;
