@@ -1,7 +1,6 @@
 import {
   useEffect,
   useRef,
-  useLayoutEffect,
   useState,
   useCallback,
   MutableRefObject,
@@ -47,10 +46,10 @@ const beatsFor = (
 };
 
 const scheduleGroup = (
-  nextNoteTime: MutableRefObject<number>,
+  nextNoteTimeRef: MutableRefObject<number>,
   schedulerState: MutableRefObject<SchedulerState>,
   buffer: AudioBuffer | undefined,
-  setNextBeatTime: (time: number) => void,
+  setNextBeatTime: (time: number | "waiting") => void,
   audioContext: AudioContext
 ) => {
   const { bpm, subDivisions, scheduleAhead } = schedulerState.current;
@@ -58,27 +57,30 @@ const scheduleGroup = (
   const schedule = (beat: Beat) => {
     scheduleNote(audioContext, beat);
   };
-  while (nextNoteTime.current < audioContext.currentTime + scheduleAhead) {
+  if (nextNoteTimeRef.current < audioContext.currentTime + scheduleAhead) {
+  }
+  while (nextNoteTimeRef.current < audioContext.currentTime + scheduleAhead) {
+    const nextNoteTime = nextNoteTimeRef.current;
+    nextNoteTimeRef.current += secondsPerBeat;
+    // Adds the scheduled note so the gui can refresh at the right time.
+    setNextBeatTime(nextNoteTime);
     // Quarter Note
     scheduleNote(audioContext, {
-      time: nextNoteTime.current,
+      time: nextNoteTime,
       pitch: 0,
       gain: 0.5,
       buffer: buffer!
     });
-    setNextBeatTime(nextNoteTime.current);
-    // Adds the scheduled note so the gui can refresh at the right time.
     // Subdivisions
     for (const subDivision of subDivisions) {
       const beats = beatsFor(
-        nextNoteTime.current,
+        nextNoteTime,
         secondsPerBeat,
         subDivision,
         buffer!
       );
       beats.forEach(schedule);
     }
-    nextNoteTime.current += secondsPerBeat;
   }
 };
 
@@ -98,14 +100,6 @@ const useAudioBuffer = (
   return buffer;
 };
 
-const useMutableLayout = <T>(dep: T): MutableRefObject<T> => {
-  const mutableRef = useRef<T>(dep);
-  useLayoutEffect(() => {
-    mutableRef.current = dep;
-  }, [dep]);
-  return mutableRef;
-};
-
 const useMutable = <T>(dep: T): MutableRefObject<T> => {
   const mutableRef = useRef<T>(dep);
   useEffect(() => {
@@ -117,19 +111,19 @@ const useMutable = <T>(dep: T): MutableRefObject<T> => {
 const useScheduleAhead = (
   playing: boolean,
   schedulerState: SchedulerState,
-  setNextBeatTime: (time: number) => void,
+  setNextBeatTime: (time: number | "waiting") => void,
   audioContext: AudioContext | undefined
 ) => {
   const { scheduleAhead } = schedulerState;
   const buffer = useAudioBuffer(audioContext, click);
-  const nextNoteTimeRef = useRef<number>(0);
   const schedulerStateRef = useMutable(schedulerState);
   const delay = playing ? (scheduleAhead * 1000) / 2 : undefined;
+  const nextNoteTimeRef = useRef(-100);
 
   useEffect(() => {
     if (delay !== undefined && audioContext !== undefined) {
-      const initialTime = audioContext.currentTime + 0.1;
-      nextNoteTimeRef.current = initialTime;
+      // TODO - there's something fishy going on here.
+      nextNoteTimeRef.current = audioContext.currentTime + 0.3;
       const tick = () => {
         scheduleGroup(
           nextNoteTimeRef,
@@ -139,6 +133,7 @@ const useScheduleAhead = (
           audioContext
         );
       };
+      tick();
       const id = setInterval(tick, delay);
       return () => {
         clearInterval(id);
@@ -150,37 +145,29 @@ const useScheduleAhead = (
 const useDisplayUpdater = (
   playing: boolean,
   audioContext: AudioContext | undefined,
-  nextBeatTime: number | undefined,
-  setNextBeatTime: (time: number | undefined) => void,
+  nextBeatTime: number | "waiting",
+  setNextBeatTime: (time: number | "waiting") => void,
   incCurrentBeat: () => void
 ) => {
-  const nextBeatTimeRef = useMutableLayout(nextBeatTime);
-
-  useLayoutEffect(() => {
-    if (audioContext !== undefined) {
+  useEffect(() => {
+    if (audioContext !== undefined && playing) {
       let animationFrame: number;
       const tick = () => {
         loop();
         const now = audioContext.currentTime;
-        const nextBeat = nextBeatTimeRef.current;
-        if (nextBeat !== undefined && now <= nextBeat) {
-          setNextBeatTime(undefined);
+        if (nextBeatTime !== "waiting" && now <= nextBeatTime) {
+          setNextBeatTime("waiting");
           incCurrentBeat();
         }
       };
-
       const loop = () => {
         animationFrame = requestAnimationFrame(tick);
       };
 
-      if (playing) {
-        loop();
-        return () => {
-          cancelAnimationFrame(animationFrame);
-        };
-      }
+      loop();
+      return () => cancelAnimationFrame(animationFrame);
     }
-  }, [playing, audioContext, incCurrentBeat, nextBeatTimeRef, setNextBeatTime]);
+  }, [nextBeatTime, audioContext, incCurrentBeat, playing, setNextBeatTime]);
 };
 
 export const useMetronome = (
@@ -189,11 +176,19 @@ export const useMetronome = (
   audioContext: AudioContext | undefined
 ): [number | undefined, Dispatch<SetStateAction<number | undefined>>] => {
   // TODO - don't update if the tab is in the background
-  const [nextBeatTime, setNextBeatTime] = useState<number>();
+  const [nextBeatTime, setNextBeatTime] = useState<number | "waiting">(
+    "waiting"
+  );
   const [currentBeat, setCurrentBeat] = useState<number | undefined>();
   const {
     signature: { numerator }
   } = schedulerState;
+
+  useEffect(() => {
+    if (!playing) {
+      setNextBeatTime("waiting");
+    }
+  }, [playing]);
 
   const incCurrentBeat = useCallback(
     () =>
