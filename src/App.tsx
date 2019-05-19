@@ -136,14 +136,13 @@ const Metronome = () => {
         signature={signature}
         currentBeat={currentBeat}
       />
-      {false && (
-        <section className="section">
-          <Dial addDiff={addDiff}>
-            <div className="has-text-centered is-size-1">{bpm}</div>
-            <TempoMarking bpm={bpm} />
-          </Dial>
-        </section>
-      )}
+      <section className="section">
+        <Dial addDiff={addDiff}>
+          <div className="has-text-centered is-size-1">{bpm}</div>
+          <TempoMarking bpm={bpm} />
+        </Dial>
+      </section>
+
       <section className="section">
         <Buttons>
           <SubDivisions
