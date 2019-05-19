@@ -6,7 +6,7 @@ import { Button } from "./Common";
 
 interface Props {
   signature: Signature;
-  currentBeat: number;
+  currentBeat: number | undefined;
   setSignature: (s: Signature) => void;
 }
 
@@ -29,7 +29,7 @@ const TimeSignature = ({
       >
         {R.range(0, numerator).map((beat: number) => {
           const bg =
-            beat + 1 === currentBeat
+            beat === currentBeat
               ? "has-background-primary"
               : "has-background-light";
           return (

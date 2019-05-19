@@ -16,6 +16,7 @@ const Inner = styled.div`
   height: 100px;
   border-radius: 100px;
   position: absolute;
+  touch-action: none;
 `;
 
 interface Props {

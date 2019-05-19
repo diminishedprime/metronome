@@ -82,15 +82,19 @@ const scheduleGroup = (
   }
 };
 
-const useAudioBuffer = (url: string): AudioBuffer | undefined => {
+const useAudioBuffer = (
+  audioContext: AudioContext | undefined,
+  url: string
+): AudioBuffer | undefined => {
   const [buffer, updateBuffer] = useState<AudioBuffer>();
   useEffect(() => {
-    const audioContext = new AudioContext();
-    fetch(url)
-      .then(response => response.arrayBuffer())
-      .then(buffer => audioContext.decodeAudioData(buffer))
-      .then(updateBuffer);
-  }, [url]);
+    if (audioContext !== undefined) {
+      fetch(url)
+        .then(response => response.arrayBuffer())
+        .then(buffer => audioContext.decodeAudioData(buffer))
+        .then(updateBuffer);
+    }
+  }, [url, audioContext]);
   return buffer;
 };
 
@@ -114,16 +118,16 @@ const useScheduleAhead = (
   playing: boolean,
   schedulerState: SchedulerState,
   setNextBeatTime: (time: number) => void,
-  audioContext: AudioContext
+  audioContext: AudioContext | undefined
 ) => {
   const { scheduleAhead } = schedulerState;
-  const buffer = useAudioBuffer(click);
+  const buffer = useAudioBuffer(audioContext, click);
   const nextNoteTimeRef = useRef<number>(0);
   const schedulerStateRef = useMutable(schedulerState);
   const delay = playing ? (scheduleAhead * 1000) / 2 : undefined;
 
   useEffect(() => {
-    if (delay !== undefined) {
+    if (delay !== undefined && audioContext !== undefined) {
       const initialTime = audioContext.currentTime + 0.1;
       nextNoteTimeRef.current = initialTime;
       const tick = () => {
@@ -145,7 +149,7 @@ const useScheduleAhead = (
 
 const useDisplayUpdater = (
   playing: boolean,
-  audioContext: AudioContext,
+  audioContext: AudioContext | undefined,
   nextBeatTime: number | undefined,
   setNextBeatTime: (time: number | undefined) => void,
   incCurrentBeat: () => void
@@ -153,30 +157,28 @@ const useDisplayUpdater = (
   const nextBeatTimeRef = useMutableLayout(nextBeatTime);
 
   useLayoutEffect(() => {
-    let animationFrame: number;
-    // We special case the first beat since we don't want to start with the UI on beat one.
-    let firstBeat = true;
-
-    const tick = () => {
-      loop();
-      const now = audioContext.currentTime;
-      const nextBeat = nextBeatTimeRef.current;
-      if ((nextBeat !== undefined && now <= nextBeat) || firstBeat) {
-        setNextBeatTime(undefined);
-        incCurrentBeat();
-        firstBeat = false;
-      }
-    };
-
-    const loop = () => {
-      animationFrame = requestAnimationFrame(tick);
-    };
-
-    if (playing) {
-      loop();
-      return () => {
-        cancelAnimationFrame(animationFrame);
+    if (audioContext !== undefined) {
+      let animationFrame: number;
+      const tick = () => {
+        loop();
+        const now = audioContext.currentTime;
+        const nextBeat = nextBeatTimeRef.current;
+        if (nextBeat !== undefined && now <= nextBeat) {
+          setNextBeatTime(undefined);
+          incCurrentBeat();
+        }
       };
+
+      const loop = () => {
+        animationFrame = requestAnimationFrame(tick);
+      };
+
+      if (playing) {
+        loop();
+        return () => {
+          cancelAnimationFrame(animationFrame);
+        };
+      }
     }
   }, [playing, audioContext, incCurrentBeat, nextBeatTimeRef, setNextBeatTime]);
 };
@@ -184,11 +186,11 @@ const useDisplayUpdater = (
 export const useMetronome = (
   playing: boolean,
   schedulerState: SchedulerState,
-  audioContext: AudioContext
-): [number, Dispatch<SetStateAction<number>>] => {
+  audioContext: AudioContext | undefined
+): [number | undefined, Dispatch<SetStateAction<number | undefined>>] => {
   // TODO - don't update if the tab is in the background
   const [nextBeatTime, setNextBeatTime] = useState<number>();
-  const [currentBeat, setCurrentBeat] = useState(0);
+  const [currentBeat, setCurrentBeat] = useState<number | undefined>();
   const {
     signature: { numerator }
   } = schedulerState;
@@ -196,9 +198,12 @@ export const useMetronome = (
   const incCurrentBeat = useCallback(
     () =>
       setCurrentBeat(oldBeat => {
+        if (oldBeat === undefined) {
+          return 0;
+        }
         let newBeat = oldBeat + 1;
-        if (oldBeat >= numerator) {
-          newBeat = 1;
+        if (oldBeat >= numerator - 1) {
+          newBeat = 0;
         }
         return newBeat;
       }),

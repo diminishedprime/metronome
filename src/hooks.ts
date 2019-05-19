@@ -1,4 +1,4 @@
-import { useState, Dispatch, SetStateAction } from "react";
+import { useState, Dispatch, SetStateAction, useCallback } from "react";
 
 export const useLocalStorage = <T>(
   key: string,
@@ -18,22 +18,31 @@ export const useLocalStorage = <T>(
     return firstValue;
   });
 
-  const setNewValue: Dispatch<SetStateAction<T>> = (
-    valueAction: SetStateAction<T>
-  ) => {
-    setValue((oldValue: T) => {
-      const newValue =
-        valueAction instanceof Function ? valueAction(oldValue) : valueAction;
-      window.localStorage.setItem(key, JSON.stringify(newValue));
-      return newValue;
-    });
-  };
+  const setNewValue: Dispatch<SetStateAction<T>> = useCallback(
+    (valueAction: SetStateAction<T>) => {
+      setValue((oldValue: T) => {
+        const newValue =
+          valueAction instanceof Function ? valueAction(oldValue) : valueAction;
+        window.localStorage.setItem(key, JSON.stringify(newValue));
+        return newValue;
+      });
+    },
+    [key]
+  );
 
   return [value, setNewValue];
 };
 
-export const useToggle = (initialValue: boolean): [boolean, () => void] => {
+export const useToggle = (
+  initialValue: boolean,
+  sideEffect = (toggleState: boolean) => {}
+): [boolean, () => void] => {
   const [value, setValue] = useState(initialValue);
-  const toggle = () => setValue((old: boolean) => !old);
+  const toggle = () =>
+    setValue((old: boolean) => {
+      const newValue = !old;
+      sideEffect(newValue);
+      return newValue;
+    });
   return [value, toggle];
 };

@@ -1,9 +1,15 @@
-import React, { useEffect, useState, ReactNode } from "react";
-import { useLocalStorage, useToggle } from "./hooks";
+import React, { useEffect, useState } from "react";
+
+import { useLocalStorage } from "./hooks";
 import * as R from "ramda";
-import styled from "styled-components";
-import { Button } from "./Common";
+import { Button, Buttons } from "./Common";
 import { Scale, Pitch, Mode, ScalesDB } from "./types";
+
+enum ScaleMode {
+  NOT_STARTED = "Not Started",
+  LEARNING = "Learning",
+  KNOWN = "Known"
+}
 
 interface Props {
   startMetronome: (bpm: number) => void;
@@ -31,9 +37,6 @@ const getScalesByFilter = (
   });
   return scales;
 };
-
-const getScales = (scalesDB: ScalesDB, mode: Mode): Scale[] =>
-  getScalesByFilter(scalesDB, s => s.mode === mode);
 
 const initScalesDB = (): ScalesDB => {
   const scalesDB: ScalesDB = {};
@@ -84,43 +87,27 @@ const initScalesDB = (): ScalesDB => {
   return scalesDB;
 };
 
-const initialScales: Scale[] = [];
-
-interface ToggleGroupProps {
-  title: ReactNode;
-  children: ReactNode;
-}
-
-const ToggleGroup = ({ title, children }: ToggleGroupProps) => {
-  const [on, toggle] = useToggle(false);
-  return (
-    <div>
-      <div className="is-grouped field has-addons">
-        <div
-          style={{ alignSelf: "center", fontWeight: "bold" }}
-          className="control is-expanded is-size-5"
-        >
-          {title}
-        </div>
-        <Button onClick={toggle}>{on ? "-" : "+"}</Button>
-      </div>
-      {on && children}
-    </div>
-  );
-};
-
 const ScalesGroup = ({
   pitch,
   mode,
   learning,
-  toggleLearning
-}: Scale & { toggleLearning: (pitch: Pitch, mode: Mode) => () => void }) => {
+  known,
+  toggleLearning,
+  toggleKnown
+}: Scale & { toggleLearning: () => void; toggleKnown: () => void }) => {
   return (
     <div className="is-grouped field has-addons">
-      <div className="is-size-5 control is-expanded">{pitch}</div>
-      <Button onClick={toggleLearning(pitch, mode)}>
-        {learning ? "Stop Learning" : "Start Learning"}
-      </Button>
+      <div className="is-size-5 control is-expanded">
+        {pitch} {mode}
+      </div>
+      <Buttons>
+        <Button classes={[known ? "is-info" : ""]} onClick={toggleKnown}>
+          Known
+        </Button>
+        <Button classes={[learning ? "is-link" : ""]} onClick={toggleLearning}>
+          Learning
+        </Button>
+      </Buttons>
     </div>
   );
 };
@@ -136,33 +123,37 @@ function shuffle<T>(a: Array<T>) {
 }
 
 interface LearnScalesProps {
-  filter: (s: Scale) => boolean;
   scalesDB: ScalesDB;
   addBPM: (s: Scale, n: number) => () => void;
   startMetronome: (bpm: number) => void;
-  stopMetronome: () => void;
+  reset: () => void;
+  scaleMode: ScaleMode;
 }
 
 const LearnScales = ({
-  filter,
   scalesDB,
   addBPM,
-  startMetronome,
-  stopMetronome
+  reset,
+  scaleMode,
+  startMetronome
 }: LearnScalesProps) => {
   const [scaleKeys, setScales] = useState<Array<[Mode, Pitch]>>(() =>
     shuffle(
-      getScalesByFilter(scalesDB, filter).map(({ mode, pitch }) => [
-        mode,
-        pitch
-      ])
+      getScalesByFilter(scalesDB, s => {
+        if (scaleMode === ScaleMode.LEARNING) {
+          return s.learning;
+        } else if (scaleMode === ScaleMode.KNOWN) {
+          return s.known;
+        }
+        return false;
+      }).map(({ mode, pitch }) => [mode, pitch])
     )
   );
   const nextScale = () => {
     setScales(old => {
       const nu = old.slice(1);
       if (nu.length === 0) {
-        stopMetronome();
+        reset();
       }
       return nu;
     });
@@ -177,96 +168,156 @@ const LearnScales = ({
     if (maybeScale !== undefined) {
       startMetronome(maybeScale.bpm);
     }
-  }, [maybeScale]);
-  const nextScaleText = scaleKeys.length > 1 ? "Next" : "Last One";
+  }, [maybeScale, startMetronome]);
+  const nextScaleText = scaleKeys.length > 1 ? "Next Scale" : "Finish";
 
+  // TODO - this error handling makes me sad, I should really do better.
   if (scaleKeys.length === 0) {
     return <div>No more scales</div>;
   }
   const scale = maybeScale!;
   const { mode, pitch, bpm } = scale!;
-  return (
-    <div className="">
-      <div>
-        {pitch} {mode} @ {bpm}
-      </div>
-      <Button style={{ flexGrow: 1 }} onClick={addBPM(scale, -1)}>
-        -
-      </Button>
 
-      <Button style={{ flexGrow: 1 }} onClick={addBPM(scale, 1)}>
-        +
-      </Button>
-      <Button classes={["is-right"]} onClick={nextScale}>
-        {nextScaleText}
-      </Button>
+  return (
+    <div>
+      <div
+        style={{ alignSelf: "center", fontWeight: "bold" }}
+        className="control is-expanded is-size-5"
+      >
+        {scaleMode}
+      </div>
+      <div style={{ display: "flex", marginBottom: "5px" }}>
+        <div style={{ alignSelf: "center", marginRight: "10px" }}>
+          {pitch} {mode} @ {bpm}bpm
+        </div>
+        <Buttons style={{ flexGrow: 1 }}>
+          <Button
+            classes={["is-danger", "is-outlined"]}
+            style={{ flexGrow: 1 }}
+            onClick={addBPM(scale, -10)}
+          >
+            -10
+          </Button>
+          <Button
+            classes={["is-danger", "is-outlined"]}
+            style={{ flexGrow: 1 }}
+            onClick={addBPM(scale, -1)}
+          >
+            -
+          </Button>
+          <Button
+            classes={["is-success", "is-outlined"]}
+            style={{ flexGrow: 1 }}
+            onClick={addBPM(scale, 1)}
+          >
+            +
+          </Button>
+          <Button
+            classes={["is-success", "is-outlined"]}
+            style={{ flexGrow: 1 }}
+            onClick={addBPM(scale, 10)}
+          >
+            +10
+          </Button>
+        </Buttons>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <Button onClick={reset}>Stop</Button>
+        <Button onClick={nextScale}>{nextScaleText}</Button>
+      </div>
     </div>
   );
 };
 
 const Scales = ({ startMetronome, stopMetronome, ...props }: Props) => {
-  // instead of saving the array, we should store them keyed by a unique
-  // identifier so we can have the scales go in any order.
   const [scalesDB, setScalesDB] = useLocalStorage(
     "@mjh/metronome/scales-db",
     initScalesDB
   );
 
-  const [started, toggleStarted] = useToggle(false);
+  const [scaleMode, setScaleMode] = useState(ScaleMode.NOT_STARTED);
 
-  const majorScales = getScales(scalesDB, Mode.Major);
-  const minorScales = getScales(scalesDB, Mode.Minor);
+  useEffect(() => {
+    if (scaleMode === ScaleMode.NOT_STARTED) {
+      stopMetronome();
+    }
+  }, [scaleMode, stopMetronome]);
 
-  const scaleGroups: [string, Scale[]][] = [
-    [
-      "Major scales (To Learn)",
-      majorScales.filter(({ learning }) => !learning)
-    ],
-    [
-      "Minor scales (To Learn)",
-      minorScales.filter(({ learning }) => !learning)
-    ],
-    ["Major scales (Learning)", majorScales.filter(({ learning }) => learning)],
-    ["Minor scales (Learning)", minorScales.filter(({ learning }) => learning)]
-  ];
-
-  const toggleLearning = (pitch: Pitch, mode: Mode) => () => {
+  const toggleLearning = ({ pitch, mode }: Scale) => () => {
     setScalesDB(R.over(R.lensPath([pitch, mode, "learning"]), R.not));
+  };
+
+  const toggleKnown = ({ pitch, mode }: Scale) => () => {
+    setScalesDB(R.over(R.lensPath([pitch, mode, "known"]), R.not));
   };
 
   const addBPM = ({ pitch, mode }: Scale, n: number) => () => {
     setScalesDB(R.over(R.lensPath([pitch, mode, "bpm"]), R.add(n)));
   };
 
-  const startStop = () => {
-    if (started) {
-      stopMetronome();
-    }
-    toggleStarted();
-  };
-
   return (
-    <div className="box">
-      <Button onClick={startStop}>{started ? "Stop" : "Start Learning"}</Button>
-      {!started &&
-        scaleGroups.map(([heading, scales]) => (
-          <ToggleGroup title={<div>{heading}</div>}>
-            {scales.map((scale: Scale) => (
+    <div className="box" style={{ marginTop: "10px" }}>
+      {scaleMode === ScaleMode.NOT_STARTED ? (
+        <div style={{ marginBottom: "5px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div
+              style={{ alignSelf: "center", fontWeight: "bold" }}
+              className="control is-expanded is-size-5"
+            >
+              Scales
+            </div>
+            <Buttons>
+              <Button
+                onClick={() => setScaleMode(ScaleMode.KNOWN)}
+                disabled={
+                  getScaleByFilter(scalesDB, s => s.known) === undefined
+                }
+                classes={["is-info", "is-outlined"]}
+              >
+                Start Known
+              </Button>
+              <Button
+                onClick={() => setScaleMode(ScaleMode.LEARNING)}
+                disabled={
+                  getScaleByFilter(scalesDB, s => s.learning) === undefined
+                }
+                classes={["is-link", "is-outlined"]}
+              >
+                Start Learning
+              </Button>
+            </Buttons>
+          </div>
+          <hr />
+
+          {getScalesByFilter(scalesDB, s => s.mode === Mode.Major).map(
+            (scale: Scale) => (
               <ScalesGroup
-                key={`${heading}-${scale.pitch}-${scale.mode}`}
+                key={`${scale.pitch}-${scale.mode}`}
                 {...scale}
-                toggleLearning={toggleLearning}
+                toggleLearning={toggleLearning(scale)}
+                toggleKnown={toggleKnown(scale)}
               />
-            ))}
-          </ToggleGroup>
-        ))}
-      {started && (
+            )
+          )}
+          <hr />
+          {getScalesByFilter(scalesDB, s => s.mode === Mode.Minor).map(
+            (scale: Scale) => (
+              <ScalesGroup
+                key={`${scale.pitch}-${scale.mode}`}
+                {...scale}
+                toggleLearning={toggleLearning(scale)}
+                toggleKnown={toggleKnown(scale)}
+              />
+            )
+          )}
+        </div>
+      ) : (
         <LearnScales
+          scaleMode={scaleMode}
           startMetronome={startMetronome}
-          stopMetronome={stopMetronome}
           addBPM={addBPM}
-          filter={(scale: Scale) => scale.learning}
           scalesDB={scalesDB}
+          reset={() => setScaleMode(ScaleMode.NOT_STARTED)}
         />
       )}
     </div>

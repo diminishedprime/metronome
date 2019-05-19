@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useState } from "react";
 import { over, set } from "ramda";
 import * as R from "ramda";
@@ -48,7 +48,7 @@ const makeInitialState = (): State => ({
 
 const Metronome = () => {
   const [playing, setPlaying] = useState(false);
-  const [audioContext, setAudioContext] = useState(() => new AudioContext());
+  const [audioContext, setAudioContext] = useState<AudioContext | undefined>();
 
   useEffect(() => {
     if (playing) {
@@ -75,7 +75,10 @@ const Metronome = () => {
       )
     );
 
-  const setBPM = (bpm: number) => setState(set(bpmL, R.clamp(1, 250, bpm)));
+  const setBPM = useCallback(
+    (bpm: number) => setState(set(bpmL, R.clamp(1, 250, bpm))),
+    [setState]
+  );
 
   const toggleSubDivision = (divisionIdx: number) => {
     setState(over(subDivisionsL(divisionIdx), R.not));
@@ -88,25 +91,28 @@ const Metronome = () => {
   );
   const toggleStart = () => {
     if (playing) {
-      setCurrentBeat(0);
+      setCurrentBeat(undefined);
     }
     setPlaying(R.not);
   };
 
-  const startMetronome = (bpm: number) => {
-    setBPM(bpm);
-    setPlaying(true);
-  };
+  const startMetronome = useCallback(
+    (bpm: number) => {
+      setBPM(bpm);
+      setPlaying(true);
+    },
+    [setPlaying, setBPM]
+  );
 
-  const stopMetronome = () => {
+  const stopMetronome = useCallback(() => {
     setPlaying(false);
-  };
+  }, []);
 
   const setSignature = (s: Signature) => {
     setState(set(signatureL, s));
   };
 
-  const [showScales, toggleScales] = useToggle(false);
+  const [showScales, toggleScales] = useToggle(true);
   const [showTuner, toggleTuner] = useToggle(false);
 
   const [updateAvailable, setUpdateAvailable] = useState(false);
@@ -118,8 +124,17 @@ const Metronome = () => {
     });
   });
 
+  const [showDial, toggleDial] = useToggle(true);
+
   return (
-    <div style={{ maxWidth: "500px", margin: "0 auto", padding: "10px" }}>
+    <div
+      style={{
+        maxWidth: "500px",
+        margin: "0 auto",
+        paddingLeft: "10px",
+        paddingRight: "10px"
+      }}
+    >
       {updateAvailable && (
         <section
           className="box is-grouped field has-addons"
@@ -136,12 +151,14 @@ const Metronome = () => {
         signature={signature}
         currentBeat={currentBeat}
       />
-      <section className="section">
-        <Dial addDiff={addDiff}>
-          <div className="has-text-centered is-size-1">{bpm}</div>
-          <TempoMarking bpm={bpm} />
-        </Dial>
-      </section>
+      {showDial && (
+        <section className="section">
+          <Dial addDiff={addDiff}>
+            <div className="has-text-centered is-size-1">{bpm}</div>
+            <TempoMarking bpm={bpm} />
+          </Dial>
+        </section>
+      )}
 
       <section className="section">
         <Buttons>
@@ -163,20 +180,33 @@ const Metronome = () => {
         <Scales startMetronome={startMetronome} stopMetronome={stopMetronome} />
       )}
       {showTuner && <Tuner />}
-      <nav
-        className="navbar is-fixed-bottom buttons is-right"
-        style={{ padding: "10px", margin: "0 auto", maxWidth: "500px" }}
-      >
-        <Button
-          classes={[showScales ? "is-primary" : ""]}
-          onClick={toggleScales}
+      <nav className="navbar is-fixed-bottom has-background-light">
+        <div
+          style={{
+            maxWidth: "500px",
+            margin: "0 auto",
+            paddingTop: "10px",
+            paddingRight: "10px"
+          }}
+          className=" buttons is-right"
         >
-          Scales
-        </Button>
-        <Button classes={[showTuner ? "is-primary" : ""]} onClick={toggleTuner}>
-          Tuner
-        </Button>
-        <div>{`v${process.env.REACT_APP_VERSION}`}</div>
+          <Button classes={[showDial ? "is-primary" : ""]} onClick={toggleDial}>
+            Dial
+          </Button>
+          <Button
+            classes={[showScales ? "is-primary" : ""]}
+            onClick={toggleScales}
+          >
+            Scales
+          </Button>
+          <Button
+            classes={[showTuner ? "is-primary" : ""]}
+            onClick={toggleTuner}
+          >
+            Tuner
+          </Button>
+          <div>{`v${process.env.REACT_APP_VERSION}`}</div>
+        </div>
       </nav>
     </div>
   );
