@@ -106,7 +106,7 @@ const Metronome = () => {
     setState(set(signatureL, s));
   };
 
-  const [showScales, toggleScales] = useToggle(true);
+  const [showScales, toggleScales] = useToggle(false);
   const [showTuner, toggleTuner] = useToggle(false);
 
   const [updateAvailable, setUpdateAvailable] = useState(false);
