@@ -106,7 +106,7 @@ const Metronome = () => {
     setState(set(signatureL, s));
   };
 
-  const [showScales, toggleScales] = useToggle(false);
+  const [showScales, toggleScales] = useToggle(true);
   const [showTuner, toggleTuner] = useToggle(false);
 
   const [updateAvailable, setUpdateAvailable] = useState(false);
@@ -136,12 +136,14 @@ const Metronome = () => {
         signature={signature}
         currentBeat={currentBeat}
       />
-      <section className="section">
-        <Dial addDiff={addDiff}>
-          <div className="has-text-centered is-size-1">{bpm}</div>
-          <TempoMarking bpm={bpm} />
-        </Dial>
-      </section>
+      {false && (
+        <section className="section">
+          <Dial addDiff={addDiff}>
+            <div className="has-text-centered is-size-1">{bpm}</div>
+            <TempoMarking bpm={bpm} />
+          </Dial>
+        </section>
+      )}
       <section className="section">
         <Buttons>
           <SubDivisions

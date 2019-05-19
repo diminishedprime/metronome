@@ -2,12 +2,13 @@ import { useState, Dispatch, SetStateAction } from "react";
 
 export const useLocalStorage = <T>(
   key: string,
-  initialValue: T | (() => T)
+  initialValue: T | (() => T),
+  override: boolean = false
 ): [T, Dispatch<SetStateAction<T>>] => {
   const [value, setValue] = useState(() => {
     let firstValue;
     const fromLocal = localStorage.getItem(key);
-    if (fromLocal !== null && fromLocal !== undefined) {
+    if (fromLocal !== null && fromLocal !== undefined && !override) {
       firstValue = JSON.parse(fromLocal);
     } else {
       firstValue =
