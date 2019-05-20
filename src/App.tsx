@@ -5,7 +5,7 @@ import * as R from "ramda";
 import TempoMarking from "./TempoMarking";
 import TimeSignature from "./TimeSignature";
 import { SchedulerState, Signature } from "./types";
-import { useMetronome } from "./metronome";
+import { useMetronome, useMetronome2 } from "./metronome";
 import TapIn from "./TapIn";
 import SubDivisions from "./SubDivisions";
 import Tuner from "./Tuner";
@@ -49,8 +49,11 @@ const makeInitialState = (): State => ({
 });
 
 const Metronome = () => {
-  const [playing, setPlaying] = useState(false);
   const [audioContext, setAudioContext] = useState<AudioContext | undefined>();
+  const metronome = useMetronome2(audioContext);
+  const {
+    state: { playing }
+  } = metronome;
 
   useEffect(() => {
     if (playing) {
@@ -69,7 +72,7 @@ const Metronome = () => {
     },
     setState
     // TODO(mjhamrick) - update this so it overrides if there's a major version bump.
-  ] = useLocalStorage("@mjh/metronome/schedulerState", makeInitialState);
+  ] = useLocalStorage("@mjh/metronome/schedulerState", makeInitialState, true);
 
   const addDiff = (diff: number) =>
     setState(
@@ -96,24 +99,19 @@ const Metronome = () => {
     schedulerState,
     audioContext
   );
+
   const toggleStart = () => {
     if (playing) {
       setCurrentBeat(undefined);
+      metronome.stop();
+    } else {
+      metronome.start();
     }
-    setPlaying(R.not);
   };
 
-  const startMetronome = useCallback(
-    (bpm: number) => {
-      setBPM(bpm);
-      setPlaying(true);
-    },
-    [setPlaying, setBPM]
-  );
+  const startMetronome = useCallback(metronome.start, []);
 
-  const stopMetronome = useCallback(() => {
-    setPlaying(false);
-  }, []);
+  const stopMetronome = useCallback(metronome.stop, []);
 
   /* const setSignature = (s: Signature) => {
    *   setState(set(signatureL, s));

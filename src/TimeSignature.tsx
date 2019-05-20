@@ -46,10 +46,11 @@ const TimeSignature = ({
                 beat === currentBeat
                 ? "has-background-primary"
                 : "has-background-light";
-            const subs = subDivisions;
+            /* const subs = subDivisions; */
+            const subs: SubDivision[] = [];
             return (
-                <div
-                    className={`column has-text-centered`}
+                    <div
+                        className={`column has-text-centered`}
                     key={beat}
                 >
                     <div className={`column ${bg}`}>{beat + 1}</div>
