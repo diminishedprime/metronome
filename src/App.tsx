@@ -20,7 +20,7 @@ interface State {
 }
 
 const subDivisionsL = (idx: number) =>
-  R.lensPath(["schedulerState", "subDivisions", idx, "on"]);
+  R.lensPath(["schedulerState", "signature", "subDivisions", idx, "on"]);
 
 const bpmL = R.lensPath(["schedulerState", "bpm"]);
 
@@ -31,18 +31,20 @@ const makeInitialState = (): State => ({
     scheduleAhead: 0.2,
     bpm: 120,
     signature: {
-      numerator: 4,
-      denominator: 4
-    },
-    subDivisions: [
-      { on: false, pitch: 10, divisions: 2, label: "2", gain: 1.0 },
-      { on: false, pitch: 20, divisions: 3, label: "3", gain: 1.0 },
-      { on: false, pitch: 30, divisions: 4, label: "4", gain: 1.0 },
-      { on: false, pitch: 40, divisions: 5, label: "5", gain: 1.0 }
-      /* { on: false, pitch: 50, divisions: 6, label: "6", gain: 1.0 },
-       * { on: false, pitch: 60, divisions: 7, label: "7", gain: 1.0 },
-       * { on: false, pitch: 70, divisions: 8, label: "8", gain: 1.0 } */
-    ]
+      numerator: 2,
+      denominator: 4,
+      // This need sto be the same length as numerator.
+      subDivisionOverrides: [[], []],
+      subDivisions: [
+        { on: false, pitch: 10, divisions: 2, label: "2", gain: 1.0 },
+        { on: false, pitch: 20, divisions: 3, label: "3", gain: 1.0 },
+        { on: false, pitch: 30, divisions: 4, label: "4", gain: 1.0 },
+        { on: false, pitch: 40, divisions: 5, label: "5", gain: 1.0 }
+        /* { on: false, pitch: 50, divisions: 6, label: "6", gain: 1.0 },
+         * { on: false, pitch: 60, divisions: 7, label: "7", gain: 1.0 },
+         * { on: false, pitch: 70, divisions: 8, label: "8", gain: 1.0 } */
+      ]
+    }
   }
 });
 
@@ -59,9 +61,14 @@ const Metronome = () => {
   const [
     {
       schedulerState,
-      schedulerState: { bpm, subDivisions, signature }
+      schedulerState: {
+        bpm,
+        signature,
+        signature: { subDivisions }
+      }
     },
     setState
+    // TODO(mjhamrick) - update this so it overrides if there's a major version bump.
   ] = useLocalStorage("@mjh/metronome/schedulerState", makeInitialState);
 
   const addDiff = (diff: number) =>
@@ -108,8 +115,12 @@ const Metronome = () => {
     setPlaying(false);
   }, []);
 
-  const setSignature = (s: Signature) => {
-    setState(set(signatureL, s));
+  /* const setSignature = (s: Signature) => {
+   *   setState(set(signatureL, s));
+   * };
+   */
+  const overSignature = (cb: (s: Signature) => Signature) => {
+    setState(over(signatureL, cb));
   };
 
   const [showScales, toggleScales] = useToggle(false);
@@ -147,7 +158,7 @@ const Metronome = () => {
         </section>
       )}
       <TimeSignature
-        setSignature={setSignature}
+        overSignature={overSignature}
         signature={signature}
         currentBeat={currentBeat}
       />

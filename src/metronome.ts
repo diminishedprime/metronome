@@ -52,7 +52,11 @@ const scheduleGroup = (
   setNextBeatTime: (time: number | "waiting") => void,
   audioContext: AudioContext
 ) => {
-  const { bpm, subDivisions, scheduleAhead } = schedulerState.current;
+  const {
+    bpm,
+    signature: { subDivisions },
+    scheduleAhead
+  } = schedulerState.current;
   const secondsPerBeat = 60.0 / bpm;
   const schedule = (beat: Beat) => {
     scheduleNote(audioContext, beat);

@@ -9,11 +9,12 @@ export interface SubDivision {
 export interface Signature {
   numerator: number;
   denominator: number;
+  subDivisionOverrides: Array<Array<SubDivision>>;
+  subDivisions: Array<SubDivision>;
 }
 
 export interface SchedulerState {
   bpm: number;
-  subDivisions: Array<SubDivision>;
   signature: Signature;
   scheduleAhead: number;
 }
