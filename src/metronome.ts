@@ -174,6 +174,58 @@ const useDisplayUpdater = (
   }, [nextBeatTime, audioContext, incCurrentBeat, playing, setNextBeatTime]);
 };
 
+// TODO - Update currentBeat to instead be something like
+// currentSubdivisionsforBeat.
+
+// One really neat thing I'd like to do with this is allow different
+// subDivisions per beat. i.e. a beat subdivided into 3, then the next beat
+// subdivided into 5
+
+// this isn't the point, but this also allows us to do something like 7/8 fairly
+// easily.
+
+// Right now I can't play 3 then 5 because I only have sub-divisions at the
+// measure level, but all I'll need to do is update the scheduler state to
+// include this and use that instead of the current subDivisions at the
+// scheduler level.
+
+// I should be able to store the same subDivisions data, but for each beat.
+
+// Instead of just keeping track of currentBeat of the numerator of the
+// timesignature, we want to keep track of the current subDivions of each
+// individual beat along with which one of them is active.
+
+// Data for each beat would look something like
+
+// interface CurrentBeatData {
+//   // there will always be an entry of 1: [true|false], but the other divisions
+//   // will either be set or not.
+//   isCurrent: boolean;
+//   [subDivision: number]: boolean[];
+// }
+
+// So a 2/4 measure might look something like this
+// [
+//   {
+//     isCurrent: true,
+//     2: [false, true],
+//     3: [false, false, true]
+//   },
+//   {
+//     isCurrent: false,
+//     2: [false, true],
+//     3: [false, false, true]
+//   }
+// ]
+
+// Incrementing this will be a bit tricker since we'll need to keep track of the
+// scheduled subdivision times as well so we know when to update current beat
+// data.
+
+// We should be able to do something close to what we were doing before, that is:
+
+
+
 export const useMetronome = (
   playing: boolean,
   schedulerState: SchedulerState,
