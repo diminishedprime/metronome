@@ -3,10 +3,11 @@ import * as R from "ramda";
 import styled from "styled-components";
 import { useToggle } from "./hooks";
 import { Button } from "./Common";
-import { Signature } from "./metronome";
+import { Signature, Division } from "./metronome";
 
 interface Props {
   signature: Signature;
+  activeSubDivisions: Division[][];
 }
 
 const SigColumn = styled.div`
@@ -20,7 +21,8 @@ const SigColumns = styled.div`
 `;
 
 const TimeSignature = ({
-  signature: { numerator, current: currentBeat, beats }
+  signature: { numerator, current: currentBeat },
+  activeSubDivisions
 }: Props) => {
   const [edit, toggleEdit] = useToggle(false);
   const set = (numerator: number, denominator = 4) => () => {
@@ -36,7 +38,7 @@ const TimeSignature = ({
         className="section is-mobile columns"
         onClick={toggleEdit}
       >
-        {beats.map(({ subDivisions }, beat) => {
+        {activeSubDivisions.map((subDivisions, beat) => {
           const bg =
             beat === currentBeat
               ? "has-background-primary"
@@ -44,14 +46,15 @@ const TimeSignature = ({
           return (
             <div className={`column has-text-centered`} key={beat}>
               <div className={`column ${bg}`}>{beat + 1}</div>
-              {subDivisions.map(({ divisions }) => {
+              {subDivisions.map(({ divisions, current }) => {
                 return (
                   <SigColumns
                     key={`d${divisions}`}
                     className="has-background-light"
                   >
                     {R.range(0, divisions).map((d, idx) => {
-                      const bg = "";
+                      const bg =
+                        current === idx ? "has-background-primary" : "";
                       return (
                         <SigColumn
                           key={`d${divisions}-${idx}`}
