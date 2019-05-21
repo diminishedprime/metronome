@@ -45,8 +45,7 @@ const TimeSignature = ({
               : "has-background-light";
           return (
             <div className={`column has-text-centered`} key={beat}>
-              <div className={`column ${bg}`}>{beat + 1}</div>
-              {subDivisions.map(({ divisions, current }) => {
+              {subDivisions.map(({ divisions, current }, beatIdx) => {
                 return (
                   <SigColumns
                     key={`d${divisions}`}
@@ -58,8 +57,11 @@ const TimeSignature = ({
                       return (
                         <SigColumn
                           key={`d${divisions}-${idx}`}
-                          className={bg}
-                        />
+                          className={`${bg} has-text-centered`}
+                          style={{ justifyContent: "center" }}
+                        >
+                          {beatIdx === 0 && beat + 1}
+                        </SigColumn>
                       );
                     })}
                   </SigColumns>

@@ -164,7 +164,7 @@ export interface Beat {
 export interface Signature {
   numerator: number;
   denominator: number;
-  current: number;
+  current: number | undefined;
   beats: Array<SignatureBeat>;
 }
 
@@ -211,29 +211,42 @@ export const useMetronome2 = (
   const [signature, setSignature] = useState<Signature>({
     numerator: 3,
     denominator: 4,
-    current: 0,
+    current: undefined,
     beats: [
       {
         subDivisions: [
+          { gain: 1.0, pitch: 220, divisions: 1, current: undefined },
           { gain: 1.0, pitch: 220, divisions: 2, current: undefined }
         ]
       },
       {
         subDivisions: [
+          { gain: 1.0, pitch: 220, divisions: 1, current: undefined },
           { gain: 1.0, pitch: 330, divisions: 3, current: undefined }
         ]
       },
       {
         subDivisions: [
+          { gain: 1.0, pitch: 220, divisions: 1, current: undefined },
           { gain: 1.0, pitch: 430, divisions: 4, current: undefined }
         ]
       }
     ]
   });
+  console.log("top level", { signature });
   const [activeSubDivisions, setActiveSubDivisions] = useState<Division[][]>([
-    [{ gain: 1.0, pitch: 220, divisions: 2, current: undefined }],
-    [{ gain: 1.0, pitch: 330, divisions: 3, current: undefined }],
-    [{ gain: 1.0, pitch: 440, divisions: 4, current: undefined }]
+    [
+      { gain: 1.0, pitch: 220, divisions: 1, current: undefined },
+      { gain: 1.0, pitch: 220, divisions: 2, current: undefined }
+    ],
+    [
+      { gain: 1.0, pitch: 220, divisions: 1, current: undefined },
+      { gain: 1.0, pitch: 330, divisions: 3, current: undefined }
+    ],
+    [
+      { gain: 1.0, pitch: 220, divisions: 1, current: undefined },
+      { gain: 1.0, pitch: 440, divisions: 4, current: undefined }
+    ]
   ]);
   const [nextBeatTime, setNextBeatTime] = useState();
   const buffer = useAudioBuffer(audioContext, click);
@@ -260,7 +273,9 @@ export const useMetronome2 = (
   const nextBeat = () => {
     setSignature(oldSignature => {
       // TODO replace numerator since it's just beats.length
-      const nextBeat = (oldSignature.current + 1) % oldSignature.numerator;
+      console.log({ oldSignature });
+      const { current = 0 } = oldSignature;
+      const nextBeat = (current + 1) % oldSignature.numerator;
       return Object.assign(oldSignature, { current: nextBeat });
     });
   };
@@ -325,8 +340,11 @@ export const useMetronome2 = (
       buffer !== undefined &&
       playing
     ) {
+      console.log("effect", { signature });
       const secondsPerBeat = 60.0 / bpm;
-      const currentDivisions = beats[currentBeatIdx].subDivisions;
+      // I might just be able to set this to the last beat?
+      const beatIdx = currentBeatIdx === undefined ? 0 : currentBeatIdx;
+      const currentDivisions = beats[beatIdx].subDivisions;
       const subDivisions = beatsFor(
         nextBeatTime,
         secondsPerBeat,
@@ -334,24 +352,25 @@ export const useMetronome2 = (
         buffer
       );
       const doClick = () => {
-        scheduleNote(audioContext, {
-          time: nextBeatTime,
-          gain: 1.0,
-          buffer,
-          pitch: 440,
-          divisions: 1,
-          idx: 0
-        });
+        nextBeat();
+        // scheduleNote(audioContext, {
+        //   time: nextBeatTime,
+        //   gain: 1.0,
+        //   buffer,
+        //   pitch: 440,
+        //   divisions: 1,
+        //   idx: 0
+        // });
         subDivisions.forEach(b => {
           runAtTime(audioContext, b.time, rafWindowTime, () => {
-            if (b.idx !== 0) {
+            if (b.divisions === 1 || b.idx !== 0) {
               scheduleNote(audioContext, b);
             }
-            setCurrentSubDivision(currentBeatIdx, b.divisions, b.idx);
+
+            setCurrentSubDivision(beatIdx, b.divisions, b.idx);
           });
         });
         setNextBeatTime(R.add(secondsPerBeat));
-        nextBeat();
         // I think I can click and also schedule the subdivisions here.
       };
       const rafWindowTime = 0.1;
