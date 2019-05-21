@@ -1,9 +1,7 @@
 import {
   useEffect,
-  useRef,
   useState,
   useCallback,
-  MutableRefObject,
   Dispatch,
   SetStateAction
 } from "react";
@@ -25,8 +23,8 @@ const scheduleNote = (
   sound.connect(volume);
   volume.connect(audioContext.destination);
 
-  const now = audioContext.currentTime;
-  const difference = now - time;
+  // const now = audioContext.currentTime;
+  // const difference = now - time;
   // console.log("Scheduling a note for: ", { difference });
   sound.start(time);
 };
@@ -34,17 +32,17 @@ const scheduleNote = (
 const beatsFor = (
   startOfBeatTime: number,
   secondsPerBeat: number,
-  divisions: SignatureBeat["subDivisions"],
+  divisions: Divisions[],
   buffer: AudioBuffer
 ): Array<Beat> => {
-  return divisions.reduce((acc: Beat[], { divisions, pitch, gain }) => {
+  return divisions.reduce((acc: Beat[], divisions) => {
     const noteOffset = secondsPerBeat / divisions;
     const newBeats = R.range(0, divisions).map((idx: number) => {
       const time = startOfBeatTime + idx * noteOffset;
       const beat: Beat = {
         time,
-        pitch,
-        gain: gain * 0.5,
+        pitch: 220,
+        gain: 1.0 * 0.5,
         buffer,
         divisions,
         idx
@@ -69,14 +67,6 @@ const useAudioBuffer = (
     }
   }, [url, audioContext]);
   return buffer;
-};
-
-const useMutable = <T>(dep: T): MutableRefObject<T> => {
-  const mutableRef = useRef<T>(dep);
-  useEffect(() => {
-    mutableRef.current = dep;
-  }, [dep]);
-  return mutableRef;
 };
 
 const runAtTime = (
@@ -164,7 +154,6 @@ export interface Beat {
 export interface Signature {
   numerator: number;
   denominator: number;
-  current: number | undefined;
   beats: Array<SignatureBeat>;
 }
 
@@ -176,7 +165,7 @@ export interface Division {
 }
 
 export interface SignatureBeat {
-  subDivisions: Array<Division>;
+  divisions: Array<Divisions>;
 }
 
 // TODO(mjhamrick) - If i find those types for time, beatTime, and the number[] should both be time.
@@ -203,55 +192,53 @@ interface Metronome {
   state: State;
 }
 
+const resetActiveSubDivisions = (beats: SignatureBeat[]) => {
+  return beats.map((beat: SignatureBeat) => {
+    return beat.divisions.map((divisions: Divisions) => ({
+      divisions,
+      current: undefined,
+      pitch: 220,
+      gain: 1.0
+    }));
+  });
+};
+
 export const useMetronome2 = (
   audioContext: AudioContext | undefined
 ): Metronome => {
   const [playing, setPlaying] = useState(false);
   const [bpm, setBPM] = useState(90);
-  const [signature, setSignature] = useState<Signature>({
+  const [currentBeatIdx, setCurrentBeatIdx] = useState<number>();
+  const [signature] = useState<Signature>({
     numerator: 3,
     denominator: 4,
-    current: undefined,
-    beats: [
-      {
-        subDivisions: [
-          { gain: 1.0, pitch: 220, divisions: 1, current: undefined },
-          { gain: 1.0, pitch: 220, divisions: 2, current: undefined }
-        ]
-      },
-      {
-        subDivisions: [
-          { gain: 1.0, pitch: 220, divisions: 1, current: undefined },
-          { gain: 1.0, pitch: 330, divisions: 3, current: undefined }
-        ]
-      },
-      {
-        subDivisions: [
-          { gain: 1.0, pitch: 220, divisions: 1, current: undefined },
-          { gain: 1.0, pitch: 430, divisions: 4, current: undefined }
-        ]
-      }
-    ]
+    beats: [{ divisions: [1, 2] }, { divisions: [1, 3] }, { divisions: [1, 4] }]
   });
-  console.log("top level", { signature });
-  const [activeSubDivisions, setActiveSubDivisions] = useState<Division[][]>([
-    [
-      { gain: 1.0, pitch: 220, divisions: 1, current: undefined },
-      { gain: 1.0, pitch: 220, divisions: 2, current: undefined }
-    ],
-    [
-      { gain: 1.0, pitch: 220, divisions: 1, current: undefined },
-      { gain: 1.0, pitch: 330, divisions: 3, current: undefined }
-    ],
-    [
-      { gain: 1.0, pitch: 220, divisions: 1, current: undefined },
-      { gain: 1.0, pitch: 440, divisions: 4, current: undefined }
-    ]
-  ]);
+  const [activeSubDivisions, setActiveSubDivisions] = useState<Division[][]>(
+    resetActiveSubDivisions(signature.beats)
+  );
   const [nextBeatTime, setNextBeatTime] = useState();
+
   const buffer = useAudioBuffer(audioContext, click);
 
-  const { beats, current: currentBeatIdx } = signature;
+  const { numerator, beats } = signature;
+
+  useEffect(() => {
+    if (currentBeatIdx !== undefined && !playing) {
+      setCurrentBeatIdx(undefined);
+      // TODO - there's probably a better way to do this, but this works for
+      // now. I need a clean way to tell a scheduled note that it shouldn't play
+      // after all.
+      setTimeout(() => {
+        console.log("timeout!");
+        setActiveSubDivisions(resetActiveSubDivisions(beats));
+      }, (60 / bpm) * 2000 + 100);
+    }
+  }, [playing, bpm, currentBeatIdx, beats]);
+
+  useEffect(() => {
+    setActiveSubDivisions(resetActiveSubDivisions(beats));
+  }, [beats]);
 
   useEffect(() => {
     if (playing && audioContext !== undefined) {
@@ -270,22 +257,19 @@ export const useMetronome2 = (
     [setPlaying]
   );
 
-  const nextBeat = () => {
-    setSignature(oldSignature => {
-      // TODO replace numerator since it's just beats.length
-      console.log({ oldSignature });
-      const { current = 0 } = oldSignature;
-      const nextBeat = (current + 1) % oldSignature.numerator;
-      return Object.assign(oldSignature, { current: nextBeat });
+  const nextBeat = useCallback(() => {
+    setCurrentBeatIdx((current = 0) => {
+      const nextBeat = (current + 1) % numerator;
+      return nextBeat;
     });
-  };
+  }, [numerator]);
 
+  // TODO - lol
   const setCurrentSubDivision = (
     currentBeatIdx: number,
     divisions: Divisions,
     idx: number
   ) => {
-    console.log({ currentBeatIdx, divisions, idx });
     // reset the not current beat ones.
     setActiveSubDivisions(oldActiveSubs => {
       const otherLenses = R.range(0, oldActiveSubs.length)
@@ -332,6 +316,7 @@ export const useMetronome2 = (
     setPlaying(false);
     setNextBeatTime(undefined);
   }, [setPlaying]);
+
   // The actual metronome bits.
   useEffect(() => {
     if (
@@ -340,11 +325,11 @@ export const useMetronome2 = (
       buffer !== undefined &&
       playing
     ) {
-      console.log("effect", { signature });
       const secondsPerBeat = 60.0 / bpm;
       // I might just be able to set this to the last beat?
       const beatIdx = currentBeatIdx === undefined ? 0 : currentBeatIdx;
-      const currentDivisions = beats[beatIdx].subDivisions;
+      const currentDivisions = beats[beatIdx].divisions;
+
       const subDivisions = beatsFor(
         nextBeatTime,
         secondsPerBeat,

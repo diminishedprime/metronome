@@ -21,7 +21,7 @@ const SigColumns = styled.div`
 `;
 
 const TimeSignature = ({
-  signature: { numerator, current: currentBeat },
+  signature: { numerator },
   activeSubDivisions
 }: Props) => {
   const [edit, toggleEdit] = useToggle(false);
@@ -39,10 +39,6 @@ const TimeSignature = ({
         onClick={toggleEdit}
       >
         {activeSubDivisions.map((subDivisions, beat) => {
-          const bg =
-            beat === currentBeat
-              ? "has-background-primary"
-              : "has-background-light";
           return (
             <div className={`column has-text-centered`} key={beat}>
               {subDivisions.map(({ divisions, current }, beatIdx) => {
