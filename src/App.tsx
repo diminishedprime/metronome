@@ -52,21 +52,21 @@ const Metronome = () => {
   const [audioContext, setAudioContext] = useState<AudioContext | undefined>();
   const metronome = useMetronome2(audioContext);
   const {
-    state: { playing }
+    state: { playing, signature }
   } = metronome;
 
   useEffect(() => {
-    if (playing) {
+    // Initialize AudioContext as a singleton on button click.
+    if (playing && audioContext === undefined) {
       setAudioContext(new AudioContext());
     }
-  }, [playing]);
+  }, [playing, audioContext]);
 
   const [
     {
       schedulerState,
       schedulerState: {
         bpm,
-        signature,
         signature: { subDivisions }
       }
     },
@@ -155,11 +155,7 @@ const Metronome = () => {
           <Button onClick={() => window.location.reload()}>Refresh</Button>
         </section>
       )}
-      <TimeSignature
-        overSignature={overSignature}
-        signature={signature}
-        currentBeat={currentBeat}
-      />
+      <TimeSignature signature={signature} />
       {showDial && (
         <section className="section">
           <Dial addDiff={addDiff}>

@@ -25,24 +25,29 @@ const scheduleNote = (
   sound.connect(volume);
   volume.connect(audioContext.destination);
 
+  const now = audioContext.currentTime;
+  const difference = now - time;
+  console.log("Scheduling a note for: ", { difference });
   sound.start(time);
 };
 
 const beatsFor = (
   startOfBeatTime: number,
   secondsPerBeat: number,
-  { divisions, on, pitch, gain }: SubDivision,
+  divisions: SignatureBeat["subDivisions"],
   buffer: AudioBuffer
 ): Array<Beat> => {
-  if (on) {
-    const noteOffset = secondsPerBeat / divisions;
-
-    return R.range(1, divisions).map(division => {
-      const time = startOfBeatTime + division * noteOffset;
-      return { time, pitch, gain: gain * 0.5, buffer };
-    });
-  }
-  return [];
+  return Object.values(divisions).reduce(
+    (acc: Beat[], { divisions, pitch, gain }) => {
+      const noteOffset = secondsPerBeat / divisions;
+      const newBeats = R.range(1, divisions).map(division => {
+        const time = startOfBeatTime + division * noteOffset;
+        return { time, pitch, gain: gain * 0.5, buffer };
+      });
+      return acc.concat(newBeats);
+    },
+    []
+  );
 };
 
 const useAudioBuffer = (
@@ -69,200 +74,27 @@ const useMutable = <T>(dep: T): MutableRefObject<T> => {
   return mutableRef;
 };
 
-const scheduleGroup = (
-  nextNoteTimeRef: MutableRefObject<number>,
-  schedulerState: MutableRefObject<SchedulerState>,
-  buffer: AudioBuffer | undefined,
-  setNextBeatTime: (time: number | "waiting") => void,
-  audioContext: AudioContext
+const runAtTime = (
+  audioContext: AudioContext,
+  timeToRun: number,
+  rafWindowTime: number,
+  callback: () => void
 ) => {
-  const {
-    bpm,
-    signature: { subDivisions },
-    scheduleAhead
-  } = schedulerState.current;
-  const secondsPerBeat = 60.0 / bpm;
-  const schedule = (beat: Beat) => {
-    scheduleNote(audioContext, beat);
-  };
-  if (nextNoteTimeRef.current < audioContext.currentTime + scheduleAhead) {
+  const now = audioContext.currentTime;
+  if (timeToRun <= now) {
+    callback();
+  } else if (timeToRun <= now + rafWindowTime) {
+    // retry every frame until the very first frame in the correct timestamp
+    window.requestAnimationFrame(() =>
+      runAtTime(audioContext, timeToRun, rafWindowTime, callback)
+    );
+  } else {
+    const sleepTime = ((timeToRun - rafWindowTime - now) / 2) * 1000;
+    setTimeout(
+      () => runAtTime(audioContext, timeToRun, rafWindowTime, callback),
+      sleepTime
+    );
   }
-  while (nextNoteTimeRef.current < audioContext.currentTime + scheduleAhead) {
-    const nextNoteTime = nextNoteTimeRef.current;
-    nextNoteTimeRef.current += secondsPerBeat;
-    // Adds the scheduled note so the gui can refresh at the right time.
-    setNextBeatTime(nextNoteTime);
-    // Quarter Note
-    scheduleNote(audioContext, {
-      time: nextNoteTime,
-      pitch: 0,
-      gain: 0.5,
-      buffer: buffer!
-    });
-    // Subdivisions
-    for (const subDivision of subDivisions) {
-      const beats = beatsFor(
-        nextNoteTime,
-        secondsPerBeat,
-        subDivision,
-        buffer!
-      );
-      beats.forEach(schedule);
-    }
-  }
-};
-
-const useScheduler = (
-  audioContext: AudioContext | undefined,
-  playing: boolean,
-  bpm: number,
-  signature: Signature
-) => {
-  // TODO - I should probably find some better types for dealing with time.
-  // TODO - nextBeatDivisions probably needs to be wrapped in a ref.
-  // TODO - bpm probably needs to be wrapped in a ref
-  const lookAhead = 0.2;
-  const intervalTime: number | undefined = playing
-    ? (lookAhead * 1000) / 2
-    : undefined;
-  const secondsPerBeat = 60.0 / bpm;
-
-  const buffer = useAudioBuffer(audioContext, click);
-  const [nextBeatDivisions, setNextBeatDivisions] = useState<
-    NextBeatDivisions
-  >();
-  const [currentBeat, setCurrentBeat] = useState<number>();
-
-  useEffect(() => {
-    console.log("this effect");
-    if (playing && currentBeat === undefined) {
-      setCurrentBeat(0);
-    }
-    if (
-      playing &&
-      nextBeatDivisions === undefined &&
-      currentBeat !== undefined
-    ) {
-      const { subDivisions } = signature;
-      const divisionsForBeat = subDivisions[currentBeat];
-      setNextBeatDivisions(divisionsForBeat);
-    }
-  }, [playing, currentBeat]);
-
-  const [scheduledUpTo, setScheduledUpTo] = useState<number>();
-
-  useEffect(() => {
-    if (playing && audioContext !== undefined) {
-      // Initialize to 0.3 seconds in the future to make faster tempos feel less
-      // sudden.
-      setScheduledUpTo(audioContext.currentTime + 0.3);
-    }
-  }, [scheduledUpTo, playing]);
-
-  useEffect(() => {
-    console.log("useScheduleAhead2 effect ran");
-    if (
-      playing &&
-      audioContext !== undefined &&
-      buffer !== undefined &&
-      nextBeatDivisions !== undefined &&
-      scheduledUpTo !== undefined
-    ) {
-      const now = audioContext.currentTime;
-      let scheduleTil = now + lookAhead;
-      // Schedule the entire next beat.
-      if (scheduleTil > scheduledUpTo) {
-        console.log("scheduleTil was greater than scheduledUpTo");
-        let max = now;
-        const baseBeat = { pitch: 440, gain: 1.0, buffer };
-        nextBeatDivisions.map(divisions => {
-          const noteOffset = secondsPerBeat / divisions;
-          if (divisions === 1) {
-            scheduleNote(audioContext, { time: now, ...baseBeat });
-          } else {
-            R.range(1, divisions).map(division => {
-              const time = now + division * noteOffset;
-              max = Math.max(max, time);
-              scheduleNote(audioContext, { time, ...baseBeat });
-            });
-          }
-        });
-        setScheduledUpTo(max);
-      }
-      // TODO - add a setTimeout here to change a value that will make this hook
-      // run again before all of the scheduled notes are done. The obvious
-      // amount of time would be some fraction of a single beat, but I'm not
-      // sure the exact amount that makes sense.
-    } else {
-      console.log({ playing });
-      console.log({ audioContext });
-      console.log({ buffer });
-      console.log({ nextBeatDivisions });
-      console.log("\n\n");
-    }
-  }, [audioContext, playing, intervalTime, bpm, buffer, nextBeatDivisions]);
-};
-
-const useScheduleAhead = (
-  playing: boolean,
-  schedulerState: SchedulerState,
-  setNextBeatTime: (time: number | "waiting") => void,
-  audioContext: AudioContext | undefined
-) => {
-  const { scheduleAhead } = schedulerState;
-  const buffer = useAudioBuffer(audioContext, click);
-  const schedulerStateRef = useMutable(schedulerState);
-  const delay = playing ? (scheduleAhead * 1000) / 2 : undefined;
-  const nextNoteTimeRef = useRef(-100);
-
-  useEffect(() => {
-    if (delay !== undefined && audioContext !== undefined) {
-      // TODO - there's something fishy going on here.
-      nextNoteTimeRef.current = audioContext.currentTime + 0.3;
-      const tick = () => {
-        scheduleGroup(
-          nextNoteTimeRef,
-          schedulerStateRef,
-          buffer,
-          setNextBeatTime,
-          audioContext
-        );
-      };
-      tick();
-      const id = setInterval(tick, delay);
-      return () => {
-        clearInterval(id);
-      };
-    }
-  }, [delay, buffer, schedulerStateRef, setNextBeatTime, audioContext]);
-};
-
-const useDisplayUpdater = (
-  playing: boolean,
-  audioContext: AudioContext | undefined,
-  nextBeatTime: number | "waiting",
-  setNextBeatTime: (time: number | "waiting") => void,
-  incCurrentBeat: () => void
-) => {
-  useEffect(() => {
-    if (audioContext !== undefined && playing) {
-      let animationFrame: number;
-      const tick = () => {
-        loop();
-        const now = audioContext.currentTime;
-        if (nextBeatTime !== "waiting" && now <= nextBeatTime) {
-          setNextBeatTime("waiting");
-          incCurrentBeat();
-        }
-      };
-      const loop = () => {
-        animationFrame = requestAnimationFrame(tick);
-      };
-
-      loop();
-      return () => cancelAnimationFrame(animationFrame);
-    }
-  }, [nextBeatTime, audioContext, incCurrentBeat, playing, setNextBeatTime]);
 };
 
 // TODO - Update currentBeat to instead be something like
@@ -288,7 +120,7 @@ const useDisplayUpdater = (
 
 // Data for each beat would look something like
 
-// interface CurrentBeatData {
+// interface SignatureBeatData {
 //   // there will always be an entry of 1: [true|false], but the other divisions
 //   // will either be set or not.
 //   isCurrent: boolean;
@@ -315,21 +147,25 @@ const useDisplayUpdater = (
 
 // We should be able to do something close to what we were doing before, that is:
 
-interface Signature {
+export interface Signature {
   numerator: number;
   denominator: number;
-  // first array is numerator entries long, the second one is an array of the
-  // splits for the beat.
-  subDivisions: Array<Array<Divisions>>;
+  current: number;
+  beats: Array<SignatureBeat>;
 }
 
-interface CurrentBeat {
-  beat: number;
-  subDivisions: { [subdivision: number]: boolean[] };
+export interface Division {
+  gain: number;
+  pitch: number;
+  divisions: Divisions;
+}
+
+export interface SignatureBeat {
+  subDivisions: Array<Division>;
 }
 
 // TODO(mjhamrick) - If i find those types for time, beatTime, and the number[] should both be time.
-type Divisions = 1 | 2 | 3 | 4 | 5 | 6;
+export type Divisions = 1 | 2 | 3 | 4 | 5 | 6;
 // Numbers aren't right, but this is the idea.
 // [[1, [3.0]], [2, [3.0, 3.45]], [3, [3.0, 3.3, 3.9]]]
 type NextBeatDivisions = Array<Divisions>;
@@ -337,7 +173,7 @@ type NextBeatDivisions = Array<Divisions>;
 interface State {
   bpm: number;
   playing: boolean;
-  currentBeat?: CurrentBeat;
+  currentBeat?: SignatureBeat;
   nextBeatDivisions?: NextBeatDivisions;
   signature: Signature;
 }
@@ -355,13 +191,30 @@ export const useMetronome2 = (
   audioContext: AudioContext | undefined
 ): Metronome => {
   const [playing, setPlaying] = useState(false);
-  const [bpm, setBPM] = useState(60);
-  const [currentBeat, setCurrentBeat] = useState<CurrentBeat>();
+  const [bpm, setBPM] = useState(120);
   const [signature, setSignature] = useState<Signature>({
     numerator: 2,
     denominator: 4,
-    subDivisions: [[1], [1]]
+    current: 0,
+    beats: [
+      {
+        subDivisions: [{ gain: 1.0, pitch: 220, divisions: 2 }]
+      },
+      { subDivisions: [{ gain: 1.0, pitch: 330, divisions: 3 }] }
+    ]
   });
+  const [nextBeatTime, setNextBeatTime] = useState();
+  const buffer = useAudioBuffer(audioContext, click);
+
+  const { beats, current: currentBeatIdx } = signature;
+
+  useEffect(() => {
+    if (playing && audioContext !== undefined) {
+      // Initialize the first beat time to 300 ms in the future.
+      setNextBeatTime(audioContext.currentTime + 0.3);
+    }
+  }, [audioContext, playing]);
+
   const start = useCallback(
     (bpm?: number) => {
       if (bpm !== undefined) {
@@ -372,19 +225,58 @@ export const useMetronome2 = (
     [setPlaying]
   );
 
+  const nextBeat = () => {
+    setSignature(oldSignature => {
+      const nextBeat = (oldSignature.current + 1) % oldSignature.numerator;
+      return Object.assign(oldSignature, { current: nextBeat });
+    });
+  };
+
   const stop = useCallback(() => {
     setPlaying(false);
+    setNextBeatTime(undefined);
   }, [setPlaying]);
-
-  useScheduler(audioContext, playing, bpm, signature);
+  // The actual metronome bits.
+  useEffect(() => {
+    if (
+      audioContext !== undefined &&
+      nextBeatTime !== undefined &&
+      buffer !== undefined &&
+      playing
+    ) {
+      console.log({ currentBeatIdx });
+      const secondsPerBeat = 60.0 / bpm;
+      const currentDivisions = beats[currentBeatIdx].subDivisions;
+      console.log({ currentDivisions });
+      const subDivisions = beatsFor(
+        nextBeatTime,
+        secondsPerBeat,
+        currentDivisions,
+        buffer
+      );
+      const doClick = () => {
+        scheduleNote(audioContext, {
+          time: nextBeatTime,
+          gain: 1.0,
+          buffer,
+          pitch: 440
+        });
+        subDivisions.forEach(b => scheduleNote(audioContext, b));
+        setNextBeatTime(R.add(secondsPerBeat));
+        nextBeat();
+        // I think I can click and also schedule the subdivisions here.
+      };
+      const rafWindowTime = 0.1;
+      runAtTime(audioContext, nextBeatTime, rafWindowTime, doClick);
+    }
+  }, [audioContext, nextBeatTime, playing, beats, buffer]);
 
   // TODO - add in the display updater.
 
   const state: State = {
     bpm,
     playing,
-    signature,
-    currentBeat
+    signature
   };
 
   return {
@@ -403,7 +295,7 @@ export const useMetronome = (
   // const [nextBeatTime, setNextBeatTime] = useState<number | "waiting">(
   //   "waiting"
   // );
-  const [currentBeat, setCurrentBeat] = useState<number | undefined>();
+  const [currentBeat, setSignatureBeat] = useState<number | undefined>();
   // const {
   //   signature: { numerator }
   // } = schedulerState;
@@ -414,9 +306,9 @@ export const useMetronome = (
   //   }
   // }, [playing]);
 
-  // const incCurrentBeat = useCallback(
+  // const incSignatureBeat = useCallback(
   //   () =>
-  //     setCurrentBeat(oldBeat => {
+  //     setSignatureBeat(oldBeat => {
   //       if (oldBeat === undefined) {
   //         return 0;
   //       }
@@ -435,8 +327,8 @@ export const useMetronome = (
   //   audioContext,
   //   nextBeatTime,
   //   setNextBeatTime,
-  //   incCurrentBeat
+  //   incSignatureBeat
   // );
 
-  return [currentBeat, setCurrentBeat];
+  return [currentBeat, setSignatureBeat];
 };
