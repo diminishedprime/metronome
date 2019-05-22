@@ -78,10 +78,15 @@ const scheduleGroup = (
 ) => {
   const {
     bpm,
+    signature,
     signature: { beats }
   } = state.current;
   const beatIdx = beatToSchedule.current;
-  const currentBeat = beats[beatToSchedule.current].divisions;
+  const currentBeat = beats[beatToSchedule.current];
+  if (currentBeat === undefined) {
+    return;
+  }
+  const divisions = currentBeat.divisions;
   const secondsPerBeat = 60.0 / bpm;
   // TODO - this isn't really nextNoteTime, it's something like scheduledUpTo.
   while (nextNoteTime.current < audioContext.currentTime + scheduleAhead) {
@@ -89,7 +94,7 @@ const scheduleGroup = (
     const beatData = beatsFor(
       nextNoteTime.current,
       secondsPerBeat,
-      currentBeat,
+      divisions,
       buffer,
       beatIdx
     );
@@ -97,17 +102,22 @@ const scheduleGroup = (
       // TODO - I think I shouldn't play all of the beat 1's
       scheduleNote(audioContext, beat);
       runAtTime(audioContext, beat.time, () => {
-        console.log("running");
-        if (!cancelUIUpdateRef.current) {
+        // We only want to update the UI if important assumptions haven't
+        // changed in the time this was scheduled.
+        const shouldStillUpdate = state.current.signature === signature; // stateBeforeSchedule === state.current;
+        if (shouldStillUpdate) {
           setDivisions((oldDivisions: t.Divisions) => {
             const newDivisions = resetActiveSubDivisions(
               beats,
               beatIdx,
               oldDivisions[beatIdx]
             );
-            newDivisions[beatIdx].find(
+            const thing = newDivisions[beatIdx].find(
               d => d.divisions === beat.divisions
-            )!.current = beat.divisionIndex;
+            );
+            if (thing !== undefined) {
+              thing.current = beat.divisionIndex;
+            }
             return newDivisions;
           });
         }
@@ -219,7 +229,6 @@ export const useMetronome = (
   const [divisions, setDivisions] = useState<t.Division[][]>(
     resetActiveSubDivisions(signature.beats)
   );
-  const cancelUIUpdateRef = useRef(false);
 
   const state: t.State = {
     bpm,
@@ -227,8 +236,10 @@ export const useMetronome = (
     signature,
     divisions
   };
-
   const { beats } = signature;
+
+  const cancelUIUpdateRef = useRef(false);
+  const numeratorRef = useRef(beats.length);
 
   const addBPM = (bpmToAdd: number) => {
     setBPM(R.add(bpmToAdd));
@@ -265,23 +276,18 @@ export const useMetronome = (
   }, [setPlaying]);
 
   const nextBeat = useCallback(() => {
-    setBeatToSchedule(current => (current + 1) % beats.length);
-  }, [beats]);
+    setBeatToSchedule(current => (current + 1) % numeratorRef.current);
+  }, []);
 
   // Effects for updating state.
-  useEffect(() => {
-    if (!playing) {
-      cancelUIUpdateRef.current = true;
-    } else {
-      cancelUIUpdateRef.current = false;
-    }
-  }, [playing]);
 
   // If the time signature changes, we need to reset the active subdivisions.
   useEffect(() => {
     // TODO - This would be fancier if when the next beat can still happen, it
     // didn't clear the active beat in the UI.
     setDivisions(resetActiveSubDivisions(beats));
+    setBeatToSchedule(0);
+    numeratorRef.current = beats.length;
   }, [beats, signature]);
 
   useEffect(() => {
