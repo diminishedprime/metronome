@@ -10,9 +10,15 @@ interface ButtonProps
 }
 
 export const Button = ({ classes = [], children, ...props }: ButtonProps) => {
-  const className = `button ${classes.join(" ")}`;
+  const className = `button ${classes.join(" ")} ${
+    props["className"] === undefined ? "" : props["className"]
+  } `;
   const allProps = Object.assign(props, { className });
-  return <button {...allProps}>{children}</button>;
+  return (
+    <button {...allProps} {...props}>
+      {children}
+    </button>
+  );
 };
 
 export const GrowButton = styled(Button)`

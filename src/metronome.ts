@@ -78,7 +78,6 @@ const scheduleGroup = (
 ) => {
   const {
     bpm,
-    divisions,
     signature: { beats }
   } = state.current;
   const beatIdx = beatToSchedule.current;
@@ -170,7 +169,7 @@ const useScheduleAhead = (
         clearInterval(id);
       };
     }
-  }, [delay, buffer, audioContext]);
+  }, [delay, buffer, audioContext, cancelUIUpdateRef, nextBeat, setDivisions]);
 };
 
 const runAtTime = (
@@ -280,15 +279,17 @@ export const useMetronome = (
 
   // If the time signature changes, we need to reset the active subdivisions.
   useEffect(() => {
+    // TODO - This would be fancier if when the next beat can still happen, it
+    // didn't clear the active beat in the UI.
     setDivisions(resetActiveSubDivisions(beats));
-  }, [signature]);
+  }, [beats, signature]);
 
   useEffect(() => {
     if (!playing) {
       setBeatToSchedule(0);
       setDivisions(resetActiveSubDivisions(beats));
     }
-  }, [playing]);
+  }, [playing, beats]);
 
   useScheduleAhead(
     audioContext,

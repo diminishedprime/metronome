@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
-import * as R from "ramda";
 import styled from "styled-components";
 import TempoMarking from "./TempoMarking";
 import TimeSignature from "./TimeSignature";

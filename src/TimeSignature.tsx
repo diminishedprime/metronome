@@ -28,7 +28,6 @@ const TimeSignature = ({
   setSignature,
   activeSubDivisions
 }: Props) => {
-  const numerator = beats.length;
   const [edit, toggleEdit] = useToggle(false);
   return (
     <>
