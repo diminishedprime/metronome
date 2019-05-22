@@ -144,7 +144,8 @@ export interface Beat {
   gain: number;
   buffer: AudioBuffer;
   divisions: DivisionOptions;
-  idx: number;
+  divisionIndex: number;
+  currentBeat: number;
 }
 
 export interface SignatureBeat {
@@ -171,6 +172,11 @@ export interface State {
   bpm: number;
   playing: boolean;
   signature: Signature;
+  // The first index of divisions is always { divisions: 1 }, so it will either
+  // be current: 0, or current: undefined depending on whether or not it is the
+  // current beat.
+  // TODO - I should add an actual assert on this somewhere. It's bound to bite
+  // me eventually.
   divisions: Divisions;
 }
 
@@ -179,7 +185,7 @@ export interface Metronome {
   start: (bpm?: number) => void;
   stop: () => void;
   setBPM: React.Dispatch<React.SetStateAction<number>>;
+  setSignature: (numerator: number, denominator?: number) => void;
   addBPM: (bpmToAdd: number) => void;
-  setDivisions: React.Dispatch<React.SetStateAction<Divisions>>;
   state: State;
 }
