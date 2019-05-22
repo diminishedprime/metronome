@@ -1,17 +1,11 @@
-import {
-  useEffect,
-  useState,
-  useCallback,
-  Dispatch,
-  SetStateAction
-} from "react";
-import { SchedulerState } from "./types";
+import { useEffect, useState, useCallback, useRef } from "react";
 import * as R from "ramda";
+import * as t from "./types";
 const click = require("./click.wav");
 
 const scheduleNote = (
   audioContext: AudioContext,
-  { time, gain, buffer, pitch }: Beat
+  { time, gain, buffer, pitch }: t.Beat
 ) => {
   const sound = audioContext.createBufferSource();
   sound.buffer = buffer;
@@ -22,24 +16,22 @@ const scheduleNote = (
 
   sound.connect(volume);
   volume.connect(audioContext.destination);
-
-  // const now = audioContext.currentTime;
-  // const difference = now - time;
-  // console.log("Scheduling a note for: ", { difference });
+  const difference = (audioContext.currentTime - time) * 1000;
+  console.log({ difference });
   sound.start(time);
 };
 
 const beatsFor = (
   startOfBeatTime: number,
   secondsPerBeat: number,
-  divisions: Divisions[],
+  divisions: t.Divisions[],
   buffer: AudioBuffer
-): Array<Beat> => {
-  return divisions.reduce((acc: Beat[], divisions) => {
+): Array<t.Beat> => {
+  return divisions.reduce((acc: t.Beat[], divisions) => {
     const noteOffset = secondsPerBeat / divisions;
     const newBeats = R.range(0, divisions).map((idx: number) => {
       const time = startOfBeatTime + idx * noteOffset;
-      const beat: Beat = {
+      const beat: t.Beat = {
         time,
         pitch: 220,
         gain: 1.0 * 0.5,
@@ -80,11 +72,15 @@ const runAtTime = (
     callback();
   } else if (timeToRun <= now + rafWindowTime) {
     // retry every frame until the very first frame in the correct timestamp
-    window.requestAnimationFrame(() =>
-      runAtTime(audioContext, timeToRun, rafWindowTime, callback)
+    // window.requestAnimationFrame(() =>
+    //                              runAtTime(audioContext, timeToRun, rafWindowTime, callback)
+    //                             );
+    setTimeout(
+      () => runAtTime(audioContext, timeToRun, rafWindowTime, callback),
+      0
     );
   } else {
-    const sleepTime = ((timeToRun - rafWindowTime - now) / 2) * 1000;
+    const sleepTime = ((timeToRun - now) / 2) * 1000;
     setTimeout(
       () => runAtTime(audioContext, timeToRun, rafWindowTime, callback),
       sleepTime
@@ -142,59 +138,9 @@ const runAtTime = (
 
 // We should be able to do something close to what we were doing before, that is:
 
-export interface Beat {
-  time: number;
-  pitch: number;
-  gain: number;
-  buffer: AudioBuffer;
-  divisions: Divisions;
-  idx: number;
-}
-
-export interface Signature {
-  numerator: number;
-  denominator: number;
-  beats: Array<SignatureBeat>;
-}
-
-export interface Division {
-  gain: number;
-  pitch: number;
-  divisions: Divisions;
-  current: number | undefined;
-}
-
-export interface SignatureBeat {
-  divisions: Array<Divisions>;
-}
-
-// TODO(mjhamrick) - If i find those types for time, beatTime, and the number[] should both be time.
-export type Divisions = 1 | 2 | 3 | 4 | 5 | 6;
-// Numbers aren't right, but this is the idea.
-// [[1, [3.0]], [2, [3.0, 3.45]], [3, [3.0, 3.3, 3.9]]]
-type NextBeatDivisions = Array<Divisions>;
-
-interface State {
-  bpm: number;
-  playing: boolean;
-  currentBeat?: SignatureBeat;
-  nextBeatDivisions?: NextBeatDivisions;
-  signature: Signature;
-  activeSubDivisions: Division[][];
-}
-
-// TODO - this is definitely the way to go. This way, all of the state needed to
-// play the metronome is managed locally, but there are a few functions that can
-// be used to make it change its behavior.
-interface Metronome {
-  start: (bpm?: number) => void;
-  stop: () => void;
-  state: State;
-}
-
-const resetActiveSubDivisions = (beats: SignatureBeat[]) => {
-  return beats.map((beat: SignatureBeat) => {
-    return beat.divisions.map((divisions: Divisions) => ({
+const resetActiveSubDivisions = (beats: t.SignatureBeat[]) => {
+  return beats.map((beat: t.SignatureBeat) => {
+    return beat.divisions.map((divisions: t.Divisions) => ({
       divisions,
       current: undefined,
       pitch: 220,
@@ -205,21 +151,26 @@ const resetActiveSubDivisions = (beats: SignatureBeat[]) => {
 
 export const useMetronome2 = (
   audioContext: AudioContext | undefined
-): Metronome => {
+): t.Metronome => {
   const [playing, setPlaying] = useState(false);
   const [bpm, setBPM] = useState(90);
   const [currentBeatIdx, setCurrentBeatIdx] = useState<number>();
-  const [signature] = useState<Signature>({
+  const [signature] = useState<t.Signature>({
     numerator: 3,
     denominator: 4,
     beats: [{ divisions: [1, 2] }, { divisions: [1, 3] }, { divisions: [1, 4] }]
   });
-  const [activeSubDivisions, setActiveSubDivisions] = useState<Division[][]>(
+  const [activeSubDivisions, setActiveSubDivisions] = useState<t.Division[][]>(
     resetActiveSubDivisions(signature.beats)
   );
   const [nextBeatTime, setNextBeatTime] = useState();
 
   const buffer = useAudioBuffer(audioContext, click);
+
+  const bpmRef = useRef(bpm);
+  useEffect(() => {
+    bpmRef.current = bpm;
+  }, [bpm]);
 
   const { numerator, beats } = signature;
 
@@ -232,9 +183,9 @@ export const useMetronome2 = (
       setTimeout(() => {
         console.log("timeout!");
         setActiveSubDivisions(resetActiveSubDivisions(beats));
-      }, (60 / bpm) * 2000 + 100);
+      }, (60 / bpmRef.current) * 2000 + 100);
     }
-  }, [playing, bpm, currentBeatIdx, beats]);
+  }, [playing, currentBeatIdx, beats]);
 
   useEffect(() => {
     setActiveSubDivisions(resetActiveSubDivisions(beats));
@@ -267,7 +218,7 @@ export const useMetronome2 = (
   // TODO - lol
   const setCurrentSubDivision = (
     currentBeatIdx: number,
-    divisions: Divisions,
+    divisions: t.Divisions,
     idx: number
   ) => {
     // reset the not current beat ones.
@@ -278,7 +229,7 @@ export const useMetronome2 = (
       return otherLenses.reduce((acc, lens) => {
         return R.over(
           lens,
-          (divisions: Division[]) => {
+          (divisions: t.Division[]) => {
             return divisions.map(division => ({
               ...division,
               current: undefined
@@ -293,15 +244,15 @@ export const useMetronome2 = (
     setActiveSubDivisions(oldActiveSubs => {
       return R.over(
         R.lensIndex(currentBeatIdx),
-        (oldBeatDivisions: Division[]) => {
+        (oldBeatDivisions: t.Division[]) => {
           const oldBeatIdx = oldBeatDivisions.findIndex(
-            (division: Division) => {
+            (division: t.Division) => {
               return division.divisions === divisions;
             }
           );
           return R.over(
             R.lensIndex(oldBeatIdx),
-            (oldDivision: Division) => {
+            (oldDivision: t.Division) => {
               return R.set(R.lensProp("current"), idx, oldDivision);
             },
             oldBeatDivisions
@@ -325,7 +276,7 @@ export const useMetronome2 = (
       buffer !== undefined &&
       playing
     ) {
-      const secondsPerBeat = 60.0 / bpm;
+      const secondsPerBeat = 60.0 / bpmRef.current;
       // I might just be able to set this to the last beat?
       const beatIdx = currentBeatIdx === undefined ? 0 : currentBeatIdx;
       const currentDivisions = beats[beatIdx].divisions;
@@ -338,14 +289,6 @@ export const useMetronome2 = (
       );
       const doClick = () => {
         nextBeat();
-        // scheduleNote(audioContext, {
-        //   time: nextBeatTime,
-        //   gain: 1.0,
-        //   buffer,
-        //   pitch: 440,
-        //   divisions: 1,
-        //   idx: 0
-        // });
         subDivisions.forEach(b => {
           runAtTime(audioContext, b.time, rafWindowTime, () => {
             if (b.divisions === 1 || b.idx !== 0) {
@@ -363,9 +306,7 @@ export const useMetronome2 = (
     }
   }, [audioContext, nextBeatTime, playing, beats, buffer]);
 
-  // TODO - add in the display updater.
-
-  const state: State = {
+  const state: t.State = {
     bpm,
     playing,
     signature,
@@ -375,53 +316,7 @@ export const useMetronome2 = (
   return {
     start,
     stop,
+    setBPM,
     state
   };
-};
-
-export const useMetronome = (
-  playing: boolean,
-  schedulerState: SchedulerState,
-  audioContext: AudioContext | undefined
-): [number | undefined, Dispatch<SetStateAction<number | undefined>>] => {
-  // // TODO - don't update if the tab is in the background
-  // const [nextBeatTime, setNextBeatTime] = useState<number | "waiting">(
-  //   "waiting"
-  // );
-  const [currentBeat, setSignatureBeat] = useState<number | undefined>();
-  // const {
-  //   signature: { numerator }
-  // } = schedulerState;
-
-  // useEffect(() => {
-  //   if (!playing) {
-  //     setNextBeatTime("waiting");
-  //   }
-  // }, [playing]);
-
-  // const incSignatureBeat = useCallback(
-  //   () =>
-  //     setSignatureBeat(oldBeat => {
-  //       if (oldBeat === undefined) {
-  //         return 0;
-  //       }
-  //       let newBeat = oldBeat + 1;
-  //       if (oldBeat >= numerator - 1) {
-  //         newBeat = 0;
-  //       }
-  //       return newBeat;
-  //     }),
-  //   [numerator]
-  // );
-
-  // useScheduleAhead(playing, schedulerState, setNextBeatTime, audioContext);
-  // useDisplayUpdater(
-  //   playing,
-  //   audioContext,
-  //   nextBeatTime,
-  //   setNextBeatTime,
-  //   incSignatureBeat
-  // );
-
-  return [currentBeat, setSignatureBeat];
 };

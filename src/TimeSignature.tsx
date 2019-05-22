@@ -3,7 +3,7 @@ import * as R from "ramda";
 import styled from "styled-components";
 import { useToggle } from "./hooks";
 import { Button } from "./Common";
-import { Signature, Division } from "./metronome";
+import { Signature, Division } from "./types";
 
 interface Props {
   signature: Signature;
