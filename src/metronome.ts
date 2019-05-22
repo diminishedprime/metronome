@@ -83,6 +83,7 @@ const scheduleGroup = (
   } = state.current;
   const beatIdx = beatToSchedule.current;
   const currentBeat = beats[beatToSchedule.current];
+  // This isn't very elegant, there's probably something that's not right.
   if (currentBeat === undefined) {
     return;
   }
@@ -104,7 +105,8 @@ const scheduleGroup = (
       runAtTime(audioContext, beat.time, () => {
         // We only want to update the UI if important assumptions haven't
         // changed in the time this was scheduled.
-        const shouldStillUpdate = state.current.signature === signature; // stateBeforeSchedule === state.current;
+        const shouldStillUpdate =
+          state.current.signature === signature && state.current.playing; // stateBeforeSchedule === state.current;
         if (shouldStillUpdate) {
           setDivisions((oldDivisions: t.Divisions) => {
             const newDivisions = resetActiveSubDivisions(
@@ -222,9 +224,9 @@ export const useMetronome = (
   // TODO, the exposed setBPM function should clamp the value.
   const [bpm, setBPM] = useState(90);
   const [beatToSchedule, setBeatToSchedule] = useState(0);
-  const [signature, setSignatureOriginal] = useState<t.Signature>({
+  const [signature, setSignature] = useState<t.Signature>({
     denominator: 4,
-    beats: [{ divisions: [1, 2] }, { divisions: [1, 3] }, { divisions: [1, 4] }]
+    beats: [{ divisions: [1] }, { divisions: [1] }, { divisions: [1] }]
   });
   const [divisions, setDivisions] = useState<t.Division[][]>(
     resetActiveSubDivisions(signature.beats)
@@ -243,15 +245,6 @@ export const useMetronome = (
 
   const addBPM = (bpmToAdd: number) => {
     setBPM(R.add(bpmToAdd));
-  };
-
-  const setSignature = (numerator: number, denominator: number = 4) => {
-    // TODO - I'm missing something.
-    // If I change the ts to 5 when it's on 2, I get an error.
-    setSignatureOriginal({
-      denominator,
-      beats: R.range(0, numerator).map(() => ({ divisions: [1] }))
-    });
   };
 
   const bpmRef = useRef(bpm);
@@ -294,6 +287,10 @@ export const useMetronome = (
     if (!playing) {
       setBeatToSchedule(0);
       setDivisions(resetActiveSubDivisions(beats));
+      setTimeout(() => {
+        setBeatToSchedule(0);
+        setDivisions(resetActiveSubDivisions(beats));
+      }, 100);
     }
   }, [playing, beats]);
 

@@ -1,15 +1,15 @@
-import React from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import * as R from "ramda";
 import styled from "styled-components";
-import { useToggle } from "./hooks";
-import { Button } from "./Common";
-import { Signature, Division } from "./types";
+import { useToggle, useLocalStorage } from "./hooks";
+import { Button, GrowButton } from "./Common";
+import * as t from "./types";
 
 interface Props {
-  signature: Signature;
-  setSignature: (numerator: number, denominator?: number) => void;
+  signature: t.Signature;
+  setSignature: React.Dispatch<React.SetStateAction<t.Signature>>;
   playing: boolean;
-  activeSubDivisions: Division[][];
+  activeSubDivisions: t.Divisions;
 }
 
 const SigColumn = styled.div`
@@ -29,13 +29,67 @@ const TimeSignature = ({
   activeSubDivisions
 }: Props) => {
   const [edit, toggleEdit] = useToggle(false);
+  const [divisions, setDivisions] = useLocalStorage<t.DivisionOptions[]>(
+    "@mjh/time-signature",
+    [1]
+  );
+  const setNumerator = useCallback(
+    (numerator: number) => {
+      setSignature(old => ({
+        ...old,
+        beats: R.range(0, numerator).map(() => ({ divisions }))
+      }));
+    },
+    [divisions]
+  );
+
+  const classesForDivisions = useCallback(
+    (division: t.DivisionOptions) => {
+      if (divisions.indexOf(division) === -1) {
+        return [""];
+      } else {
+        return ["is-primary"];
+      }
+    },
+    [divisions]
+  );
+
+  useEffect(() => {
+    setSignature(old => ({
+      ...old,
+      beats: R.range(0, old.beats.length).map(() => ({ divisions }))
+    }));
+  }, [divisions]);
+
+  const toggleDivisionOption = (divisionOption: t.DivisionOptions) => {
+    setDivisions(old => {
+      if (old.indexOf(divisionOption) !== -1) {
+        return old.filter(a => a !== divisionOption);
+      } else {
+        return old.concat([divisionOption]).sort();
+      }
+    });
+  };
+
   return (
     <>
       <section
         style={{ marginTop: "10px" }}
-        className="section is-mobile columns"
-        onClick={toggleEdit}
+        className="section buttons is-centered"
       >
+        {([2, 3, 4, 5, 6] as t.DivisionOptions[]).map(
+          (num: t.DivisionOptions) => (
+            <GrowButton
+              key={`division-options-${num}`}
+              classes={classesForDivisions(num)}
+              onClick={() => toggleDivisionOption(num)}
+            >
+              {num}
+            </GrowButton>
+          )
+        )}
+      </section>
+      <section className="section is-mobile columns" onClick={toggleEdit}>
         {activeSubDivisions.map((subDivisions, beat) => {
           return (
             <div className={`column has-text-centered`} key={beat}>
@@ -69,10 +123,10 @@ const TimeSignature = ({
       </section>
       {edit && (
         <section className="section buttons is-centered">
-          <Button onClick={() => setSignature(2)}>2/4</Button>
-          <Button onClick={() => setSignature(3)}>3/4</Button>
-          <Button onClick={() => setSignature(4)}>4/4</Button>
-          <Button onClick={() => setSignature(5)}>5/4</Button>
+          <Button onClick={() => setNumerator(2)}>2/4</Button>
+          <Button onClick={() => setNumerator(3)}>3/4</Button>
+          <Button onClick={() => setNumerator(4)}>4/4</Button>
+          <Button onClick={() => setNumerator(5)}>5/4</Button>
         </section>
       )}
     </>

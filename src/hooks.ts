@@ -1,5 +1,7 @@
 import { useState, Dispatch, SetStateAction, useCallback } from "react";
 
+// TODO - add in some logic to do simple migrations. Otherwise, we get stuck
+// with this state forever and have to blow it away.
 export const useLocalStorage = <T>(
   key: string,
   initialValue: T | (() => T),
