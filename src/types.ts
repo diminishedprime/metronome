@@ -165,16 +165,20 @@ export interface Division {
   current: number | undefined;
 }
 
+export type Divisions = Division[][];
+
 export interface State {
   bpm: number;
   playing: boolean;
   signature: Signature;
-  divisions: Division[][];
+  divisions: Divisions;
 }
 
 export interface Metronome {
+  toggleStart: () => void;
   start: (bpm?: number) => void;
   stop: () => void;
   setBPM: React.Dispatch<React.SetStateAction<number>>;
+  setDivisions: React.Dispatch<React.SetStateAction<Divisions>>;
   state: State;
 }

@@ -149,7 +149,7 @@ const resetActiveSubDivisions = (beats: t.SignatureBeat[]) => {
   });
 };
 
-export const useMetronome2 = (
+export const useMetronome = (
   audioContext: AudioContext | undefined
 ): t.Metronome => {
   const [playing, setPlaying] = useState(false);
@@ -207,6 +207,8 @@ export const useMetronome2 = (
     },
     [setPlaying]
   );
+
+  const toggleStart = () => setPlaying(R.not);
 
   const nextBeat = useCallback(() => {
     setCurrentBeatIdx((current = 0) => {
@@ -314,9 +316,11 @@ export const useMetronome2 = (
   };
 
   return {
+    toggleStart,
     start,
     stop,
     setBPM,
+    setDivisions,
     state
   };
 };

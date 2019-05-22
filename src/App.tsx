@@ -3,7 +3,7 @@ import { useState } from "react";
 import * as R from "ramda";
 import TempoMarking from "./TempoMarking";
 import TimeSignature from "./TimeSignature";
-import { useMetronome2 } from "./metronome";
+import { useMetronome } from "./metronome";
 
 import TapIn from "./TapIn";
 import Tuner from "./Tuner";
@@ -15,7 +15,7 @@ import * as serviceWorker from "./serviceWorker";
 
 const Metronome = () => {
   const [audioContext, setAudioContext] = useState<AudioContext | undefined>();
-  const metronome = useMetronome2(audioContext);
+  const metronome = useMetronome(audioContext);
   const {
     state: { playing, signature, divisions, bpm },
     setBPM
