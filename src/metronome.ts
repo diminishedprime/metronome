@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import * as R from "ramda";
 import * as t from "./types";
+import { useLocalStorage } from "./hooks";
 const click = require("./click.wav");
 
 // When I schedule a group of notes, I need to also add to a queue that it's
@@ -222,13 +223,17 @@ export const useMetronome = (
 ): t.Metronome => {
   const [playing, setPlaying] = useState(false);
   // TODO, the exposed setBPM function should clamp the value.
-  const [bpm, setBPM] = useState(90);
+  const [bpm, setBPM] = useLocalStorage("@mjh/bpm", 90);
   const [beatToSchedule, setBeatToSchedule] = useState(0);
-  const [signature, setSignature] = useState<t.Signature>({
-    denominator: 4,
-    beats: [{ divisions: [1] }, { divisions: [1] }, { divisions: [1] }]
-  });
-  const [divisions, setDivisions] = useState<t.Division[][]>(
+  const [signature, setSignature] = useLocalStorage<t.Signature>(
+    "@mjh/saved-signature",
+    {
+      denominator: 4,
+      beats: [{ divisions: [1] }, { divisions: [1] }, { divisions: [1] }]
+    }
+  );
+  const [divisions, setDivisions] = useLocalStorage<t.Division[][]>(
+    "@mjh/saved-divisions",
     resetActiveSubDivisions(signature.beats)
   );
 

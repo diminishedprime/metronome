@@ -29,12 +29,14 @@ const TimeSignature = ({
   activeSubDivisions
 }: Props) => {
   const [edit, toggleEdit] = useToggle(false);
+  const [hasChanged, setHasChanged] = useState(false);
   const [divisions, setDivisions] = useLocalStorage<t.DivisionOptions[]>(
     "@mjh/time-signature",
     [1]
   );
   const setNumerator = useCallback(
     (numerator: number) => {
+      setHasChanged(true);
       setSignature(old => ({
         ...old,
         beats: R.range(0, numerator).map(() => ({ divisions }))
@@ -55,13 +57,16 @@ const TimeSignature = ({
   );
 
   useEffect(() => {
-    setSignature(old => ({
-      ...old,
-      beats: R.range(0, old.beats.length).map(() => ({ divisions }))
-    }));
-  }, [divisions]);
+    if (hasChanged) {
+      setSignature(old => ({
+        ...old,
+        beats: R.range(0, old.beats.length).map(() => ({ divisions }))
+      }));
+    }
+  }, [divisions, hasChanged]);
 
   const toggleDivisionOption = (divisionOption: t.DivisionOptions) => {
+    setHasChanged(true);
     setDivisions(old => {
       if (old.indexOf(divisionOption) !== -1) {
         return old.filter(a => a !== divisionOption);

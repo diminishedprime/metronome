@@ -66,7 +66,7 @@ const Metronome = () => {
       />
       {showDial && (
         <section className="section">
-          <Dial addDiff={addBPM}>
+          <Dial initialValue={bpm} addDiff={addBPM}>
             <div className="has-text-centered is-size-1">{bpm}</div>
             <TempoMarking bpm={bpm} />
           </Dial>

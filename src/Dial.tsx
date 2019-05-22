@@ -20,12 +20,14 @@ const Inner = styled.div`
 `;
 
 interface Props {
+  initialValue: number;
   addDiff: (diff: number) => void;
   size?: number;
 }
 
 const InfiniKnob = ({
   size = 300,
+  initialValue,
   addDiff,
   children
 }: Props &
@@ -33,7 +35,7 @@ const InfiniKnob = ({
     React.HTMLAttributes<HTMLDivElement>,
     HTMLDivElement
   >) => {
-  const [radians, setRadions] = useState((Math.PI * 3) / 2);
+  const [radians, setRadions] = useState((initialValue * (Math.PI * 3)) / 2);
   const radiansRef = useRef(Math.PI);
   useEffect(() => {
     radiansRef.current = radians;
