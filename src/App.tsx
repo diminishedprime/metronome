@@ -17,7 +17,7 @@ const Metronome = () => {
   const [audioContext, setAudioContext] = useState<AudioContext | undefined>();
   const metronome = useMetronome2(audioContext);
   const {
-    state: { playing, signature, activeSubDivisions, bpm },
+    state: { playing, signature, divisions, bpm },
     setBPM
   } = metronome;
 
@@ -82,10 +82,7 @@ const Metronome = () => {
           <Button onClick={() => window.location.reload()}>Refresh</Button>
         </section>
       )}
-      <TimeSignature
-        signature={signature}
-        activeSubDivisions={activeSubDivisions}
-      />
+      <TimeSignature signature={signature} activeSubDivisions={divisions} />
       {showDial && (
         <section className="section">
           <Dial addDiff={addDiff}>

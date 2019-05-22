@@ -156,11 +156,10 @@ export const useMetronome2 = (
   const [bpm, setBPM] = useState(90);
   const [currentBeatIdx, setCurrentBeatIdx] = useState<number>();
   const [signature] = useState<t.Signature>({
-    numerator: 3,
     denominator: 4,
     beats: [{ divisions: [1, 2] }, { divisions: [1, 3] }, { divisions: [1, 4] }]
   });
-  const [activeSubDivisions, setActiveSubDivisions] = useState<t.Division[][]>(
+  const [divisions, setDivisions] = useState<t.Division[][]>(
     resetActiveSubDivisions(signature.beats)
   );
   const [nextBeatTime, setNextBeatTime] = useState();
@@ -172,7 +171,8 @@ export const useMetronome2 = (
     bpmRef.current = bpm;
   }, [bpm]);
 
-  const { numerator, beats } = signature;
+  const { beats } = signature;
+  const numerator = beats.length;
 
   useEffect(() => {
     if (currentBeatIdx !== undefined && !playing) {
@@ -182,13 +182,13 @@ export const useMetronome2 = (
       // after all.
       setTimeout(() => {
         console.log("timeout!");
-        setActiveSubDivisions(resetActiveSubDivisions(beats));
+        setDivisions(resetActiveSubDivisions(beats));
       }, (60 / bpmRef.current) * 2000 + 100);
     }
   }, [playing, currentBeatIdx, beats]);
 
   useEffect(() => {
-    setActiveSubDivisions(resetActiveSubDivisions(beats));
+    setDivisions(resetActiveSubDivisions(beats));
   }, [beats]);
 
   useEffect(() => {
@@ -222,7 +222,7 @@ export const useMetronome2 = (
     idx: number
   ) => {
     // reset the not current beat ones.
-    setActiveSubDivisions(oldActiveSubs => {
+    setDivisions(oldActiveSubs => {
       const otherLenses = R.range(0, oldActiveSubs.length)
         .filter(beatIdx => beatIdx !== currentBeatIdx)
         .map(i => R.lensIndex(i));
@@ -241,7 +241,7 @@ export const useMetronome2 = (
     });
 
     // update with new value
-    setActiveSubDivisions(oldActiveSubs => {
+    setDivisions(oldActiveSubs => {
       return R.over(
         R.lensIndex(currentBeatIdx),
         (oldBeatDivisions: t.Division[]) => {
@@ -310,7 +310,7 @@ export const useMetronome2 = (
     bpm,
     playing,
     signature,
-    activeSubDivisions
+    divisions
   };
 
   return {

@@ -147,11 +147,16 @@ export interface Beat {
   idx: number;
 }
 
+export interface SignatureBeat {
+  divisions: Array<DivisionOptions>;
+}
+
 export interface Signature {
-  numerator: number;
   denominator: number;
   beats: Array<SignatureBeat>;
 }
+
+export type DivisionOptions = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface Division {
   gain: number;
@@ -160,17 +165,11 @@ export interface Division {
   current: number | undefined;
 }
 
-export interface SignatureBeat {
-  divisions: Array<DivisionOptions>;
-}
-
-export type DivisionOptions = 1 | 2 | 3 | 4 | 5 | 6;
-
 export interface State {
   bpm: number;
   playing: boolean;
   signature: Signature;
-  activeSubDivisions: Division[][];
+  divisions: Division[][];
 }
 
 export interface Metronome {

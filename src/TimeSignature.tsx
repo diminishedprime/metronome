@@ -20,10 +20,8 @@ const SigColumns = styled.div`
   height: 20px;
 `;
 
-const TimeSignature = ({
-  signature: { numerator },
-  activeSubDivisions
-}: Props) => {
+const TimeSignature = ({ signature: { beats }, activeSubDivisions }: Props) => {
+  const numerator = beats.length;
   const [edit, toggleEdit] = useToggle(false);
   const set = (numerator: number, denominator = 4) => () => {
     // overSignature((old) => {
