@@ -1,4 +1,5 @@
 import React from "react";
+import styled from "styled-components";
 
 interface ButtonProps
   extends React.DetailedHTMLProps<
@@ -13,6 +14,10 @@ export const Button = ({ classes = [], children, ...props }: ButtonProps) => {
   const allProps = Object.assign(props, { className });
   return <button {...allProps}>{children}</button>;
 };
+
+export const GrowButton = styled(Button)`
+  flex-grow: 1;
+`;
 
 interface ButtonsProps
   extends React.DetailedHTMLProps<

@@ -1,16 +1,16 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
 import * as R from "ramda";
+import styled from "styled-components";
 import TempoMarking from "./TempoMarking";
 import TimeSignature from "./TimeSignature";
 import { useMetronome } from "./metronome";
-
 import TapIn from "./TapIn";
 import Tuner from "./Tuner";
 import Dial from "./Dial";
 import Scales from "./Scales";
 import { useToggle } from "./hooks";
-import { Button, Buttons } from "./Common";
+import { Button, GrowButton, Buttons } from "./Common";
 import * as serviceWorker from "./serviceWorker";
 
 const Metronome = () => {
@@ -46,14 +46,7 @@ const Metronome = () => {
   });
 
   return (
-    <div
-      style={{
-        maxWidth: "500px",
-        margin: "0 auto",
-        paddingLeft: "10px",
-        paddingRight: "10px"
-      }}
-    >
+    <InnerBody>
       {updateAvailable && (
         <section
           className="box is-grouped field has-addons"
@@ -79,27 +72,18 @@ const Metronome = () => {
         <Buttons>
           {/* <SubDivisions subDivisions={subDivisions} toggle={toggleSubDivision} /> */}
           <TapIn setBPM={setBPM} />
-          <Button
-            style={{ flexGrow: 1 }}
+          <GrowButton
             classes={["is-outlined", playing ? "is-danger" : "is-primary"]}
             onClick={toggleStart}
           >
             {playing ? "Stop" : "Start"}
-          </Button>
+          </GrowButton>
         </Buttons>
       </section>
       {showScales && <Scales startMetronome={start} stopMetronome={stop} />}
       {showTuner && <Tuner />}
       <nav className="navbar is-fixed-bottom has-background-light">
-        <div
-          style={{
-            maxWidth: "500px",
-            margin: "0 auto",
-            paddingTop: "10px",
-            paddingRight: "10px"
-          }}
-          className=" buttons is-right"
-        >
+        <InnerBody className=" buttons is-right">
           <Button classes={[showDial ? "is-primary" : ""]} onClick={toggleDial}>
             Dial
           </Button>
@@ -116,11 +100,18 @@ const Metronome = () => {
             Tuner
           </Button>
           <div>{`v${process.env.REACT_APP_VERSION}`}</div>
-        </div>
+        </InnerBody>
       </nav>
-    </div>
+    </InnerBody>
   );
 };
+
+const InnerBody = styled.div`
+  max-width: 500px;
+  margin: 0 auto;
+  padding-left: 10px;
+  padding-right: 10px;
+`;
 
 const App: React.FC = () => {
   return <Metronome />;
