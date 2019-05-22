@@ -153,7 +153,13 @@ export const useMetronome = (
   audioContext: AudioContext | undefined
 ): t.Metronome => {
   const [playing, setPlaying] = useState(false);
+  // TODO, the exposed setBPM function should clamp the value.
   const [bpm, setBPM] = useState(90);
+
+  const addBPM = (bpmToAdd: number) => {
+    setBPM(R.add(bpmToAdd));
+  };
+
   const [currentBeatIdx, setCurrentBeatIdx] = useState<number>();
   const [signature] = useState<t.Signature>({
     denominator: 4,
@@ -321,6 +327,7 @@ export const useMetronome = (
     stop,
     setBPM,
     setDivisions,
+    addBPM,
     state
   };
 };

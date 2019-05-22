@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import * as R from "ramda";
 import TempoMarking from "./TempoMarking";
@@ -15,42 +15,27 @@ import * as serviceWorker from "./serviceWorker";
 
 const Metronome = () => {
   const [audioContext, setAudioContext] = useState<AudioContext | undefined>();
-  const metronome = useMetronome(audioContext);
   const {
     state: { playing, signature, divisions, bpm },
-    setBPM
-  } = metronome;
+    start,
+    stop,
+    toggleStart,
+    setBPM,
+    addBPM
+  } = useMetronome(audioContext);
 
+  // Initialize AudioContext as a singleton on first start.
   useEffect(() => {
-    // Initialize AudioContext as a singleton on button click.
     if (playing && audioContext === undefined) {
       setAudioContext(new AudioContext());
     }
   }, [playing, audioContext]);
 
-  const addDiff = (diff: number) =>
-    setBPM(
-      R.pipe(
-        R.add(diff),
-        R.clamp(1, 250)
-      )
-    );
-
-  const toggleStart = () => {
-    if (playing) {
-      metronome.stop();
-    } else {
-      metronome.start();
-    }
-  };
-
-  const startMetronome = useCallback(metronome.start, []);
-
-  const stopMetronome = useCallback(metronome.stop, []);
-
   const [showScales, toggleScales] = useToggle(false);
   const [showTuner, toggleTuner] = useToggle(false);
+  const [showDial, toggleDial] = useToggle(true);
 
+  // TODO - This doesn't seem to work, but I don't really know why.
   const [updateAvailable, setUpdateAvailable] = useState(false);
   useEffect(() => {
     serviceWorker.register({
@@ -59,8 +44,6 @@ const Metronome = () => {
       }
     });
   });
-
-  const [showDial, toggleDial] = useToggle(true);
 
   return (
     <div
@@ -85,7 +68,7 @@ const Metronome = () => {
       <TimeSignature signature={signature} activeSubDivisions={divisions} />
       {showDial && (
         <section className="section">
-          <Dial addDiff={addDiff}>
+          <Dial addDiff={addBPM}>
             <div className="has-text-centered is-size-1">{bpm}</div>
             <TempoMarking bpm={bpm} />
           </Dial>
@@ -105,9 +88,7 @@ const Metronome = () => {
           </Button>
         </Buttons>
       </section>
-      {showScales && (
-        <Scales startMetronome={startMetronome} stopMetronome={stopMetronome} />
-      )}
+      {showScales && <Scales startMetronome={start} stopMetronome={stop} />}
       {showTuner && <Tuner />}
       <nav className="navbar is-fixed-bottom has-background-light">
         <div

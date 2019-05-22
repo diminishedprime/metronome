@@ -179,6 +179,7 @@ export interface Metronome {
   start: (bpm?: number) => void;
   stop: () => void;
   setBPM: React.Dispatch<React.SetStateAction<number>>;
+  addBPM: (bpmToAdd: number) => void;
   setDivisions: React.Dispatch<React.SetStateAction<Divisions>>;
   state: State;
 }
