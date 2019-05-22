@@ -3,8 +3,8 @@ import { useState } from "react";
 import * as R from "ramda";
 import TempoMarking from "./TempoMarking";
 import TimeSignature from "./TimeSignature";
-import { SchedulerState } from "./types";
 import { useMetronome2 } from "./metronome";
+
 import TapIn from "./TapIn";
 import Tuner from "./Tuner";
 import Dial from "./Dial";
@@ -12,10 +12,6 @@ import Scales from "./Scales";
 import { useToggle } from "./hooks";
 import { Button, Buttons } from "./Common";
 import * as serviceWorker from "./serviceWorker";
-
-interface State {
-  schedulerState: SchedulerState;
-}
 
 const Metronome = () => {
   const [audioContext, setAudioContext] = useState<AudioContext | undefined>();

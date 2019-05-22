@@ -24,7 +24,7 @@ const scheduleNote = (
 const beatsFor = (
   startOfBeatTime: number,
   secondsPerBeat: number,
-  divisions: t.Divisions[],
+  divisions: t.DivisionOptions[],
   buffer: AudioBuffer
 ): Array<t.Beat> => {
   return divisions.reduce((acc: t.Beat[], divisions) => {
@@ -140,7 +140,7 @@ const runAtTime = (
 
 const resetActiveSubDivisions = (beats: t.SignatureBeat[]) => {
   return beats.map((beat: t.SignatureBeat) => {
-    return beat.divisions.map((divisions: t.Divisions) => ({
+    return beat.divisions.map((divisions: t.DivisionOptions) => ({
       divisions,
       current: undefined,
       pitch: 220,
@@ -218,7 +218,7 @@ export const useMetronome2 = (
   // TODO - lol
   const setCurrentSubDivision = (
     currentBeatIdx: number,
-    divisions: t.Divisions,
+    divisions: t.DivisionOptions,
     idx: number
   ) => {
     // reset the not current beat ones.
