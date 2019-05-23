@@ -264,7 +264,7 @@ export const useMetronome = (
       }
       setPlaying(true);
     },
-    [setPlaying]
+    [setPlaying, setBPM]
   );
 
   const toggleStart = () => setPlaying(R.not);
@@ -286,7 +286,7 @@ export const useMetronome = (
     setDivisions(resetActiveSubDivisions(beats));
     setBeatToSchedule(0);
     numeratorRef.current = beats.length;
-  }, [beats, signature]);
+  }, [beats, signature, setDivisions]);
 
   useEffect(() => {
     if (!playing) {
@@ -297,7 +297,7 @@ export const useMetronome = (
         setDivisions(resetActiveSubDivisions(beats));
       }, 100);
     }
-  }, [playing, beats]);
+  }, [playing, beats, setDivisions]);
 
   useScheduleAhead(
     audioContext,

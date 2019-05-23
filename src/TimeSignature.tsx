@@ -42,7 +42,7 @@ const TimeSignature = ({
         beats: R.range(0, numerator).map(() => ({ divisions }))
       }));
     },
-    [divisions]
+    [divisions, setSignature]
   );
 
   const classesForDivisions = useCallback(
@@ -63,7 +63,7 @@ const TimeSignature = ({
         beats: R.range(0, old.beats.length).map(() => ({ divisions }))
       }));
     }
-  }, [divisions, hasChanged]);
+  }, [divisions, hasChanged, setSignature]);
 
   const toggleDivisionOption = (divisionOption: t.DivisionOptions) => {
     setHasChanged(true);
