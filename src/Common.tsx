@@ -5,15 +5,11 @@ interface ButtonProps
   extends React.DetailedHTMLProps<
     React.ButtonHTMLAttributes<HTMLButtonElement>,
     HTMLButtonElement
-  > {
-  classes?: string[];
-}
+  > {}
 
-export const Button = ({ classes = [], children, ...props }: ButtonProps) => {
-  const className = `button ${classes.join(" ")} ${
-    props["className"] === undefined ? "" : props["className"]
-  } `;
-  const allProps = Object.assign(props, { className });
+export const Button = ({ children, className, ...props }: ButtonProps) => {
+  const classes = `button ${className}`;
+  const allProps = Object.assign(props, { className: classes });
   return (
     <button {...allProps} {...props}>
       {children}
@@ -33,8 +29,8 @@ interface ButtonsProps
   classes?: string[];
 }
 
-export const Buttons = ({ classes = [], children, ...props }: ButtonsProps) => {
-  const className = `buttons has-addons ${classes.join(" ")}`;
-  const allProps = Object.assign(props, { className });
+export const Buttons = ({ children, className, ...props }: ButtonsProps) => {
+  const classes = `${className} buttons has-addons}`;
+  const allProps = Object.assign(props, { className: classes });
   return <div {...allProps}>{children}</div>;
 };

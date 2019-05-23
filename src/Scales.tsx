@@ -101,10 +101,13 @@ const ScalesGroup = ({
         {pitch} {mode}
       </div>
       <Buttons>
-        <Button classes={[known ? "is-info" : ""]} onClick={toggleKnown}>
+        <Button className={`${known ? "is-info" : ""}`} onClick={toggleKnown}>
           Known
         </Button>
-        <Button classes={[learning ? "is-link" : ""]} onClick={toggleLearning}>
+        <Button
+          className={`${learning ? "is-link" : ""}`}
+          onClick={toggleLearning}
+        >
           Learning
         </Button>
       </Buttons>
@@ -192,28 +195,28 @@ const LearnScales = ({
         </div>
         <Buttons style={{ flexGrow: 1 }}>
           <Button
-            classes={["is-danger", "is-outlined"]}
+            className="is-danger is-outlined"
             style={{ flexGrow: 1 }}
             onClick={addBPM(scale, -10)}
           >
             -10
           </Button>
           <Button
-            classes={["is-danger", "is-outlined"]}
+            className="is-danger is-outlined"
             style={{ flexGrow: 1 }}
             onClick={addBPM(scale, -1)}
           >
             -
           </Button>
           <Button
-            classes={["is-success", "is-outlined"]}
+            className="is-success is-outlined"
             style={{ flexGrow: 1 }}
             onClick={addBPM(scale, 1)}
           >
             +
           </Button>
           <Button
-            classes={["is-success", "is-outlined"]}
+            className="is-success is-outlined"
             style={{ flexGrow: 1 }}
             onClick={addBPM(scale, 10)}
           >
@@ -272,7 +275,7 @@ const Scales = ({ startMetronome, stopMetronome, ...props }: Props) => {
                 disabled={
                   getScaleByFilter(scalesDB, s => s.known) === undefined
                 }
-                classes={["is-info", "is-outlined"]}
+                className="is-info is-outlined"
               >
                 Start Known
               </Button>
@@ -281,7 +284,7 @@ const Scales = ({ startMetronome, stopMetronome, ...props }: Props) => {
                 disabled={
                   getScaleByFilter(scalesDB, s => s.learning) === undefined
                 }
-                classes={["is-link", "is-outlined"]}
+                className="is-link is-outlined"
               >
                 Start Learning
               </Button>

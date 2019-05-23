@@ -47,14 +47,13 @@ const TimeSignature = ({
   const classesForDivisions = useCallback(
     (division: t.DivisionOptions) => {
       if (divisions.indexOf(division) === -1) {
-        return [""];
+        return "";
       } else {
-        return ["is-primary"];
+        return "is-primary";
       }
     },
     [divisions]
   );
-
   useEffect(() => {
     if (hasChanged) {
       setSignature(old => ({
@@ -64,16 +63,23 @@ const TimeSignature = ({
     }
   }, [divisions, hasChanged, setSignature]);
 
-  const toggleDivisionOption = (divisionOption: t.DivisionOptions) => {
-    setHasChanged(true);
-    setDivisions(old => {
-      if (old.indexOf(divisionOption) !== -1) {
-        return old.filter(a => a !== divisionOption);
-      } else {
-        return old.concat([divisionOption]).sort();
-      }
-    });
-  };
+  const toggleDivisionOption = useCallback(
+    (divisionOption: t.DivisionOptions) => {
+      setHasChanged(true);
+      setDivisions(old => {
+        if (old.indexOf(divisionOption) !== -1) {
+          return old.filter(a => a !== divisionOption);
+        } else {
+          return old.concat([divisionOption]).sort();
+        }
+      });
+    },
+    [setDivisions]
+  );
+
+  const clearDivisions = useCallback(() => {
+    setDivisions([1]);
+  }, [setDivisions]);
 
   return (
     <>
@@ -91,13 +97,19 @@ const TimeSignature = ({
           (num: t.DivisionOptions) => (
             <GrowButton
               key={`division-options-${num}`}
-              classes={classesForDivisions(num)}
+              className={classesForDivisions(num)}
               onClick={() => toggleDivisionOption(num)}
             >
               {num}
             </GrowButton>
           )
         )}
+        <GrowButton
+          className={"is-danger is-outlined"}
+          onClick={clearDivisions}
+        >
+          Clear
+        </GrowButton>
       </section>
       <section className="section is-mobile columns" onClick={toggleEdit}>
         {activeSubDivisions.map((subDivisions, beat) => {

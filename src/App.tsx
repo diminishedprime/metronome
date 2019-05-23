@@ -83,7 +83,7 @@ const Metronome = () => {
         <Buttons>
           <TapIn setBPM={setBPM} />
           <GrowButton
-            classes={["is-outlined", playing ? "is-danger" : "is-primary"]}
+            className={`is-outlined ${playing ? "is-danger" : "is-primary"}`}
             onClick={toggleStart}
           >
             {playing ? "Stop" : "Start"}
@@ -94,17 +94,20 @@ const Metronome = () => {
       {showTuner && <Tuner />}
       <nav className="navbar is-fixed-bottom has-background-light">
         <InnerBody className=" buttons is-right">
-          <Button classes={[showDial ? "is-primary" : ""]} onClick={toggleDial}>
+          <Button
+            className={`${showDial ? "is-primary" : ""}`}
+            onClick={toggleDial}
+          >
             Dial
           </Button>
           <Button
-            classes={[showScales ? "is-primary" : ""]}
+            className={`${showScales ? "is-primary" : ""}`}
             onClick={toggleScales}
           >
             Scales
           </Button>
           <Button
-            classes={[showTuner ? "is-primary" : ""]}
+            className={`${showTuner ? "is-primary" : ""}`}
             onClick={toggleTuner}
           >
             Tuner

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import * as R from "ramda";
 import * as t from "./types";
-import { useLocalStorage, useAdvice, useDetectChangedValue } from "./hooks";
+import { useLocalStorage, useAdvice } from "./hooks";
 const click = require("./click.wav");
 
 const scheduleNote = (
@@ -153,7 +153,6 @@ const useScheduleAhead = (
   }, [beatToSchedule]);
 
   useEffect(() => {
-    console.log("interval effect");
     if (
       delay !== undefined &&
       audioContext !== undefined &&
@@ -179,7 +178,6 @@ const useScheduleAhead = (
       };
     }
   }, [delay, buffer, audioContext, nextBeat, setDivisions]);
-  useDetectChangedValue(delay, buffer, audioContext, nextBeat, setDivisions);
 };
 
 const runAtTime = (
