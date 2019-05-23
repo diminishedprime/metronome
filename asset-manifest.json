@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/metronome/static/css/main.062e35c5.chunk.css",
-    "main.js": "/metronome/static/js/main.5a170c42.chunk.js",
-    "main.js.map": "/metronome/static/js/main.5a170c42.chunk.js.map",
+    "main.js": "/metronome/static/js/main.64b9c084.chunk.js",
+    "main.js.map": "/metronome/static/js/main.64b9c084.chunk.js.map",
     "runtime~main.js": "/metronome/static/js/runtime~main.17634b44.js",
     "runtime~main.js.map": "/metronome/static/js/runtime~main.17634b44.js.map",
-    "static/js/2.aedb7cfa.chunk.js": "/metronome/static/js/2.aedb7cfa.chunk.js",
-    "static/js/2.aedb7cfa.chunk.js.map": "/metronome/static/js/2.aedb7cfa.chunk.js.map",
+    "static/js/2.a811dd8c.chunk.js": "/metronome/static/js/2.a811dd8c.chunk.js",
+    "static/js/2.a811dd8c.chunk.js.map": "/metronome/static/js/2.a811dd8c.chunk.js.map",
     "index.html": "/metronome/index.html",
-    "precache-manifest.7013201e7bda50d1add57bcc100cfad5.js": "/metronome/precache-manifest.7013201e7bda50d1add57bcc100cfad5.js",
+    "precache-manifest.914fc7c6b38fb942e5a22bab2a432c84.js": "/metronome/precache-manifest.914fc7c6b38fb942e5a22bab2a432c84.js",
     "service-worker.js": "/metronome/service-worker.js",
     "static/css/main.062e35c5.chunk.css.map": "/metronome/static/css/main.062e35c5.chunk.css.map",
     "static/media/click.wav": "/metronome/static/media/click.b48ed3e5.wav"
