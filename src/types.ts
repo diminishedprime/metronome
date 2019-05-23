@@ -125,6 +125,7 @@ export const scaleKeys: ScaleKey[] = [
 ];
 
 export interface Scale {
+  scaleKey: ScaleKey;
   mode: Mode;
   pitch: Pitch;
   known: boolean;

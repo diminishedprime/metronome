@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useLocalStorage } from "./hooks";
 import * as R from "ramda";
 import { Button, Buttons } from "./Common";
-import { Scale, Pitch, Mode, ScalesDB } from "./types";
+import { Scale, Pitch, Mode, ScalesDB, ScaleKey, scaleKeys } from "./types";
 
 enum ScaleMode {
   NOT_STARTED = "Not Started",
@@ -40,56 +40,34 @@ const getScalesByFilter = (
 
 const initScalesDB = (): ScalesDB => {
   const scalesDB: ScalesDB = {};
-  const scaleFor = (pitch: Pitch, mode: Mode): Scale => ({
-    pitch,
-    mode,
+  const scaleFor = (scaleKey: ScaleKey): Scale => ({
+    scaleKey,
+    pitch: scaleKey[0],
+    mode: scaleKey[1],
     known: false,
     learning: false,
     bpm: 60
   });
 
-  const addScale = (pitch: Pitch, mode: Mode): void => {
+  const addScale = (key: ScaleKey): void => {
+    const [pitch, mode] = key;
     let pitchMap = scalesDB[pitch];
     if (pitchMap === undefined) {
       pitchMap = {};
       scalesDB[pitch] = pitchMap;
     }
-    pitchMap[mode] = scaleFor(pitch, mode);
+    pitchMap[mode] = scaleFor(key);
   };
   // TODO(me) - clean up scale names & add sharps.
   // Major
-  addScale(Pitch.A, Mode.Major);
-  addScale(Pitch.B_Flat, Mode.Major);
-  addScale(Pitch.B, Mode.Major);
-  addScale(Pitch.C, Mode.Major);
-  addScale(Pitch.D_Flat, Mode.Major);
-  addScale(Pitch.D, Mode.Major);
-  addScale(Pitch.E_Flat, Mode.Major);
-  addScale(Pitch.E, Mode.Major);
-  addScale(Pitch.F, Mode.Major);
-  addScale(Pitch.G_Flat, Mode.Major);
-  addScale(Pitch.G, Mode.Major);
-  addScale(Pitch.A_Flat, Mode.Major);
-
-  // Minor
-  addScale(Pitch.A, Mode.Minor);
-  addScale(Pitch.B_Flat, Mode.Minor);
-  addScale(Pitch.B, Mode.Minor);
-  addScale(Pitch.C, Mode.Minor);
-  addScale(Pitch.D_Flat, Mode.Minor);
-  addScale(Pitch.D, Mode.Minor);
-  addScale(Pitch.E_Flat, Mode.Minor);
-  addScale(Pitch.E, Mode.Minor);
-  addScale(Pitch.F, Mode.Minor);
-  addScale(Pitch.G_Flat, Mode.Minor);
-  addScale(Pitch.G, Mode.Minor);
-  addScale(Pitch.A_Flat, Mode.Minor);
+  for (const key of scaleKeys) {
+    addScale(key);
+  }
   return scalesDB;
 };
 
 const ScalesGroup = ({
-  pitch,
-  mode,
+  scaleKey: [pitch, mode],
   learning,
   known,
   toggleLearning,
@@ -140,7 +118,7 @@ const LearnScales = ({
   scaleMode,
   startMetronome
 }: LearnScalesProps) => {
-  const [scaleKeys, setScales] = useState<Array<[Mode, Pitch]>>(() =>
+  const [scaleKeys, setScales] = useState<Array<ScaleKey>>(() =>
     shuffle(
       getScalesByFilter(scalesDB, s => {
         if (scaleMode === ScaleMode.LEARNING) {
@@ -149,7 +127,7 @@ const LearnScales = ({
           return s.known;
         }
         return false;
-      }).map(({ mode, pitch }) => [mode, pitch])
+      }).map(({ scaleKey }) => scaleKey)
     )
   );
   const nextScale = () => {
@@ -165,7 +143,7 @@ const LearnScales = ({
   const currentKey = scaleKeys[0] || [];
   const maybeScale = getScaleByFilter(
     scalesDB,
-    (s: Scale) => s.mode === currentKey[0] && s.pitch === currentKey[1]
+    (s: Scale) => s.mode === currentKey[1] && s.pitch === currentKey[0]
   );
   useEffect(() => {
     if (maybeScale !== undefined) {
@@ -234,7 +212,7 @@ const LearnScales = ({
 
 const Scales = ({ startMetronome, stopMetronome, ...props }: Props) => {
   const [scalesDB, setScalesDB] = useLocalStorage(
-    "@mjh/metronome/scales-db",
+    "@mjh/metronome/scales-db-2",
     initScalesDB
   );
 
