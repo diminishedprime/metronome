@@ -4,6 +4,7 @@
   "version": "22.5.1",
   "private": true,
   "dependencies": {
+    "@craco/craco": "^5.2.1",
     "@types/jest": "24.0.12",
     "@types/node": "11.13.9",
     "@types/react": "16.8.15",
@@ -19,10 +20,10 @@
     "vexflow": "^1.2.89"
   },
   "scripts": {
-    "start": "PORT=9999 HOST=0.0.0.0 react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "PORT=9999 HOST=0.0.0.0 craco start",
+    "build": "craco build",
+    "test": "craco test",
+    "eject": "craco eject",
     "predeploy": "yarn version && yarn build",
     "deploy": "gh-pages -d build"
   },
@@ -44,6 +45,7 @@
   "devDependencies": {
     "@types/ramda": "^0.26.8",
     "@types/styled-components": "^4.1.14",
+    "craco-workbox": "^0.1.0",
     "gh-pages": "^2.0.1",
     "node-sass": "^4.12.0",
     "prettier": "^1.17.0",
