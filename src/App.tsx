@@ -8,9 +8,10 @@ import TapIn from "./TapIn";
 import Tuner from "./Tuner";
 import Dial from "./Dial";
 import Scales from "./Scales";
-import { useToggle } from "./hooks";
+import { usePersistantToggle } from "./hooks";
 import { Button, GrowButton, Buttons } from "./Common";
 import * as serviceWorker from "./serviceWorker";
+import * as t from "./types";
 
 const Metronome = () => {
   const [audioContext, setAudioContext] = useState<AudioContext | undefined>();
@@ -31,11 +32,20 @@ const Metronome = () => {
     }
   }, [playing, audioContext]);
 
-  const [showScales, toggleScales] = useToggle(false);
-  const [showTuner, toggleTuner] = useToggle(false);
-  const [showDial, toggleDial] = useToggle(true);
+  const [showScales, toggleScales] = usePersistantToggle(
+    t.LocalStorageKey.ShowScales,
+    false
+  );
+  const [showTuner, toggleTuner] = usePersistantToggle(
+    t.LocalStorageKey.ShowTuner,
 
-  // TODO - This doesn't seem to work, but I don't really know why.
+    false
+  );
+  const [showDial, toggleDial] = usePersistantToggle(
+    t.LocalStorageKey.ShowDial,
+    true
+  );
+
   const [updateAvailable, setUpdateAvailable] = useState(false);
   useEffect(() => {
     serviceWorker.register({

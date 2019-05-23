@@ -6,12 +6,14 @@ import {
   useEffect,
   useRef
 } from "react";
+import * as R from "ramda";
 import * as d from "deep-object-diff";
+import * as t from "./types";
 
 // TODO - add in some logic to do simple migrations. Otherwise, we get stuck
 // with this state forever and have to blow it away.
 export const useLocalStorage = <T>(
-  key: string,
+  key: t.LocalStorageKey,
   initialValue: T | (() => T),
   override: boolean = false
 ): [T, Dispatch<SetStateAction<T>>] => {
@@ -43,17 +45,31 @@ export const useLocalStorage = <T>(
   return [value, setNewValue];
 };
 
+export const usePersistantToggle = (
+  key: t.LocalStorageKey,
+  initialValue: boolean
+): [boolean, () => void] => {
+  const [storageValue, setStorageValue] = useLocalStorage(key, initialValue);
+  const toggle = useCallback(() => {
+    setStorageValue(R.not);
+  }, [setStorageValue]);
+  return [storageValue, toggle];
+};
+
 export const useToggle = (
   initialValue: boolean,
   sideEffect = (toggleState: boolean) => {}
 ): [boolean, () => void] => {
   const [value, setValue] = useState(initialValue);
-  const toggle = () =>
-    setValue((old: boolean) => {
-      const newValue = !old;
-      sideEffect(newValue);
-      return newValue;
-    });
+  const toggle = useCallback(
+    () =>
+      setValue((old: boolean) => {
+        const newValue = !old;
+        sideEffect(newValue);
+        return newValue;
+      }),
+    [sideEffect]
+  );
   return [value, toggle];
 };
 

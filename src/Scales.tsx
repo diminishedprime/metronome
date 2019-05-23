@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 
-import { useLocalStorage } from "./hooks";
+import { useLocalStorage, usePersistantToggle } from "./hooks";
 import * as R from "ramda";
 import { Button, Buttons } from "./Common";
-import { Scale, Pitch, Mode, ScalesDB, ScaleKey, scaleKeys } from "./types";
+import { Scale, Mode, ScalesDB, ScaleKey, scaleKeys } from "./types";
+import * as t from "./types";
 
 enum ScaleMode {
   NOT_STARTED = "Not Started",
@@ -212,7 +213,7 @@ const LearnScales = ({
 
 const Scales = ({ startMetronome, stopMetronome, ...props }: Props) => {
   const [scalesDB, setScalesDB] = useLocalStorage(
-    "@mjh/metronome/scales-db-2",
+    t.LocalStorageKey.ScalesDB,
     initScalesDB
   );
 
@@ -231,6 +232,11 @@ const Scales = ({ startMetronome, stopMetronome, ...props }: Props) => {
   const toggleKnown = ({ pitch, mode }: Scale) => () => {
     setScalesDB(R.over(R.lensPath([pitch, mode, "known"]), R.not));
   };
+
+  const [showKnown, toggleShowKnown] = usePersistantToggle(
+    t.LocalStorageKey.ShowKnown,
+    false
+  );
 
   const addBPM = ({ pitch, mode }: Scale, n: number) => () => {
     setScalesDB(R.over(R.lensPath([pitch, mode, "bpm"]), R.add(n)));
@@ -270,27 +276,39 @@ const Scales = ({ startMetronome, stopMetronome, ...props }: Props) => {
           </div>
           <hr />
 
-          {getScalesByFilter(scalesDB, s => s.mode === Mode.Major).map(
-            (scale: Scale) => (
-              <ScalesGroup
-                key={`${scale.pitch}-${scale.mode}`}
-                {...scale}
-                toggleLearning={toggleLearning(scale)}
-                toggleKnown={toggleKnown(scale)}
-              />
-            )
-          )}
+          <Buttons>
+            <Button
+              onClick={toggleShowKnown}
+              className={`${
+                showKnown ? "is-primary is-outlined" : "is-danger"
+              }`}
+            >
+              {showKnown ? "Hide Known" : "Show Known"}
+            </Button>
+          </Buttons>
+          {getScalesByFilter(
+            scalesDB,
+            s => s.mode === Mode.Major && (showKnown ? true : s.known === false)
+          ).map((scale: Scale) => (
+            <ScalesGroup
+              key={`${scale.pitch}-${scale.mode}`}
+              {...scale}
+              toggleLearning={toggleLearning(scale)}
+              toggleKnown={toggleKnown(scale)}
+            />
+          ))}
           <hr />
-          {getScalesByFilter(scalesDB, s => s.mode === Mode.Minor).map(
-            (scale: Scale) => (
-              <ScalesGroup
-                key={`${scale.pitch}-${scale.mode}`}
-                {...scale}
-                toggleLearning={toggleLearning(scale)}
-                toggleKnown={toggleKnown(scale)}
-              />
-            )
-          )}
+          {getScalesByFilter(
+            scalesDB,
+            s => s.mode === Mode.Minor && (showKnown ? true : s.known === false)
+          ).map((scale: Scale) => (
+            <ScalesGroup
+              key={`${scale.pitch}-${scale.mode}`}
+              {...scale}
+              toggleLearning={toggleLearning(scale)}
+              toggleKnown={toggleKnown(scale)}
+            />
+          ))}
         </div>
       ) : (
         <LearnScales

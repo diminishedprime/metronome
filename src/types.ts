@@ -1,5 +1,19 @@
 import React from "react";
 
+export enum LocalStorageKey {
+  SignatureDivisions = "@mjh/k/signature-divisions",
+  ShowKnown = "@mjh/k/show-known-0",
+  ScalesDB = "@mjh/k/scales-db",
+  Divisions = "@mjh/k/divisions-0",
+  Signature = "@mjh/k/signature-0",
+  BPM = "@mjh/k/bpm-0",
+  KnownScales = "@mjh/k/known-scales-0",
+  ShowScales = "@mjh/k/show-scales-0",
+  ShowTuner = "@mjh/k/show-tuner-0",
+  ShowDial = "@mjh/k/show-dial-0",
+  Radians = "@mjh/k/radians-0"
+}
+
 // TODO - figure out a better way to manage this.
 export interface SubDivision {
   on: boolean;
@@ -25,18 +39,18 @@ export enum Pitch {
 
   A_Flat = "Ab",
   B_Flat = "Bb",
-  C_Flat = "Bb",
+  C_Flat = "Cb",
   D_Flat = "Db",
   E_Flat = "Eb",
-  F_Flat = "Eb",
+  F_Flat = "Fb",
   G_Flat = "Gb",
 
   A_Sharp = "A#",
   B_Sharp = "B#",
-  C_Sharp = "B#",
+  C_Sharp = "C#",
   D_Sharp = "D#",
   E_Sharp = "E#",
-  F_Sharp = "E#",
+  F_Sharp = "F#",
   G_Sharp = "G#"
 }
 

@@ -219,17 +219,20 @@ export const useMetronome = (
   const clampBPM = useCallback((bpm: number) => R.clamp(10, 250, bpm), []);
 
   const [playing, setPlaying] = useState(false);
-  const [bpm, setBPM] = useAdvice(useLocalStorage("@mjh/bpm", 90), clampBPM);
+  const [bpm, setBPM] = useAdvice(
+    useLocalStorage(t.LocalStorageKey.BPM, 90),
+    clampBPM
+  );
   const [beatToSchedule, setBeatToSchedule] = useState(0);
   const [signature, setSignature] = useLocalStorage<t.Signature>(
-    "@mjh/saved-signature",
+    t.LocalStorageKey.Signature,
     {
       denominator: 4,
       beats: [{ divisions: [1] }, { divisions: [1] }, { divisions: [1] }]
     }
   );
   const [divisions, setDivisions] = useLocalStorage<t.Division[][]>(
-    "@mjh/saved-divisions",
+    t.LocalStorageKey.Divisions,
     resetActiveSubDivisions(signature.beats)
   );
 

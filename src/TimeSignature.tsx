@@ -30,7 +30,7 @@ const TimeSignature = ({
   const [edit, toggleEdit] = useToggle(false);
   const [hasChanged, setHasChanged] = useState(false);
   const [divisions, setDivisions] = useLocalStorage<t.DivisionOptions[]>(
-    "@mjh/time-signature",
+    t.LocalStorageKey.SignatureDivisions,
     [1]
   );
   const setNumerator = useCallback(

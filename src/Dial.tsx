@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useLocalStorage } from "./hooks";
 import styled from "styled-components";
+import * as t from "./types";
 
 const Outer = styled.div`
   margin: auto;
@@ -30,12 +32,11 @@ const InfiniKnob = ({
   initialValue,
   addDiff,
   children
-}: Props &
-  React.DetailedHTMLProps<
-    React.HTMLAttributes<HTMLDivElement>,
-    HTMLDivElement
-  >) => {
-  const [radians, setRadions] = useState((initialValue * (Math.PI * 3)) / 2);
+}: React.PropsWithChildren<Props>) => {
+  const [radians, setRadians] = useLocalStorage(
+    t.LocalStorageKey.Radians,
+    (initialValue * (Math.PI * 3)) / 2
+  );
   const radiansRef = useRef(Math.PI);
   useEffect(() => {
     radiansRef.current = radians;
@@ -100,10 +101,10 @@ const InfiniKnob = ({
       }
       const same = newRadians === radiansRef.current;
       if (!same) {
-        setRadions(newRadians);
+        setRadians(newRadians);
       }
     },
-    [addToBuffer]
+    [addToBuffer, setRadians]
   );
 
   const onMouseMove = useCallback(
