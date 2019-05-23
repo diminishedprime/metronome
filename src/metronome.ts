@@ -1,12 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import * as R from "ramda";
 import * as t from "./types";
-import { useLocalStorage } from "./hooks";
+import { useLocalStorage, useAdvice, useDetectChangedValue } from "./hooks";
 const click = require("./click.wav");
-
-// When I schedule a group of notes, I need to also add to a queue that it's
-// scheduled, and when the scheduled notes change, I need to run runAtExactly to
-// change the gui information..
 
 const scheduleNote = (
   audioContext: AudioContext,
@@ -74,8 +70,7 @@ const scheduleGroup = (
   audioContext: AudioContext,
   setDivisions: React.Dispatch<React.SetStateAction<t.Divisions>>,
   beatToSchedule: React.MutableRefObject<number>,
-  nextBeat: () => void,
-  cancelUIUpdateRef: React.MutableRefObject<boolean>
+  nextBeat: () => void
 ) => {
   const {
     bpm,
@@ -90,7 +85,9 @@ const scheduleGroup = (
   }
   const divisions = currentBeat.divisions;
   const secondsPerBeat = 60.0 / bpm;
-  // TODO - this isn't really nextNoteTime, it's something like scheduledUpTo.
+  // TODO - instead of scheduling a whole measure, I want to make a queue of
+  // notes and only schedule the ones that should happen before the next
+  // setInterval is run.
   while (nextNoteTime.current < audioContext.currentTime + scheduleAhead) {
     // schedule the whole beat, I think.
     const beatData = beatsFor(
@@ -136,8 +133,7 @@ const useScheduleAhead = (
   state: t.State,
   setDivisions: React.Dispatch<React.SetStateAction<t.Divisions>>,
   beatToSchedule: number,
-  nextBeat: () => void,
-  cancelUIUpdateRef: React.MutableRefObject<boolean>
+  nextBeat: () => void
 ) => {
   const scheduleAhead = 0.3;
   const { playing } = state;
@@ -157,6 +153,7 @@ const useScheduleAhead = (
   }, [beatToSchedule]);
 
   useEffect(() => {
+    console.log("interval effect");
     if (
       delay !== undefined &&
       audioContext !== undefined &&
@@ -173,8 +170,7 @@ const useScheduleAhead = (
           audioContext,
           setDivisions,
           beatToScheduleRef,
-          nextBeat,
-          cancelUIUpdateRef
+          nextBeat
         );
       };
       const id = setInterval(tick, delay);
@@ -182,7 +178,8 @@ const useScheduleAhead = (
         clearInterval(id);
       };
     }
-  }, [delay, buffer, audioContext, cancelUIUpdateRef, nextBeat, setDivisions]);
+  }, [delay, buffer, audioContext, nextBeat, setDivisions]);
+  useDetectChangedValue(delay, buffer, audioContext, nextBeat, setDivisions);
 };
 
 const runAtTime = (
@@ -221,9 +218,10 @@ const resetActiveSubDivisions = (
 export const useMetronome = (
   audioContext: AudioContext | undefined
 ): t.Metronome => {
+  const clampBPM = useCallback((bpm: number) => R.clamp(10, 250, bpm), []);
+
   const [playing, setPlaying] = useState(false);
-  // TODO, the exposed setBPM function should clamp the value.
-  const [bpm, setBPM] = useLocalStorage("@mjh/bpm", 90);
+  const [bpm, setBPM] = useAdvice(useLocalStorage("@mjh/bpm", 90), clampBPM);
   const [beatToSchedule, setBeatToSchedule] = useState(0);
   const [signature, setSignature] = useLocalStorage<t.Signature>(
     "@mjh/saved-signature",
@@ -245,7 +243,6 @@ export const useMetronome = (
   };
   const { beats } = signature;
 
-  const cancelUIUpdateRef = useRef(false);
   const numeratorRef = useRef(beats.length);
 
   const addBPM = (bpmToAdd: number) => {
@@ -299,14 +296,7 @@ export const useMetronome = (
     }
   }, [playing, beats, setDivisions]);
 
-  useScheduleAhead(
-    audioContext,
-    state,
-    setDivisions,
-    beatToSchedule,
-    nextBeat,
-    cancelUIUpdateRef
-  );
+  useScheduleAhead(audioContext, state, setDivisions, beatToSchedule, nextBeat);
 
   return {
     toggleStart,

@@ -19,7 +19,6 @@ const SigColumn = styled.div`
 
 const SigColumns = styled.div`
   display: flex;
-  height: 20px;
 `;
 
 const TimeSignature = ({
@@ -106,20 +105,27 @@ const TimeSignature = ({
             <div className={`column has-text-centered`} key={beat}>
               {subDivisions.map(({ divisions, current }, beatIdx) => {
                 return (
-                  <SigColumns
-                    key={`d${divisions}`}
-                    className="has-background-light"
-                  >
+                  <SigColumns key={`d${divisions}`}>
                     {R.range(0, divisions).map((d, idx) => {
                       const bg =
                         current === idx && playing
                           ? "has-background-primary"
-                          : "";
+                          : "has-background-light";
+                      const marginTop = divisions === 1 ? 0 : 5;
+                      const marginLeft = idx === 0 ? 0 : 10 / divisions;
+                      const marginRight =
+                        idx === divisions - 1 ? 0 : 10 / divisions;
                       return (
                         <SigColumn
                           key={`d${divisions}-${idx}`}
                           className={`${bg} has-text-centered`}
-                          style={{ justifyContent: "center" }}
+                          style={{
+                            justifyContent: "center",
+                            height: 70 / subDivisions.length - marginTop,
+                            marginLeft,
+                            marginRight,
+                            marginTop
+                          }}
                         >
                           {beatIdx === 0 && beat + 1}
                         </SigColumn>

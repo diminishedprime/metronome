@@ -1,4 +1,12 @@
-import { useState, Dispatch, SetStateAction, useCallback } from "react";
+import {
+  useState,
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useRef
+} from "react";
+import * as d from "deep-object-diff";
 
 // TODO - add in some logic to do simple migrations. Otherwise, we get stuck
 // with this state forever and have to blow it away.
@@ -47,4 +55,36 @@ export const useToggle = (
       return newValue;
     });
   return [value, toggle];
+};
+
+export const useAdvice = <T>(
+  [originalT, originalSetter]: [T, React.Dispatch<React.SetStateAction<T>>],
+  advice: (t: T) => T
+): [T, React.Dispatch<React.SetStateAction<T>>] => {
+  const newSetter = useCallback(
+    (action: React.SetStateAction<T>) => {
+      originalSetter(oldT =>
+        advice(action instanceof Function ? action(oldT) : action)
+      );
+    },
+    [advice, originalSetter]
+  );
+  return [originalT, newSetter];
+};
+
+export const useDetectChangedValue = (...values: any[]) => {
+  const oldValues = useRef<any[]>(values);
+
+  useEffect(() => {
+    const lastValues = oldValues.current;
+    const newValues = values;
+    lastValues.forEach((lastValue: any, index: number) => {
+      const newValue = newValues[index];
+      if (newValue !== lastValue) {
+        const diff = d.detailedDiff(lastValue, newValue);
+        console.log(`Change at argument index: ${index}`, diff);
+      }
+    });
+    oldValues.current = values;
+  }, [values]);
 };
