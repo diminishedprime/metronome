@@ -81,7 +81,6 @@ const Metronome = () => {
 
       <section className="section">
         <Buttons>
-          {/* <SubDivisions subDivisions={subDivisions} toggle={toggleSubDivision} /> */}
           <TapIn setBPM={setBPM} />
           <GrowButton
             classes={["is-outlined", playing ? "is-danger" : "is-primary"]}
