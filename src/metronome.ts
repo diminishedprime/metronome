@@ -27,23 +27,28 @@ const beatsFor = (
   buffer: AudioBuffer,
   currentBeat: number
 ): Array<t.Beat> => {
-  return divisions.reduce((acc: t.Beat[], divisions) => {
-    const noteOffset = secondsPerBeat / divisions;
-    const newBeats = R.range(0, divisions).map((divisionIndex: number) => {
+  const beats = [];
+  for (const divisionOptions of divisions) {
+    const noteOffset = secondsPerBeat / divisionOptions;
+    for (
+      let divisionIndex = 0;
+      divisionIndex < divisionOptions;
+      divisionIndex++
+    ) {
       const time = startOfBeatTime + divisionIndex * noteOffset;
       const beat: t.Beat = {
         time,
         pitch: 220,
         gain: 1.0 * 0.5,
         buffer,
-        divisions,
+        divisions: divisionOptions,
         divisionIndex,
         currentBeat
       };
-      return beat;
-    });
-    return acc.concat(newBeats);
-  }, []);
+      beats.push(beat);
+    }
+  }
+  return beats;
 };
 
 const useAudioBuffer = (
