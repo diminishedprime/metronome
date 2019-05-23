@@ -212,6 +212,8 @@ const LearnScales = ({
 };
 
 const Scales = ({ startMetronome, stopMetronome, ...props }: Props) => {
+  // TODO - Add a button to start learning a new scale. This will be a scale
+  // that is know known and is not learning.
   const [scalesDB, setScalesDB] = useLocalStorage(
     t.LocalStorageKey.ScalesDB,
     initScalesDB
