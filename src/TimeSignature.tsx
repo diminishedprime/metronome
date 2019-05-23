@@ -78,6 +78,12 @@ const TimeSignature = ({
 
   return (
     <>
+      <h3
+        className="subtitle is-5"
+        style={{ paddingLeft: "10px", marginBottom: "0" }}
+      >
+        Divisions
+      </h3>
       <section
         style={{ marginTop: "10px" }}
         className="section buttons is-centered"

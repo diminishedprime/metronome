@@ -58,12 +58,12 @@ const Metronome = () => {
           <Button onClick={() => window.location.reload()}>Refresh</Button>
         </section>
       )}
-      <TimeSignature
-        playing={playing}
-        signature={signature}
-        setSignature={setSignature}
-        activeSubDivisions={divisions}
-      />
+      <section
+        className="section"
+        style={{ marginTop: "10px", marginBottom: "10px" }}
+      >
+        <h2 className="title is-2 has-text-centered">(mjh)tronome</h2>
+      </section>
       {showDial && (
         <section className="section">
           <Dial initialValue={bpm} addDiff={addBPM}>
@@ -72,6 +72,12 @@ const Metronome = () => {
           </Dial>
         </section>
       )}
+      <TimeSignature
+        playing={playing}
+        signature={signature}
+        setSignature={setSignature}
+        activeSubDivisions={divisions}
+      />
 
       <section className="section">
         <Buttons>
