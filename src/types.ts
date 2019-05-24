@@ -1,7 +1,7 @@
 import React from "react";
 
 export enum LocalStorageKey {
-  SignatureDivisions = "@mjh/k/signature-divisions-2",
+  SignatureDivisions = "@mjh/k/signature-divisions-3",
   ShowKnown = "@mjh/k/show-known-2",
   ScalesDB = "@mjh/k/scales-db",
   ActiveBeats = "@mjh/k/active-beats-2",
@@ -165,7 +165,7 @@ export type EnabledDivisions = {
 
 export interface TimeSignature {
   denominator: number;
-  numerator: Division[][];
+  numerator: EnabledDivisions[];
 }
 
 export interface State {

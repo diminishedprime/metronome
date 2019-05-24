@@ -27,29 +27,32 @@ const scheduleNote = (
 const beatsFor = (
   startOfBeatTime: number,
   secondsPerBeat: number,
-  divisions: t.Division[],
+  divisions: t.EnabledDivisions,
   buffer: AudioBuffer,
   currentBeat: number
 ): Array<t.Beat> => {
   const beats = [];
-  for (const divisionOptions of divisions) {
-    const noteOffset = secondsPerBeat / divisionOptions;
-    for (
-      let divisionIndex = 0;
-      divisionIndex < divisionOptions;
-      divisionIndex++
-    ) {
-      const time = startOfBeatTime + divisionIndex * noteOffset;
-      const beat: t.Beat = {
-        time,
-        pitch: 220,
-        gain: 1.0 * 0.5,
-        buffer,
-        divisions: divisionOptions,
-        divisionIndex,
-        currentBeat
-      };
-      beats.push(beat);
+  for (const key in divisions) {
+    if (divisions[key]) {
+      let divisionOption = parseInt(key, 10) as t.Division;
+      const noteOffset = secondsPerBeat / divisionOption;
+      for (
+        let divisionIndex = 0;
+        divisionIndex < divisionOption;
+        divisionIndex++
+      ) {
+        const time = startOfBeatTime + divisionIndex * noteOffset;
+        const beat: t.Beat = {
+          time,
+          pitch: 220,
+          gain: 1.0 * 0.5,
+          buffer,
+          divisions: divisionOption,
+          divisionIndex,
+          currentBeat
+        };
+        beats.push(beat);
+      }
     }
   }
   beats.sort((a, b) => a.time - b.time);
@@ -77,7 +80,7 @@ const playBeatsTill = (
 const addBeatsToQueue = (
   state: t.State,
   nextNoteTime: React.MutableRefObject<number>,
-  currentBeat: t.Division[],
+  currentBeat: t.EnabledDivisions,
   beatIdx: number,
   currentTime: number,
   scheduleAhead: number,
@@ -230,17 +233,9 @@ const useScheduleAhead = (
   ]);
 };
 
-// TODO - this also seems like something that can be cleaned up. I probably just
-// haven't found the right types for subdivisions.
-const resetActiveBeats = (beats: t.Division[][]): t.ActiveDivisions[] =>
-  beats.map((beat: t.Division[]) =>
-    beat.reduce(
-      (acc: t.ActiveDivisions, divisions: t.Division) => ({
-        ...acc,
-        [divisions]: R.range(0, divisions).map(() => false)
-      }),
-      {}
-    )
+const resetActiveBeats = (beats: t.EnabledDivisions[]): t.ActiveDivisions[] =>
+  beats.map((enabledDivisions: t.EnabledDivisions) =>
+    R.mapObjIndexed(() => undefined, enabledDivisions)
   );
 
 const clampBPM = (bpm: number) => R.clamp(10, 250, bpm);
@@ -257,7 +252,7 @@ export const useMetronome = (
     t.LocalStorageKey.TimeSignature,
     {
       denominator: 4,
-      numerator: [[1], [1], [1]]
+      numerator: [{ 1: true }, { 1: true }, { 1: true }]
     }
   );
   const [activeDivisions, setActiveDivisions] = useLocalStorage<

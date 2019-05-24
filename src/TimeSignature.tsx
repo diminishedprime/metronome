@@ -29,57 +29,49 @@ const TimeSignature = ({
 }: Props) => {
   const [edit, toggleEdit] = useToggle(false);
   const [hasChanged, setHasChanged] = useState(false);
-  const [divisions, setDivisions] = useLocalStorage<t.Division[]>(
-    t.LocalStorageKey.SignatureDivisions,
-    [1]
-  );
+  const [uIenabledDivisions, setUiEnabledDivisions] = useLocalStorage<
+    t.EnabledDivisions
+  >(t.LocalStorageKey.SignatureDivisions, { 1: true });
   const setNumerator = useCallback(
     (numerator: number) => {
       setHasChanged(true);
       setSignature(old => ({
         ...old,
-        numerator: R.range(0, numerator).map(() => divisions)
+        numerator: R.range(0, numerator).map(() => uIenabledDivisions)
       }));
     },
-    [divisions, setSignature]
+    [uIenabledDivisions, setSignature]
   );
 
   const classesForDivisions = useCallback(
-    (division: t.Division) => {
-      if (divisions.indexOf(division) === -1) {
-        return "";
-      } else {
-        return "is-primary";
-      }
-    },
-    [divisions]
+    (division: t.Division) =>
+      uIenabledDivisions[division] ? "is-primary" : "",
+    [uIenabledDivisions]
   );
   useEffect(() => {
     if (hasChanged) {
       setSignature(old => ({
         ...old,
-        numerator: R.range(0, old.numerator.length).map(() => divisions)
+        numerator: R.range(0, old.numerator.length).map(
+          () => uIenabledDivisions
+        )
       }));
     }
-  }, [divisions, hasChanged, setSignature]);
+  }, [uIenabledDivisions, hasChanged, setSignature]);
 
   const toggleDivisionOption = useCallback(
     (divisionOption: t.Division) => {
       setHasChanged(true);
-      setDivisions(old => {
-        if (old.indexOf(divisionOption) !== -1) {
-          return old.filter(a => a !== divisionOption);
-        } else {
-          return old.concat([divisionOption]).sort();
-        }
-      });
+      setUiEnabledDivisions(old =>
+        R.over(R.lensPath([divisionOption]), R.not, old)
+      );
     },
-    [setDivisions]
+    [setUiEnabledDivisions]
   );
 
   const clearDivisions = useCallback(() => {
-    setDivisions([1]);
-  }, [setDivisions]);
+    setUiEnabledDivisions({ 1: true });
+  }, [setUiEnabledDivisions]);
 
   return (
     <>
@@ -110,43 +102,49 @@ const TimeSignature = ({
         </GrowButton>
       </section>
       <section className="section is-mobile columns" onClick={toggleEdit}>
-        {activeBeats.map((activeBeat: t.ActiveDivisions, beat) => {
-          const activeBeatKeys = Object.keys(activeBeat);
+        {numerator.map((beatDivisions: t.EnabledDivisions, beat: number) => {
           return (
             <div className={`column has-text-centered`} key={beat}>
-              {activeBeatKeys.map((divisionOption, beatIdx) => {
-                const divisions = parseInt(divisionOption, 10);
-                const thing = activeBeat[divisions];
-                return (
-                  <SigColumns key={`d${divisions}`}>
-                    {R.range(0, divisions).map(idx => {
-                      const bg =
-                        thing === idx && playing
-                          ? "has-background-primary"
-                          : "has-background-light";
-                      const marginTop = divisions === 1 ? 0 : 5;
-                      const marginLeft = idx === 0 ? 0 : 10 / divisions;
-                      const marginRight =
-                        idx === divisions - 1 ? 0 : 10 / divisions;
-                      return (
-                        <SigColumn
-                          key={`d${divisions}-${idx}`}
-                          className={`${bg} has-text-centered`}
-                          style={{
-                            justifyContent: "center",
-                            height: 70 / activeBeatKeys.length - marginTop,
-                            marginLeft,
-                            marginRight,
-                            marginTop
-                          }}
-                        >
-                          {beatIdx === 0 && beat + 1}
-                        </SigColumn>
-                      );
-                    })}
-                  </SigColumns>
-                );
-              })}
+              {Object.keys(beatDivisions)
+                .filter(key => beatDivisions[key as any])
+                .map((division, beatIdx) => {
+                  const divisions = parseInt(division, 10);
+                  console.log({ divisions, beatDivisions });
+                  return (
+                    <SigColumns key={`d${divisions}`}>
+                      {R.range(0, divisions).map(idx => {
+                        const bg =
+                          activeBeats[beat][divisions] === idx && playing
+                            ? "has-background-primary"
+                            : "has-background-light";
+                        const marginTop = divisions === 1 ? 0 : 5;
+                        const marginLeft = idx === 0 ? 0 : 10 / divisions;
+                        const marginRight =
+                          idx === divisions - 1 ? 0 : 10 / divisions;
+                        return (
+                          <SigColumn
+                            key={`d${divisions}-${idx}`}
+                            className={`${bg} has-text-centered`}
+                            style={{
+                              justifyContent: "center",
+                              height:
+                                70 /
+                                  Object.keys(beatDivisions).filter(
+                                    key => beatDivisions[key as any]
+                                  ).length -
+                                marginTop,
+                              marginLeft,
+                              marginRight,
+                              marginTop
+                            }}
+                          >
+                            {beatIdx === 0 && beat + 1}
+                          </SigColumn>
+                        );
+                      })}
+                    </SigColumns>
+                  );
+                })}
             </div>
           );
         })}
