@@ -23,7 +23,7 @@ const SigColumns = styled.div`
 
 const TimeSignature = ({
   playing,
-  signature: { beats },
+  signature: { numerator },
   setSignature,
   activeBeats
 }: Props) => {
@@ -38,7 +38,7 @@ const TimeSignature = ({
       setHasChanged(true);
       setSignature(old => ({
         ...old,
-        beats: R.range(0, numerator).map(() => ({ divisions }))
+        numerator: R.range(0, numerator).map(() => ({ divisions }))
       }));
     },
     [divisions, setSignature]
@@ -58,7 +58,7 @@ const TimeSignature = ({
     if (hasChanged) {
       setSignature(old => ({
         ...old,
-        beats: R.range(0, old.beats.length).map(() => ({ divisions }))
+        numerator: R.range(0, old.numerator.length).map(() => ({ divisions }))
       }));
     }
   }, [divisions, hasChanged, setSignature]);

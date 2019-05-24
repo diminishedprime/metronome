@@ -5,7 +5,7 @@ export enum LocalStorageKey {
   ShowKnown = "@mjh/k/show-known-0",
   ScalesDB = "@mjh/k/scales-db",
   ActiveBeats = "@mjh/k/active-beats-0",
-  Signature = "@mjh/k/signature-0",
+  Signature = "@mjh/k/signature-1",
   BPM = "@mjh/k/bpm-0",
   KnownScales = "@mjh/k/known-scales-0",
   ShowScales = "@mjh/k/show-scales-0",
@@ -160,7 +160,7 @@ export interface SignatureBeat {
 
 export interface TimeSignature {
   denominator: number;
-  beats: Array<SignatureBeat>;
+  numerator: Array<SignatureBeat>;
 }
 
 export type Division = 1 | 2 | 3 | 4 | 5 | 6;

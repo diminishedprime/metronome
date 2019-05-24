@@ -134,7 +134,7 @@ const useScheduleAhead = (
 
   const nextBeat = () => {
     setBeatToSchedule(
-      old => (old + 1) % stateRef.current.signature.beats.length
+      old => (old + 1) % stateRef.current.signature.numerator.length
     );
   };
 
@@ -151,7 +151,7 @@ const useScheduleAhead = (
         );
         let lastBeatIdx = beat.currentBeat - 1;
         if (lastBeatIdx < 0) {
-          lastBeatIdx = stateRef.current.signature.beats.length - 1;
+          lastBeatIdx = stateRef.current.signature.numerator.length - 1;
         }
         return R.adjust(
           lastBeatIdx,
@@ -194,10 +194,13 @@ const useScheduleAhead = (
       nextNoteTimeRef.current = firstClickTime;
       const tick = () => {
         const {
-          signature: { beats }
+          signature: { numerator }
         } = stateRef.current;
-        const beatIdx = Math.min(beatToScheduleRef.current, beats.length - 1);
-        const currentBeat = beats[beatIdx];
+        const beatIdx = Math.min(
+          beatToScheduleRef.current,
+          numerator.length - 1
+        );
+        const currentBeat = numerator[beatIdx];
         addBeatsToQueue(
           stateRef.current,
           nextNoteTimeRef,
@@ -254,12 +257,12 @@ export const useMetronome = (
     t.LocalStorageKey.Signature,
     {
       denominator: 4,
-      beats: [{ divisions: [1] }, { divisions: [1] }, { divisions: [1] }]
+      numerator: [{ divisions: [1] }, { divisions: [1] }, { divisions: [1] }]
     }
   );
   const [activeBeats, setActiveBeats] = useLocalStorage<t.ActiveBeat[]>(
     t.LocalStorageKey.ActiveBeats,
-    resetActiveBeats(signature.beats)
+    resetActiveBeats(signature.numerator)
   );
 
   const state: t.State = {
@@ -268,7 +271,7 @@ export const useMetronome = (
     signature,
     activeBeats
   };
-  const { beats } = signature;
+  const { numerator } = signature;
 
   const bpmRef = useRef(bpm);
   useEffect(() => {
@@ -281,17 +284,17 @@ export const useMetronome = (
   useEffect(() => {
     // TODO - This would be fancier if when the next beat can still happen, it
     // didn't clear the active beat in the UI.
-    setActiveBeats(resetActiveBeats(beats));
-  }, [beats, signature, setActiveBeats]);
+    setActiveBeats(resetActiveBeats(numerator));
+  }, [numerator, signature, setActiveBeats]);
 
   useEffect(() => {
     if (!playing) {
-      setActiveBeats(resetActiveBeats(beats));
+      setActiveBeats(resetActiveBeats(numerator));
       setTimeout(() => {
-        setActiveBeats(resetActiveBeats(beats));
+        setActiveBeats(resetActiveBeats(numerator));
       }, 300);
     }
-  }, [playing, beats, setActiveBeats]);
+  }, [playing, numerator, setActiveBeats]);
 
   useScheduleAhead(audioContext, state, setActiveBeats);
 
