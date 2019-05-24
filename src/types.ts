@@ -156,8 +156,11 @@ export interface Beat {
 
 export type Division = 1 | 2 | 3 | 4 | 5 | 6;
 
-export type ActiveDivision = {
+export type ActiveDivisions = {
   [divisionOption: number]: number | undefined;
+};
+export type EnabledDivisions = {
+  [divisionOption: number]: boolean;
 };
 
 export interface TimeSignature {
@@ -169,7 +172,7 @@ export interface State {
   bpm: number;
   playing: boolean;
   signature: TimeSignature;
-  activeDivisions: Array<ActiveDivision>;
+  activeDivisions: Array<ActiveDivisions>;
 }
 
 export interface Metronome {

@@ -107,7 +107,7 @@ const intervalError = 0.1;
 const useScheduleAhead = (
   audioContext: AudioContext | undefined,
   state: t.State,
-  setActiveDivisions: React.Dispatch<React.SetStateAction<t.ActiveDivision[]>>
+  setActiveDivisions: React.Dispatch<React.SetStateAction<t.ActiveDivisions[]>>
 ) => {
   const scheduleAhead = 0.3;
   const { playing } = state;
@@ -144,7 +144,7 @@ const useScheduleAhead = (
       setActiveDivisions(oldBeats => {
         const withNewBeat = R.adjust(
           beat.currentBeat,
-          (activeBeat: t.ActiveDivision) => {
+          (activeBeat: t.ActiveDivisions) => {
             return { ...activeBeat, [beat.divisions]: beat.divisionIndex };
           },
           oldBeats
@@ -155,7 +155,7 @@ const useScheduleAhead = (
         }
         return R.adjust(
           lastBeatIdx,
-          (activeBeat: t.ActiveDivision) => {
+          (activeBeat: t.ActiveDivisions) => {
             return Object.keys(activeBeat).reduce(
               (acc, key) => ({ ...acc, [key]: undefined }),
               {}
@@ -232,10 +232,10 @@ const useScheduleAhead = (
 
 // TODO - this also seems like something that can be cleaned up. I probably just
 // haven't found the right types for subdivisions.
-const resetActiveBeats = (beats: t.Division[][]): t.ActiveDivision[] =>
+const resetActiveBeats = (beats: t.Division[][]): t.ActiveDivisions[] =>
   beats.map((beat: t.Division[]) =>
     beat.reduce(
-      (acc: t.ActiveDivision, divisions: t.Division) => ({
+      (acc: t.ActiveDivisions, divisions: t.Division) => ({
         ...acc,
         [divisions]: R.range(0, divisions).map(() => false)
       }),
@@ -261,7 +261,7 @@ export const useMetronome = (
     }
   );
   const [activeDivisions, setActiveDivisions] = useLocalStorage<
-    t.ActiveDivision[]
+    t.ActiveDivisions[]
   >(t.LocalStorageKey.ActiveBeats, resetActiveBeats(signature.numerator));
 
   const state: t.State = {
