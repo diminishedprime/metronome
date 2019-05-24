@@ -8,19 +8,18 @@ const click = require("./click.wav");
 
 const scheduleNote = (
   audioContext: AudioContext,
-  { time, gain, buffer, pitch }: t.Beat
+  { time, gain, buffer, pitch, currentBeat, divisionIndex }: t.Beat
 ) => {
+  const isOne = currentBeat === 0 && divisionIndex === 0;
   const sound = audioContext.createBufferSource();
   sound.buffer = buffer;
-  sound.detune.value = -pitch;
+  sound.detune.value = isOne ? 0 : -pitch;
 
   const volume = audioContext.createGain();
-  volume.gain.value = gain;
+  volume.gain.value = isOne ? 1.0 : gain;
 
   sound.connect(volume);
   volume.connect(audioContext.destination);
-  if (time <= audioContext.currentTime) {
-  }
   sound.start(time);
 };
 
@@ -142,6 +141,7 @@ const useScheduleAhead = (
   };
 
   // TODO - this is super janky.
+  // TODO - this would be much nicer with an animation.
   const setActiveBeat = useCallback(
     (beat: t.Beat) => {
       setActiveDivisions(oldBeats => {
@@ -154,6 +154,9 @@ const useScheduleAhead = (
         );
         let lastBeatIdx = beat.currentBeat - 1;
         if (lastBeatIdx < 0) {
+          if (oldBeats.length === 1) {
+            return withNewBeat;
+          }
           lastBeatIdx = stateRef.current.signature.numerator.length - 1;
         }
         return R.adjust(

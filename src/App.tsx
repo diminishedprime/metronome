@@ -8,8 +8,8 @@ import TapIn from "./TapIn";
 import Tuner from "./Tuner";
 import Dial from "./Dial";
 import Scales from "./Scales";
-import { usePersistantToggle } from "./hooks";
-import { Button, GrowButton, Buttons } from "./Common";
+import { usePersistantToggle, useToggle, useSleepLock } from "./hooks";
+import { Button, Buttons, ToggleButton } from "./Common";
 import * as serviceWorker from "./serviceWorker";
 import * as t from "./types";
 
@@ -32,13 +32,23 @@ const Metronome = () => {
     }
   }, [playing, audioContext]);
 
+  const [wakeLock, toggleWakeLock] = useToggle(false);
+  const { lock, release } = useSleepLock();
+
+  useEffect(() => {
+    if (wakeLock && playing) {
+      lock();
+    } else {
+      release();
+    }
+  }, [playing, wakeLock, lock, release]);
+
   const [showScales, toggleScales] = usePersistantToggle(
     t.LocalStorageKey.ShowScales,
     false
   );
   const [showTuner, toggleTuner] = usePersistantToggle(
     t.LocalStorageKey.ShowTuner,
-
     false
   );
   const [showDial, toggleDial] = usePersistantToggle(
@@ -92,36 +102,35 @@ const Metronome = () => {
       <section className="section">
         <Buttons>
           <TapIn setBPM={setBPM} />
-          <GrowButton
-            className={`is-outlined ${playing ? "is-danger" : "is-primary"}`}
+          <ToggleButton
+            on={!playing}
+            offClass="is-danger"
+            grow
+            isOutlined
+            isPrimary
             onClick={toggleStart}
           >
-            {playing ? "Stop" : "Start"}
-          </GrowButton>
+            <>Start</>
+            <>Stop</>
+          </ToggleButton>
         </Buttons>
       </section>
       {showScales && <Scales startMetronome={start} stopMetronome={stop} />}
       {showTuner && <Tuner />}
       <nav className="navbar is-fixed-bottom has-background-light">
         <InnerBody className=" buttons is-right">
-          <Button
-            className={`${showDial ? "is-primary" : ""}`}
-            onClick={toggleDial}
-          >
+          <ToggleButton isPrimary on={wakeLock} onClick={toggleWakeLock}>
+            Stay Awake
+          </ToggleButton>
+          <ToggleButton isPrimary on={showDial} onClick={toggleDial}>
             Dial
-          </Button>
-          <Button
-            className={`${showScales ? "is-primary" : ""}`}
-            onClick={toggleScales}
-          >
+          </ToggleButton>
+          <ToggleButton isPrimary on={showScales} onClick={toggleScales}>
             Scales
-          </Button>
-          <Button
-            className={`${showTuner ? "is-primary" : ""}`}
-            onClick={toggleTuner}
-          >
+          </ToggleButton>
+          <ToggleButton isPrimary on={showTuner} onClick={toggleTuner}>
             Tuner
-          </Button>
+          </ToggleButton>
           <div>{`v${process.env.REACT_APP_VERSION}`}</div>
         </InnerBody>
       </nav>

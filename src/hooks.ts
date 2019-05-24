@@ -9,6 +9,24 @@ import {
 import * as R from "ramda";
 import * as d from "deep-object-diff";
 import * as t from "./types";
+import NoSleep from "nosleep.js";
+
+export const useSleepLock = () => {
+  const [noSleep] = useState(new NoSleep());
+
+  const lock = useCallback(() => {
+    noSleep.enable();
+  }, [noSleep]);
+
+  const release = useCallback(() => {
+    noSleep.disable();
+  }, [noSleep]);
+
+  return {
+    lock,
+    release
+  };
+};
 
 // TODO - add in some logic to do simple migrations. Otherwise, we get stuck
 // with this state forever and have to blow it away.

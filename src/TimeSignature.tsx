@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import * as R from "ramda";
 import styled from "styled-components";
 import { useToggle, useLocalStorage } from "./hooks";
-import { Button, GrowButton } from "./Common";
+import { Button } from "./Common";
 import * as t from "./types";
 
 interface Props {
@@ -44,7 +44,9 @@ const BeatColumnRow = ({
           playing &&
           activeBeats[beatIdx] &&
           activeBeats[beatIdx][divisions] === idx
-            ? "has-background-primary"
+            ? beatIdx === 0
+              ? "has-background-info"
+              : "has-background-primary"
             : "has-background-light";
         const marginTop = divisions === 1 ? 0 : 5;
         const marginLeft = idx === 0 ? 0 : 10 / divisions;
@@ -119,11 +121,6 @@ const TimeSignature = ({
     [uIenabledDivisions, setSignature]
   );
 
-  const classesForDivisions = useCallback(
-    (division: t.Division) =>
-      uIenabledDivisions[division] ? "is-primary" : "",
-    [uIenabledDivisions]
-  );
   useEffect(() => {
     if (hasChanged) {
       setSignature(old => ({
@@ -161,21 +158,22 @@ const TimeSignature = ({
         style={{ marginTop: "10px" }}
         className="section buttons is-centered"
       >
-        {([2, 3, 4, 5, 6] as t.Division[]).map((num: t.Division) => (
-          <GrowButton
-            key={`division-options-${num}`}
-            className={classesForDivisions(num)}
-            onClick={() => toggleDivisionOption(num)}
-          >
-            {num}
-          </GrowButton>
-        ))}
-        <GrowButton
-          className={"is-danger is-outlined"}
-          onClick={clearDivisions}
-        >
+        {([2, 3, 4, 5, 6] as t.Division[]).map((num: t.Division) => {
+          const isPrimary = uIenabledDivisions[num] || undefined;
+          return (
+            <Button
+              grow
+              isPrimary={isPrimary}
+              key={`division-options-${num}`}
+              onClick={() => toggleDivisionOption(num)}
+            >
+              {num}
+            </Button>
+          );
+        })}
+        <Button grow isDanger isOutlined onClick={clearDivisions}>
           Clear
-        </GrowButton>
+        </Button>
       </section>
       <section className="section is-mobile columns" onClick={toggleEdit}>
         {numerator.map(
@@ -189,10 +187,19 @@ const TimeSignature = ({
       </section>
       {edit && (
         <section className="section buttons is-centered">
-          <Button onClick={() => setNumerator(2)}>2/4</Button>
-          <Button onClick={() => setNumerator(3)}>3/4</Button>
-          <Button onClick={() => setNumerator(4)}>4/4</Button>
-          <Button onClick={() => setNumerator(5)}>5/4</Button>
+          {[1, 2, 3, 4, 5].map(num => {
+            const on = numerator.length === num || undefined;
+            return (
+              <Button
+                key={`numerator-button-${num}`}
+                isPrimary={on}
+                grow
+                onClick={on ? () => {} : () => setNumerator(num)}
+              >
+                {num}/4
+              </Button>
+            );
+          })}
         </section>
       )}
     </>

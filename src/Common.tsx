@@ -1,25 +1,82 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import * as R from "ramda";
 import styled from "styled-components";
 
 interface ButtonProps
   extends React.DetailedHTMLProps<
     React.ButtonHTMLAttributes<HTMLButtonElement>,
     HTMLButtonElement
-  > {}
+  > {
+  primary?: true;
+  isPrimary?: true;
+  isLink?: true;
+  isInfo?: true;
+  isSuccess?: true;
+  isDanger?: true;
+  isOutlined?: true;
+  grow?: true;
+}
 
-export const Button = ({ children, className, ...props }: ButtonProps) => {
-  const classes = `button ${className}`;
-  const allProps = Object.assign(props, { className: classes });
+interface ToggleButtonProps extends ButtonProps {
+  on: boolean;
+  offClass?: string;
+}
+
+export const ToggleButton = (props: ToggleButtonProps) => {
+  const [buttonProps, setButtonProps] = useState(props);
+  const { on, children, offClass, className = "" } = props;
+  useEffect(() => {
+    let newProps = props;
+    if (!props.on) {
+      newProps = R.dissoc("isPrimary", newProps);
+      newProps = R.dissoc("isLink", newProps);
+      newProps = R.dissoc("isDanger", newProps);
+      newProps = R.dissoc("isInfo", newProps);
+      newProps = R.dissoc("isSuccess", newProps);
+      newProps = offClass
+        ? R.assoc("className", `${className} ${offClass}`, newProps)
+        : newProps;
+    }
+    setButtonProps(newProps);
+  }, [props.on]);
+  const { on: _1, offClass: _2, ...renderProps } = buttonProps;
+  const child =
+    children instanceof Array && children.length === 2
+      ? on
+        ? children[0]
+        : children[1]
+      : children;
+  return <Button {...renderProps}>{child}</Button>;
+};
+
+export const Button = ({
+  isPrimary,
+  isDanger,
+  isLink,
+  isInfo,
+  isSuccess,
+  grow,
+  isOutlined,
+  ...props
+}: ButtonProps) => {
+  const primary = isPrimary ? "is-primary" : "";
+  const link = isLink ? "is-link" : "";
+  const danger = isDanger ? "is-danger" : "";
+  const info = isInfo ? "is-info" : "";
+  const success = isSuccess ? "is-success" : "";
+  const outlined = isOutlined ? "is-outlined" : "";
+  const propClassName = props.className ? props.className : "";
+
+  const className = `${propClassName} button ${primary} ${link} ${outlined} ${danger} ${info} ${success}`;
+
+  const style = grow ? { flexGrow: 1 } : {};
+
   return (
-    <button {...allProps} {...props}>
-      {children}
+    <button style={style} {...{ ...props, className }}>
+      {props.children}
     </button>
   );
 };
-
-export const GrowButton = styled(Button)`
-  flex-grow: 1;
-`;
 
 interface ButtonsProps
   extends React.DetailedHTMLProps<

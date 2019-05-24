@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import { useLocalStorage, usePersistantToggle } from "./hooks";
 import * as R from "ramda";
-import { Button, Buttons } from "./Common";
+import { Button, Buttons, ToggleButton } from "./Common";
 import { Scale, Mode, ScalesDB, ScaleKey, scaleKeys } from "./types";
 import * as t from "./types";
 
@@ -80,15 +80,12 @@ const ScalesGroup = ({
         {pitch} {mode}
       </div>
       <Buttons>
-        <Button className={`${known ? "is-info" : ""}`} onClick={toggleKnown}>
+        <ToggleButton on={known} isInfo onClick={toggleKnown}>
           Known
-        </Button>
-        <Button
-          className={`${learning ? "is-link" : ""}`}
-          onClick={toggleLearning}
-        >
+        </ToggleButton>
+        <ToggleButton on={learning} isLink onClick={toggleLearning}>
           Learning
-        </Button>
+        </ToggleButton>
       </Buttons>
     </div>
   );
@@ -173,45 +170,33 @@ const LearnScales = ({
           {pitch} {mode} @ {bpm}bpm
         </div>
         <Buttons style={{ flexGrow: 1 }}>
-          <Button
-            className="is-danger is-outlined"
-            style={{ flexGrow: 1 }}
-            onClick={addBPM(scale, -10)}
-          >
+          <Button isDanger isOutlined grow onClick={addBPM(scale, -10)}>
             -10
           </Button>
-          <Button
-            className="is-danger is-outlined"
-            style={{ flexGrow: 1 }}
-            onClick={addBPM(scale, -1)}
-          >
+          <Button isDanger isOutlined grow onClick={addBPM(scale, -1)}>
             -
           </Button>
-          <Button
-            className="is-success is-outlined"
-            style={{ flexGrow: 1 }}
-            onClick={addBPM(scale, 1)}
-          >
+          <Button isPrimary isOutlined grow onClick={addBPM(scale, 1)}>
             +
           </Button>
-          <Button
-            className="is-success is-outlined"
-            style={{ flexGrow: 1 }}
-            onClick={addBPM(scale, 10)}
-          >
+          <Button isPrimary isOutlined grow onClick={addBPM(scale, 10)}>
             +10
           </Button>
         </Buttons>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <Button onClick={reset}>Stop</Button>
-        <Button onClick={nextScale}>{nextScaleText}</Button>
+        <Button isDanger isOutlined onClick={reset}>
+          Stop
+        </Button>
+        <Button isPrimary onClick={nextScale}>
+          {nextScaleText}
+        </Button>
       </div>
     </div>
   );
 };
 
-const Scales = ({ startMetronome, stopMetronome, ...props }: Props) => {
+const Scales = ({ startMetronome, stopMetronome }: Props) => {
   // TODO - Add a button to start learning a new scale. This will be a scale
   // that is know known and is not learning.
   const [scalesDB, setScalesDB] = useLocalStorage(
