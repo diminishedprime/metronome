@@ -9,7 +9,7 @@ interface Props {
   signature: t.Signature;
   setSignature: React.Dispatch<React.SetStateAction<t.Signature>>;
   playing: boolean;
-  activeSubDivisions: t.Divisions;
+  activeBeats: t.ActiveBeat[];
 }
 
 const SigColumn = styled.div`
@@ -25,7 +25,7 @@ const TimeSignature = ({
   playing,
   signature: { beats },
   setSignature,
-  activeSubDivisions
+  activeBeats
 }: Props) => {
   const [edit, toggleEdit] = useToggle(false);
   const [hasChanged, setHasChanged] = useState(false);
@@ -112,15 +112,18 @@ const TimeSignature = ({
         </GrowButton>
       </section>
       <section className="section is-mobile columns" onClick={toggleEdit}>
-        {activeSubDivisions.map((subDivisions, beat) => {
+        {activeBeats.map((activeBeat: t.ActiveBeat, beat) => {
+          const activeBeatKeys = Object.keys(activeBeat);
           return (
             <div className={`column has-text-centered`} key={beat}>
-              {subDivisions.map(({ divisions, current }, beatIdx) => {
+              {activeBeatKeys.map((divisionOption, beatIdx) => {
+                const divisions = parseInt(divisionOption, 10);
+                const thing = activeBeat[divisions];
                 return (
                   <SigColumns key={`d${divisions}`}>
-                    {R.range(0, divisions).map((d, idx) => {
+                    {R.range(0, divisions).map(idx => {
                       const bg =
-                        current === idx && playing
+                        thing === idx && playing
                           ? "has-background-primary"
                           : "has-background-light";
                       const marginTop = divisions === 1 ? 0 : 5;
@@ -133,7 +136,7 @@ const TimeSignature = ({
                           className={`${bg} has-text-centered`}
                           style={{
                             justifyContent: "center",
-                            height: 70 / subDivisions.length - marginTop,
+                            height: 70 / activeBeatKeys.length - marginTop,
                             marginLeft,
                             marginRight,
                             marginTop

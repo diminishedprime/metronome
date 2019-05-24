@@ -4,7 +4,7 @@ export enum LocalStorageKey {
   SignatureDivisions = "@mjh/k/signature-divisions",
   ShowKnown = "@mjh/k/show-known-0",
   ScalesDB = "@mjh/k/scales-db",
-  Divisions = "@mjh/k/divisions-0",
+  ActiveBeats = "@mjh/k/active-beats-0",
   Signature = "@mjh/k/signature-0",
   BPM = "@mjh/k/bpm-0",
   KnownScales = "@mjh/k/known-scales-0",
@@ -178,21 +178,20 @@ export interface Division {
   gain: number;
   pitch: number;
   divisions: DivisionOptions;
-  current: number | undefined;
+  activeDivisions: boolean[];
 }
 
 export type Divisions = Division[][];
+
+export type ActiveBeat = {
+  [divisionOption: number]: number;
+};
 
 export interface State {
   bpm: number;
   playing: boolean;
   signature: Signature;
-  // The first index of divisions is always { divisions: 1 }, so it will either
-  // be current: 0, or current: undefined depending on whether or not it is the
-  // current beat.
-  // TODO - I should add an actual assert on this somewhere. It's bound to bite
-  // me eventually.
-  divisions: Divisions;
+  activeBeats: Array<ActiveBeat>;
 }
 
 export interface Metronome {
