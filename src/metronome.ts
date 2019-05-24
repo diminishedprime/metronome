@@ -77,7 +77,7 @@ const playBeatsTill = (
 const addBeatsToQueue = (
   state: t.State,
   nextNoteTime: React.MutableRefObject<number>,
-  currentBeat: t.SignatureBeat,
+  currentBeat: t.Division[],
   beatIdx: number,
   currentTime: number,
   scheduleAhead: number,
@@ -87,7 +87,7 @@ const addBeatsToQueue = (
 ) => {
   const { bpm } = state;
   const secondsPerBeat = 60.0 / bpm;
-  const divisions = currentBeat.divisions;
+  const divisions = currentBeat;
   if (nextNoteTime.current < currentTime + scheduleAhead) {
     const beatsForNextMeasure = beatsFor(
       nextNoteTime.current,
@@ -232,9 +232,9 @@ const useScheduleAhead = (
 
 // TODO - this also seems like something that can be cleaned up. I probably just
 // haven't found the right types for subdivisions.
-const resetActiveBeats = (beats: t.SignatureBeat[]): t.ActiveBeat[] =>
-  beats.map((beat: t.SignatureBeat) =>
-    beat.divisions.reduce(
+const resetActiveBeats = (beats: t.Division[][]): t.ActiveBeat[] =>
+  beats.map((beat: t.Division[]) =>
+    beat.reduce(
       (acc: t.ActiveBeat, divisions: t.Division) => ({
         ...acc,
         [divisions]: R.range(0, divisions).map(() => false)
@@ -257,7 +257,7 @@ export const useMetronome = (
     t.LocalStorageKey.TimeSignature,
     {
       denominator: 4,
-      numerator: [{ divisions: [1] }, { divisions: [1] }, { divisions: [1] }]
+      numerator: [[1], [1], [1]]
     }
   );
   const [activeBeats, setActiveBeats] = useLocalStorage<t.ActiveBeat[]>(

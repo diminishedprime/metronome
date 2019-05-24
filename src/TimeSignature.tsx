@@ -38,7 +38,7 @@ const TimeSignature = ({
       setHasChanged(true);
       setSignature(old => ({
         ...old,
-        numerator: R.range(0, numerator).map(() => ({ divisions }))
+        numerator: R.range(0, numerator).map(() => divisions)
       }));
     },
     [divisions, setSignature]
@@ -58,7 +58,7 @@ const TimeSignature = ({
     if (hasChanged) {
       setSignature(old => ({
         ...old,
-        numerator: R.range(0, old.numerator.length).map(() => ({ divisions }))
+        numerator: R.range(0, old.numerator.length).map(() => divisions)
       }));
     }
   }, [divisions, hasChanged, setSignature]);

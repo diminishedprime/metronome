@@ -1,11 +1,11 @@
 import React from "react";
 
 export enum LocalStorageKey {
-  SignatureDivisions = "@mjh/k/signature-divisions",
-  ShowKnown = "@mjh/k/show-known-0",
+  SignatureDivisions = "@mjh/k/signature-divisions-2",
+  ShowKnown = "@mjh/k/show-known-2",
   ScalesDB = "@mjh/k/scales-db",
-  ActiveBeats = "@mjh/k/active-beats-0",
-  TimeSignature = "@mjh/k/signature-1",
+  ActiveBeats = "@mjh/k/active-beats-2",
+  TimeSignature = "@mjh/k/signature-2",
   BPM = "@mjh/k/bpm-0",
   KnownScales = "@mjh/k/known-scales-0",
   ShowScales = "@mjh/k/show-scales-0",
@@ -154,20 +154,16 @@ export interface Beat {
   currentBeat: number;
 }
 
-export interface SignatureBeat {
-  divisions: Array<Division>;
-}
-
-export interface TimeSignature {
-  denominator: number;
-  numerator: Array<SignatureBeat>;
-}
-
 export type Division = 1 | 2 | 3 | 4 | 5 | 6;
 
 export type ActiveBeat = {
   [divisionOption: number]: number;
 };
+
+export interface TimeSignature {
+  denominator: number;
+  numerator: Division[][];
+}
 
 export interface State {
   bpm: number;
