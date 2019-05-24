@@ -117,7 +117,10 @@ const Metronome = () => {
       </section>
       {showScales && <Scales startMetronome={start} stopMetronome={stop} />}
       {showTuner && <Tuner />}
-      <nav className="navbar is-fixed-bottom has-background-light">
+      <nav
+        className="navbar is-fixed-bottom has-background-light"
+        style={{ paddingTop: 10 }}
+      >
         <InnerBody className=" buttons is-right">
           <ToggleButton isPrimary on={wakeLock} onClick={toggleWakeLock}>
             Stay Awake

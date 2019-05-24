@@ -102,7 +102,6 @@ const TimeSignature = ({
   setSignature,
   activeBeats
 }: Props) => {
-  const [edit, toggleEdit] = useToggle(false);
   const [hasChanged, setHasChanged] = useState(false);
   const [uIenabledDivisions, setUiEnabledDivisions] = useLocalStorage<
     t.EnabledDivisions
@@ -175,7 +174,7 @@ const TimeSignature = ({
           Clear
         </Button>
       </section>
-      <section className="section is-mobile columns" onClick={toggleEdit}>
+      <section className="section is-mobile columns">
         {numerator.map(
           (enabledDivisions: t.EnabledDivisions, beatIdx: number) => (
             <BeatColumn
@@ -185,23 +184,21 @@ const TimeSignature = ({
           )
         )}
       </section>
-      {edit && (
-        <section className="section buttons is-centered">
-          {[1, 2, 3, 4, 5].map(num => {
-            const on = numerator.length === num || undefined;
-            return (
-              <Button
-                key={`numerator-button-${num}`}
-                isPrimary={on}
-                grow
-                onClick={on ? () => {} : () => setNumerator(num)}
-              >
-                {num}/4
-              </Button>
-            );
-          })}
-        </section>
-      )}
+      <section className="section buttons is-centered">
+        {[1, 2, 3, 4, 5].map(num => {
+          const on = numerator.length === num || undefined;
+          return (
+            <Button
+              key={`numerator-button-${num}`}
+              isPrimary={on}
+              grow
+              onClick={on ? () => {} : () => setNumerator(num)}
+            >
+              {num}/4
+            </Button>
+          );
+        })}
+      </section>
     </>
   );
 };
