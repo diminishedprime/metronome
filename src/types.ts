@@ -3,7 +3,7 @@ import React from "react";
 export enum LocalStorageKey {
   SignatureDivisions = "@mjh/k/signature-divisions-3",
   ShowKnown = "@mjh/k/show-known-2",
-  ScalesDB = "@mjh/k/scales-db",
+  ScalesDB = "@mjh/k/scales-db-1",
   ActiveBeats = "@mjh/k/active-beats-2",
   TimeSignature = "@mjh/k/signature-2",
   BPM = "@mjh/k/bpm-0",
@@ -106,8 +106,6 @@ export const scaleKeys: ScaleKey[] = [
   [Pitch.G_Flat, Mode.Major],
   // The sharps
   [Pitch.C_Sharp, Mode.Major],
-  [Pitch.D_Sharp, Mode.Major],
-  [Pitch.E_Sharp, Mode.Major],
   [Pitch.F_Sharp, Mode.Major],
   // Now The Minors
   [Pitch.A, Mode.Minor],
