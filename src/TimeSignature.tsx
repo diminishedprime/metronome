@@ -21,6 +21,77 @@ const SigColumns = styled.div`
   display: flex;
 `;
 
+const BeatColumnRow = ({
+  playing,
+  activeBeats,
+  beatIdx,
+  division,
+  divisionIdx,
+  enabledDivisions: beatDivisions
+}: {
+  division: string;
+  playing: boolean;
+  activeBeats: t.ActiveDivisions[];
+  divisionIdx: number;
+  beatIdx: number;
+  enabledDivisions: t.EnabledDivisions;
+}) => {
+  const divisions = parseInt(division, 10);
+  return (
+    <SigColumns key={`d${divisions}`}>
+      {R.range(0, divisions).map(idx => {
+        const bg =
+          activeBeats[beatIdx][divisions] === idx && playing
+            ? "has-background-primary"
+            : "has-background-light";
+        const marginTop = divisions === 1 ? 0 : 5;
+        const marginLeft = idx === 0 ? 0 : 10 / divisions;
+        const marginRight = idx === divisions - 1 ? 0 : 10 / divisions;
+        return (
+          <SigColumn
+            key={`d${divisions}-${idx}`}
+            className={`${bg} has-text-centered`}
+            style={{
+              justifyContent: "center",
+              height:
+                70 /
+                  Object.keys(beatDivisions).filter(
+                    key => beatDivisions[key as any]
+                  ).length -
+                marginTop,
+              marginLeft,
+              marginRight,
+              marginTop
+            }}
+          >
+            {divisionIdx === 0 && beatIdx + 1}
+          </SigColumn>
+        );
+      })}
+    </SigColumns>
+  );
+};
+
+const BeatColumn = (props: {
+  playing: boolean;
+  activeBeats: t.ActiveDivisions[];
+  beatIdx: number;
+  enabledDivisions: t.EnabledDivisions;
+}) => {
+  return (
+    <div className={`column has-text-centered`}>
+      {Object.keys(props.enabledDivisions)
+        .filter(key => props.enabledDivisions[key as any])
+        .map((division, divisionIdx) => (
+          <BeatColumnRow
+            key={`${props.beatIdx}-${divisionIdx}`}
+            {...{ ...props, division, divisionIdx }}
+          />
+        ))}
+    </div>
+  );
+};
+
 const TimeSignature = ({
   playing,
   signature: { numerator },
@@ -102,52 +173,14 @@ const TimeSignature = ({
         </GrowButton>
       </section>
       <section className="section is-mobile columns" onClick={toggleEdit}>
-        {numerator.map((beatDivisions: t.EnabledDivisions, beat: number) => {
-          return (
-            <div className={`column has-text-centered`} key={beat}>
-              {Object.keys(beatDivisions)
-                .filter(key => beatDivisions[key as any])
-                .map((division, beatIdx) => {
-                  const divisions = parseInt(division, 10);
-                  console.log({ divisions, beatDivisions });
-                  return (
-                    <SigColumns key={`d${divisions}`}>
-                      {R.range(0, divisions).map(idx => {
-                        const bg =
-                          activeBeats[beat][divisions] === idx && playing
-                            ? "has-background-primary"
-                            : "has-background-light";
-                        const marginTop = divisions === 1 ? 0 : 5;
-                        const marginLeft = idx === 0 ? 0 : 10 / divisions;
-                        const marginRight =
-                          idx === divisions - 1 ? 0 : 10 / divisions;
-                        return (
-                          <SigColumn
-                            key={`d${divisions}-${idx}`}
-                            className={`${bg} has-text-centered`}
-                            style={{
-                              justifyContent: "center",
-                              height:
-                                70 /
-                                  Object.keys(beatDivisions).filter(
-                                    key => beatDivisions[key as any]
-                                  ).length -
-                                marginTop,
-                              marginLeft,
-                              marginRight,
-                              marginTop
-                            }}
-                          >
-                            {beatIdx === 0 && beat + 1}
-                          </SigColumn>
-                        );
-                      })}
-                    </SigColumns>
-                  );
-                })}
-            </div>
-          );
-        })}
+        {numerator.map(
+          (enabledDivisions: t.EnabledDivisions, beatIdx: number) => (
+            <BeatColumn
+              key={`${beatIdx}-enabledDivisionColumn`}
+              {...{ playing, beatIdx, enabledDivisions, activeBeats }}
+            />
+          )
+        )}
       </section>
       {edit && (
         <section className="section buttons is-centered">
