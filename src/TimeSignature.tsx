@@ -41,7 +41,9 @@ const BeatColumnRow = ({
     <SigColumns key={`d${divisions}`}>
       {R.range(0, divisions).map(idx => {
         const bg =
-          activeBeats[beatIdx][divisions] === idx && playing
+          playing &&
+          activeBeats[beatIdx] &&
+          activeBeats[beatIdx][divisions] === idx
             ? "has-background-primary"
             : "has-background-light";
         const marginTop = divisions === 1 ? 0 : 5;
@@ -106,10 +108,13 @@ const TimeSignature = ({
   const setNumerator = useCallback(
     (numerator: number) => {
       setHasChanged(true);
-      setSignature(old => ({
-        ...old,
-        numerator: R.range(0, numerator).map(() => uIenabledDivisions)
-      }));
+      setSignature(old => {
+        return R.assoc(
+          "numerator",
+          R.range(0, numerator).map(() => uIenabledDivisions),
+          old
+        );
+      });
     },
     [uIenabledDivisions, setSignature]
   );
