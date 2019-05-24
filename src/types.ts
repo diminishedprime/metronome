@@ -158,7 +158,7 @@ export interface SignatureBeat {
   divisions: Array<Division>;
 }
 
-export interface Signature {
+export interface TimeSignature {
   denominator: number;
   beats: Array<SignatureBeat>;
 }
@@ -172,7 +172,7 @@ export type ActiveBeat = {
 export interface State {
   bpm: number;
   playing: boolean;
-  signature: Signature;
+  signature: TimeSignature;
   activeBeats: Array<ActiveBeat>;
 }
 
@@ -181,7 +181,7 @@ export interface Metronome {
   start: (bpm?: number) => void;
   stop: () => void;
   setBPM: React.Dispatch<React.SetStateAction<number>>;
-  setSignature: React.Dispatch<React.SetStateAction<Signature>>;
+  setSignature: React.Dispatch<React.SetStateAction<TimeSignature>>;
   addBPM: (bpmToAdd: number) => void;
   state: State;
 }

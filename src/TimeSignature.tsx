@@ -6,8 +6,8 @@ import { Button, GrowButton } from "./Common";
 import * as t from "./types";
 
 interface Props {
-  signature: t.Signature;
-  setSignature: React.Dispatch<React.SetStateAction<t.Signature>>;
+  signature: t.TimeSignature;
+  setSignature: React.Dispatch<React.SetStateAction<t.TimeSignature>>;
   playing: boolean;
   activeBeats: t.ActiveBeat[];
 }
