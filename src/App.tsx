@@ -70,7 +70,7 @@ const Metronome = () => {
       {updateAvailable && (
         <section
           className="box is-grouped field has-addons"
-          style={{ marginBottom: "10px" }}
+          style={{ marginBottom: 10, marginTop: 10 }}
         >
           <p style={{ alignSelf: "center" }} className="control is-expanded">
             An Update is Available!
