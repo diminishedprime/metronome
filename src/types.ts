@@ -14,8 +14,6 @@ export enum LocalStorageKey {
   Radians = "@mjh/k/radians-0"
 }
 
-// TODO - figure out a better way to manage this.
-
 export enum Mode {
   Major = "Major",
   Minor = "Minor"
@@ -151,13 +149,13 @@ export interface Beat {
   pitch: number;
   gain: number;
   buffer: AudioBuffer;
-  divisions: DivisionOptions;
+  divisions: Division;
   divisionIndex: number;
   currentBeat: number;
 }
 
 export interface SignatureBeat {
-  divisions: Array<DivisionOptions>;
+  divisions: Array<Division>;
 }
 
 export interface Signature {
@@ -165,7 +163,7 @@ export interface Signature {
   beats: Array<SignatureBeat>;
 }
 
-export type DivisionOptions = 1 | 2 | 3 | 4 | 5 | 6;
+export type Division = 1 | 2 | 3 | 4 | 5 | 6;
 
 export type ActiveBeat = {
   [divisionOption: number]: number;

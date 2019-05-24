@@ -29,7 +29,7 @@ const TimeSignature = ({
 }: Props) => {
   const [edit, toggleEdit] = useToggle(false);
   const [hasChanged, setHasChanged] = useState(false);
-  const [divisions, setDivisions] = useLocalStorage<t.DivisionOptions[]>(
+  const [divisions, setDivisions] = useLocalStorage<t.Division[]>(
     t.LocalStorageKey.SignatureDivisions,
     [1]
   );
@@ -45,7 +45,7 @@ const TimeSignature = ({
   );
 
   const classesForDivisions = useCallback(
-    (division: t.DivisionOptions) => {
+    (division: t.Division) => {
       if (divisions.indexOf(division) === -1) {
         return "";
       } else {
@@ -64,7 +64,7 @@ const TimeSignature = ({
   }, [divisions, hasChanged, setSignature]);
 
   const toggleDivisionOption = useCallback(
-    (divisionOption: t.DivisionOptions) => {
+    (divisionOption: t.Division) => {
       setHasChanged(true);
       setDivisions(old => {
         if (old.indexOf(divisionOption) !== -1) {
@@ -93,17 +93,15 @@ const TimeSignature = ({
         style={{ marginTop: "10px" }}
         className="section buttons is-centered"
       >
-        {([2, 3, 4, 5, 6] as t.DivisionOptions[]).map(
-          (num: t.DivisionOptions) => (
-            <GrowButton
-              key={`division-options-${num}`}
-              className={classesForDivisions(num)}
-              onClick={() => toggleDivisionOption(num)}
-            >
-              {num}
-            </GrowButton>
-          )
-        )}
+        {([2, 3, 4, 5, 6] as t.Division[]).map((num: t.Division) => (
+          <GrowButton
+            key={`division-options-${num}`}
+            className={classesForDivisions(num)}
+            onClick={() => toggleDivisionOption(num)}
+          >
+            {num}
+          </GrowButton>
+        ))}
         <GrowButton
           className={"is-danger is-outlined"}
           onClick={clearDivisions}

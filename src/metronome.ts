@@ -27,7 +27,7 @@ const scheduleNote = (
 const beatsFor = (
   startOfBeatTime: number,
   secondsPerBeat: number,
-  divisions: t.DivisionOptions[],
+  divisions: t.Division[],
   buffer: AudioBuffer,
   currentBeat: number
 ): Array<t.Beat> => {
@@ -232,7 +232,7 @@ const useScheduleAhead = (
 const resetActiveBeats = (beats: t.SignatureBeat[]): t.ActiveBeat[] =>
   beats.map((beat: t.SignatureBeat) =>
     beat.divisions.reduce(
-      (acc: t.ActiveBeat, divisions: t.DivisionOptions) => ({
+      (acc: t.ActiveBeat, divisions: t.Division) => ({
         ...acc,
         [divisions]: R.range(0, divisions).map(() => false)
       }),
