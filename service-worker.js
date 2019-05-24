@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.0/workbox-sw.js");
 
 importScripts(
-  "/metronome/precache-manifest.5a4daa1f037f48c2a998caf0132b1be8.js"
+  "/metronome/precache-manifest.0313507e6c3b1456485fc2804afe2838.js"
 );
 
 workbox.core.skipWaiting();
