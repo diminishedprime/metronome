@@ -85,6 +85,7 @@ export const useAdvice = <T>(
     },
     [advice, originalSetter]
   );
+  useDetectChangedValue(advice, originalSetter);
   return [originalT, newSetter];
 };
 
@@ -103,4 +104,20 @@ export const useDetectChangedValue = (...values: any[]) => {
     });
     oldValues.current = values;
   }, [values]);
+};
+
+export const useAudioBuffer = (
+  audioContext: AudioContext | undefined,
+  url: string
+): AudioBuffer | undefined => {
+  const [buffer, updateBuffer] = useState<AudioBuffer>();
+  useEffect(() => {
+    if (audioContext !== undefined) {
+      fetch(url)
+        .then(response => response.arrayBuffer())
+        .then(buffer => audioContext.decodeAudioData(buffer))
+        .then(updateBuffer);
+    }
+  }, [url, audioContext]);
+  return buffer;
 };

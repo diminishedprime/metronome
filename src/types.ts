@@ -15,13 +15,6 @@ export enum LocalStorageKey {
 }
 
 // TODO - figure out a better way to manage this.
-export interface SubDivision {
-  on: boolean;
-  pitch: number;
-  divisions: number;
-  label: string;
-  gain: number;
-}
 
 export enum Mode {
   Major = "Major",
@@ -173,15 +166,6 @@ export interface Signature {
 }
 
 export type DivisionOptions = 1 | 2 | 3 | 4 | 5 | 6;
-
-export interface Division {
-  gain: number;
-  pitch: number;
-  divisions: DivisionOptions;
-  activeDivisions: boolean[];
-}
-
-export type Divisions = Division[][];
 
 export type ActiveBeat = {
   [divisionOption: number]: number;

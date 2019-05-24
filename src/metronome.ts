@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import * as R from "ramda";
 import * as t from "./types";
-import { useLocalStorage, useAdvice } from "./hooks";
-import { diff } from "deep-object-diff";
+import { useLocalStorage, useAdvice, useAudioBuffer } from "./hooks";
 import Deque from "double-ended-queue";
+import { runAtTime } from "./util";
 const click = require("./click.wav");
 
 const scheduleNote = (
@@ -56,27 +56,11 @@ const beatsFor = (
   return beats;
 };
 
-const useAudioBuffer = (
-  audioContext: AudioContext | undefined,
-  url: string
-): AudioBuffer | undefined => {
-  const [buffer, updateBuffer] = useState<AudioBuffer>();
-  useEffect(() => {
-    if (audioContext !== undefined) {
-      fetch(url)
-        .then(response => response.arrayBuffer())
-        .then(buffer => audioContext.decodeAudioData(buffer))
-        .then(updateBuffer);
-    }
-  }, [url, audioContext]);
-  return buffer;
-};
-
 const playBeatsTill = (
   beatsQueue: Deque<t.Beat>,
   intervalLength: number,
   audioContext: AudioContext,
-  updateUi: (beat: t.Beat) => void
+  updateUi: (audioContext: AudioContext, beat: t.Beat) => void
 ) => {
   const now = audioContext.currentTime;
   const scheduleTil = now + intervalLength + intervalError;
@@ -85,10 +69,11 @@ const playBeatsTill = (
     if (first.divisionIndex !== 0 || first.divisions === 1) {
       scheduleNote(audioContext, first);
     }
-    updateUi(first);
+    updateUi(audioContext, first);
   }
 };
 
+// TODO - I should clean this up if possible. It takes way too many arguments.
 const addBeatsToQueue = (
   state: t.State,
   nextNoteTime: React.MutableRefObject<number>,
@@ -103,9 +88,6 @@ const addBeatsToQueue = (
   const { bpm } = state;
   const secondsPerBeat = 60.0 / bpm;
   const divisions = currentBeat.divisions;
-  // We schedule the full next measure, which means some changes, such as
-  // divisions can only be updated after the last scheduled measure has
-  // completed.
   if (nextNoteTime.current < currentTime + scheduleAhead) {
     const beatsForNextMeasure = beatsFor(
       nextNoteTime.current,
@@ -156,6 +138,7 @@ const useScheduleAhead = (
     );
   };
 
+  // TODO - this is super janky.
   const setActiveBeat = useCallback(
     (beat: t.Beat) => {
       setActiveDivisions(oldBeats => {
@@ -185,33 +168,20 @@ const useScheduleAhead = (
     [setActiveDivisions]
   );
 
-  useEffect(() => {
-    if (playing && beatToSchedule === 0) {
-      // clear the activeBeats that don't have a corresponding signature entry.
-      setActiveDivisions((activeBeats: t.ActiveBeat[]) => {
-        return activeBeats;
-        // console.log({
-        //   activeBeats,
-        //   beats: stateRef.current.signature.divisions
-        // });
-        // const beats = stateRef.current.signature.divisions;
-        // return activeBeats.map((activeBeat: t.ActiveDivision, idx) => {
-        //   const beat = beats[idx];
-        //   Object.keys(activeBeat)
-        //     .filter(
-        //       key =>
-        //         beat.divisions.indexOf(
-        //           (key as unknown) as t.DivisionOptions
-        //         ) !== -1
-        //     )
-        //     .forEach(
-        //       key => delete activeBeat[(key as unknown) as t.DivisionOptions]
-        //     );
-        //   return activeBeat;
-        // });
+  // TODO - because the ui callbacks run in the future, I can get in a weird
+  // spot state-wise. I should figure out a way to either cancel them running
+  // when the number of divisions changes.
+  const updateUi = useCallback(
+    (audioContext: AudioContext, beat: t.Beat) => {
+      // We ovewrite activeBeats here because it's definitely changing.
+      runAtTime(audioContext, beat.time, () => {
+        if (stateRef.current.playing) {
+          setActiveBeat(beat);
+        }
       });
-    }
-  }, [playing, beatToSchedule]);
+    },
+    [setActiveBeat]
+  );
 
   useEffect(() => {
     if (
@@ -219,46 +189,26 @@ const useScheduleAhead = (
       audioContext !== undefined &&
       buffer !== undefined
     ) {
-      const updateUi = (beat: t.Beat) => {
-        // We ovewrite activeBeats here because it's definitely changing.
-        runAtTime(audioContext, beat.time, () => {
-          if (stateRef.current.playing) {
-            setActiveBeat(beat);
-          }
-        });
-      };
-
       const beatsQueue = new Deque<t.Beat>();
       const firstClickTime = audioContext.currentTime + 0.3;
       nextNoteTimeRef.current = firstClickTime;
-      // We want to schedule until at least the next interval runs. The error
-      // should help to not miss notes if setInterval is late.
       const tick = () => {
-        // TODO - figure out how far ahead this should go, presumably it should
-        // be more than the interval time in case one is late???
         const {
           signature: { beats }
         } = stateRef.current;
         const beatIdx = Math.min(beatToScheduleRef.current, beats.length - 1);
         const currentBeat = beats[beatIdx];
-        if (currentBeat) {
-          addBeatsToQueue(
-            stateRef.current,
-            nextNoteTimeRef,
-            currentBeat,
-            beatToScheduleRef.current,
-            audioContext.currentTime,
-            scheduleAhead,
-            buffer,
-            beatsQueue,
-            nextBeat
-          );
-        } else {
-          console.log("currentBeat was undefined", stateRef.current, {
-            beatIdx
-          });
-          throw "hi";
-        }
+        addBeatsToQueue(
+          stateRef.current,
+          nextNoteTimeRef,
+          currentBeat,
+          beatToScheduleRef.current,
+          audioContext.currentTime,
+          scheduleAhead,
+          buffer,
+          beatsQueue,
+          nextBeat
+        );
         playBeatsTill(beatsQueue, delay / 1000, audioContext, updateUi);
       };
       tick();
@@ -267,41 +217,34 @@ const useScheduleAhead = (
         clearInterval(id);
       };
     }
-  }, [delay, buffer, audioContext, setActiveDivisions, setActiveBeat]);
+  }, [
+    delay,
+    buffer,
+    audioContext,
+    setActiveDivisions,
+    setActiveBeat,
+    updateUi
+  ]);
 };
 
-const runAtTime = (
-  audioContext: AudioContext,
-  timeToRun: number,
-  callback: () => void
-) => {
-  const now = audioContext.currentTime;
-  if (timeToRun <= now) {
-    callback();
-  } else {
-    const sleepTime = ((timeToRun - now) / 2) * 1000;
-    setTimeout(() => runAtTime(audioContext, timeToRun, callback), sleepTime);
-  }
-};
-
-const resetActiveBeats = (beats: t.SignatureBeat[]): t.ActiveBeat[] => {
-  const b: t.ActiveBeat[] = beats.map((beat: t.SignatureBeat) => {
-    return beat.divisions.reduce(
+// TODO - this also seems like something that can be cleaned up. I probably just
+// haven't found the right types for subdivisions.
+const resetActiveBeats = (beats: t.SignatureBeat[]): t.ActiveBeat[] =>
+  beats.map((beat: t.SignatureBeat) =>
+    beat.divisions.reduce(
       (acc: t.ActiveBeat, divisions: t.DivisionOptions) => ({
         ...acc,
         [divisions]: R.range(0, divisions).map(() => false)
       }),
       {}
-    );
-  });
-  return b;
-};
+    )
+  );
+
+const clampBPM = (bpm: number) => R.clamp(10, 250, bpm);
 
 export const useMetronome = (
   audioContext: AudioContext | undefined
 ): t.Metronome => {
-  const clampBPM = useCallback((bpm: number) => R.clamp(10, 250, bpm), []);
-
   const [playing, setPlaying] = useState(false);
   const [bpm, setBPM] = useAdvice(
     useLocalStorage(t.LocalStorageKey.BPM, 90),
@@ -327,32 +270,10 @@ export const useMetronome = (
   };
   const { beats } = signature;
 
-  const numeratorRef = useRef(beats.length);
-
-  const addBPM = (bpmToAdd: number) => {
-    setBPM(R.add(bpmToAdd));
-  };
-
   const bpmRef = useRef(bpm);
   useEffect(() => {
     bpmRef.current = bpm;
   }, [bpm]);
-
-  const start = useCallback(
-    (bpm?: number) => {
-      if (bpm !== undefined) {
-        setBPM(bpm);
-      }
-      setPlaying(true);
-    },
-    [setPlaying, setBPM]
-  );
-
-  const toggleStart = () => setPlaying(R.not);
-
-  const stop = useCallback(() => {
-    setPlaying(false);
-  }, [setPlaying]);
 
   // Effects for updating state.
 
@@ -361,10 +282,6 @@ export const useMetronome = (
     // TODO - This would be fancier if when the next beat can still happen, it
     // didn't clear the active beat in the UI.
     setActiveBeats(resetActiveBeats(beats));
-    setTimeout(() => {
-      setActiveBeats(resetActiveBeats(beats));
-    }, 300);
-    numeratorRef.current = beats.length;
   }, [beats, signature, setActiveBeats]);
 
   useEffect(() => {
@@ -377,6 +294,27 @@ export const useMetronome = (
   }, [playing, beats, setActiveBeats]);
 
   useScheduleAhead(audioContext, state, setActiveBeats);
+
+  // External API Things.
+  const addBPM = (bpmToAdd: number) => {
+    setBPM(R.add(bpmToAdd));
+  };
+
+  const toggleStart = () => setPlaying(R.not);
+
+  const start = useCallback(
+    (bpm?: number) => {
+      if (bpm !== undefined) {
+        setBPM(bpm);
+      }
+      setPlaying(true);
+    },
+    [setPlaying, setBPM]
+  );
+
+  const stop = useCallback(() => {
+    setPlaying(false);
+  }, [setPlaying]);
 
   return {
     toggleStart,
