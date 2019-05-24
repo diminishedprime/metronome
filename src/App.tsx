@@ -16,7 +16,7 @@ import * as t from "./types";
 const Metronome = () => {
   const [audioContext, setAudioContext] = useState<AudioContext | undefined>();
   const {
-    state: { playing, signature, bpm, activeBeats },
+    state: { playing, signature, bpm, activeDivisions },
     start,
     stop,
     toggleStart,
@@ -86,7 +86,7 @@ const Metronome = () => {
         playing={playing}
         signature={signature}
         setSignature={setSignature}
-        activeBeats={activeBeats}
+        activeBeats={activeDivisions}
       />
 
       <section className="section">

@@ -107,7 +107,7 @@ const intervalError = 0.1;
 const useScheduleAhead = (
   audioContext: AudioContext | undefined,
   state: t.State,
-  setActiveDivisions: React.Dispatch<React.SetStateAction<t.ActiveBeat[]>>
+  setActiveDivisions: React.Dispatch<React.SetStateAction<t.ActiveDivision[]>>
 ) => {
   const scheduleAhead = 0.3;
   const { playing } = state;
@@ -144,7 +144,7 @@ const useScheduleAhead = (
       setActiveDivisions(oldBeats => {
         const withNewBeat = R.adjust(
           beat.currentBeat,
-          (activeBeat: t.ActiveBeat) => {
+          (activeBeat: t.ActiveDivision) => {
             return { ...activeBeat, [beat.divisions]: beat.divisionIndex };
           },
           oldBeats
@@ -155,7 +155,7 @@ const useScheduleAhead = (
         }
         return R.adjust(
           lastBeatIdx,
-          (activeBeat: t.ActiveBeat) => {
+          (activeBeat: t.ActiveDivision) => {
             return Object.keys(activeBeat).reduce(
               (acc, key) => ({ ...acc, [key]: undefined }),
               {}
@@ -232,10 +232,10 @@ const useScheduleAhead = (
 
 // TODO - this also seems like something that can be cleaned up. I probably just
 // haven't found the right types for subdivisions.
-const resetActiveBeats = (beats: t.Division[][]): t.ActiveBeat[] =>
+const resetActiveBeats = (beats: t.Division[][]): t.ActiveDivision[] =>
   beats.map((beat: t.Division[]) =>
     beat.reduce(
-      (acc: t.ActiveBeat, divisions: t.Division) => ({
+      (acc: t.ActiveDivision, divisions: t.Division) => ({
         ...acc,
         [divisions]: R.range(0, divisions).map(() => false)
       }),
@@ -260,16 +260,15 @@ export const useMetronome = (
       numerator: [[1], [1], [1]]
     }
   );
-  const [activeBeats, setActiveBeats] = useLocalStorage<t.ActiveBeat[]>(
-    t.LocalStorageKey.ActiveBeats,
-    resetActiveBeats(signature.numerator)
-  );
+  const [activeDivisions, setActiveDivisions] = useLocalStorage<
+    t.ActiveDivision[]
+  >(t.LocalStorageKey.ActiveBeats, resetActiveBeats(signature.numerator));
 
   const state: t.State = {
     bpm,
     playing,
     signature,
-    activeBeats
+    activeDivisions
   };
   const { numerator } = signature;
 
@@ -284,19 +283,19 @@ export const useMetronome = (
   useEffect(() => {
     // TODO - This would be fancier if when the next beat can still happen, it
     // didn't clear the active beat in the UI.
-    setActiveBeats(resetActiveBeats(numerator));
-  }, [numerator, signature, setActiveBeats]);
+    setActiveDivisions(resetActiveBeats(numerator));
+  }, [numerator, signature, setActiveDivisions]);
 
   useEffect(() => {
     if (!playing) {
-      setActiveBeats(resetActiveBeats(numerator));
+      setActiveDivisions(resetActiveBeats(numerator));
       setTimeout(() => {
-        setActiveBeats(resetActiveBeats(numerator));
+        setActiveDivisions(resetActiveBeats(numerator));
       }, 300);
     }
-  }, [playing, numerator, setActiveBeats]);
+  }, [playing, numerator, setActiveDivisions]);
 
-  useScheduleAhead(audioContext, state, setActiveBeats);
+  useScheduleAhead(audioContext, state, setActiveDivisions);
 
   // External API Things.
   const addBPM = (bpmToAdd: number) => {

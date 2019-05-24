@@ -9,7 +9,7 @@ interface Props {
   signature: t.TimeSignature;
   setSignature: React.Dispatch<React.SetStateAction<t.TimeSignature>>;
   playing: boolean;
-  activeBeats: t.ActiveBeat[];
+  activeBeats: t.ActiveDivision[];
 }
 
 const SigColumn = styled.div`
@@ -110,7 +110,7 @@ const TimeSignature = ({
         </GrowButton>
       </section>
       <section className="section is-mobile columns" onClick={toggleEdit}>
-        {activeBeats.map((activeBeat: t.ActiveBeat, beat) => {
+        {activeBeats.map((activeBeat: t.ActiveDivision, beat) => {
           const activeBeatKeys = Object.keys(activeBeat);
           return (
             <div className={`column has-text-centered`} key={beat}>
