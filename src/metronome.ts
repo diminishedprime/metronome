@@ -254,7 +254,7 @@ export const useMetronome = (
     clampBPM
   );
   const [signature, setSignature] = useLocalStorage<t.TimeSignature>(
-    t.LocalStorageKey.Signature,
+    t.LocalStorageKey.TimeSignature,
     {
       denominator: 4,
       numerator: [{ divisions: [1] }, { divisions: [1] }, { divisions: [1] }]
