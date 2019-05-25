@@ -1,4 +1,7 @@
-import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
+import React, { useEffect, useState, useLayoutEffect } from "react";
+import { useToggle } from "./hooks";
+import { ToggleButton, Buttons } from "./Common";
+import styled from "styled-components";
 
 const noteIdx: { [note: number]: string } = {
   0: "A",
@@ -56,78 +59,85 @@ const freqToPitch = (freq: number) => {
 };
 
 const Tuner = () => {
+  const [on, toggleOn] = useToggle(false);
   const [analyser, setAnalyser] = useState<AnalyserNode>();
-  const [, setDataArray] = useState();
   const [sampleRate, setSampleRate] = useState<number>();
   const [freq, setFreq] = useState<number>(440);
+  const [audioContext, setAudioContext] = useState<AudioContext>();
 
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  // Initailize the AudioContext when user turns on the tuner.
+  useEffect(() => {
+    if (!audioContext) {
+      setAudioContext(new AudioContext());
+    }
+  }, [on, audioContext]);
+
+  // Prompt for microphone when user turns on the tuner.
+  useEffect(() => {
+    if (on && audioContext) {
+      setSampleRate(audioContext.sampleRate);
+      const mediaDevices = navigator.mediaDevices;
+      if (mediaDevices) {
+        let mediaStream: MediaStream;
+        mediaDevices.getUserMedia({ audio: true }).then((ms: MediaStream) => {
+          mediaStream = ms;
+          const analyser = audioContext.createAnalyser();
+          // If this isn't big, I don't have very good frequency accuracy, and I
+          // can't change the sample rate because web audio sucks.
+          analyser.fftSize = 8192;
+          const mic = audioContext.createMediaStreamSource(ms);
+          mic.connect(analyser);
+          setAnalyser(analyser);
+        });
+        return () => {
+          mediaStream.getAudioTracks().forEach(track => track.stop());
+        };
+      }
+    }
+  }, [on, audioContext]);
 
   useEffect(() => {
-    const audioContext = new AudioContext();
-    setSampleRate(audioContext.sampleRate);
-    const mediaDevices = navigator.mediaDevices;
-    if (mediaDevices) {
-      mediaDevices.getUserMedia({ audio: true }).then((thing: MediaStream) => {
-        const analyser = audioContext.createAnalyser();
-        // If this isn't big, I don't have very good frequency accuracy, and I
-        // can't change the sample rate because web audio sucks.
-        analyser.fftSize = 8192;
-        const mic = audioContext.createMediaStreamSource(thing);
-        mic.connect(analyser);
-        setAnalyser(analyser);
-      });
-    }
-    return () => {
-      audioContext.close();
-    };
-  }, []);
+    if (on && analyser && sampleRate) {
+      const tick = () => {
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Float32Array(bufferLength);
+        analyser.getFloatFrequencyData(dataArray);
+        const [, maxIdx] = dataArray.reduce(
+          (a, b, i) => (a[0] < b ? [b, i] : a),
+          [-Infinity, -1]
+        );
+        const resolution = sampleRate / analyser.fftSize;
+        const freq = resolution * maxIdx;
+        setFreq(freq);
+      };
+      tick();
+      let interval = setInterval(tick, 50);
 
-  useLayoutEffect(() => {
-    let animationFrame: number;
-
-    const tick = () => {
-      const bufferLength = analyser!.frequencyBinCount;
-      const dataArray = new Float32Array(bufferLength);
-      analyser!.getFloatFrequencyData(dataArray);
-      setDataArray(dataArray);
-
-      const [, maxIdx] = dataArray.reduce(
-        (a, b, i) => (a[0] < b ? [b, i] : a),
-        [-Infinity, -1]
-      );
-
-      const resolution = sampleRate! / analyser!.fftSize;
-      const freq = resolution * maxIdx;
-      setFreq(freq);
-
-      loop();
-    };
-
-    const loop = () => {
-      animationFrame = requestAnimationFrame(tick);
-    };
-
-    if (analyser !== undefined) {
-      loop();
       return () => {
-        cancelAnimationFrame(animationFrame);
+        clearInterval(interval);
       };
     }
-  }, [analyser, sampleRate]);
+  }, [on, analyser, sampleRate]);
 
   const { octave, note, cents } = freqToPitch(freq || 0);
   return (
-    <div className="box">
-      <div className="has-text-centered">
-        <div className="is-size-1">{note + octave}</div>
-        <div>
-          {cents.toFixed(2)} Cents {cents < 0 ? "flat" : "sharp"}
-        </div>
+    <TunerWrapper className="box has-text-centered">
+      <div className="is-size-1">{note + octave}</div>
+      <div>
+        {cents.toFixed(2)} Cents {cents < 0 ? "flat" : "sharp"}
       </div>
-      {false && <canvas width={"100%"} height={"100"} ref={canvasRef} />}
-    </div>
+      <Buttons className="is-right">
+        <ToggleButton on={on} isDanger offIsPrimary onClick={toggleOn}>
+          <>Stop</>
+          <>Start</>
+        </ToggleButton>
+      </Buttons>
+    </TunerWrapper>
   );
 };
+
+const TunerWrapper = styled.section`
+  margin-top: 10px;
+`;
 
 export default Tuner;

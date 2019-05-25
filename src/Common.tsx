@@ -15,17 +15,22 @@ interface ButtonProps
   isSuccess?: true;
   isDanger?: true;
   isOutlined?: true;
+  offIsPrimary?: true;
+  offIsLink?: true;
+  offIsInfo?: true;
+  offIsSuccess?: true;
+  offIsDanger?: true;
+  offIsOutlined?: true;
   grow?: true;
 }
 
 interface ToggleButtonProps extends ButtonProps {
   on: boolean;
-  offClass?: string;
 }
 
 export const ToggleButton = (props: ToggleButtonProps) => {
   const [buttonProps, setButtonProps] = useState(props);
-  const { on, children, offClass, className = "" } = props;
+  const { on, children, className = "" } = props;
   useEffect(() => {
     let newProps = props;
     if (!props.on) {
@@ -34,13 +39,16 @@ export const ToggleButton = (props: ToggleButtonProps) => {
       newProps = R.dissoc("isDanger", newProps);
       newProps = R.dissoc("isInfo", newProps);
       newProps = R.dissoc("isSuccess", newProps);
-      newProps = offClass
-        ? R.assoc("className", `${className} ${offClass}`, newProps)
-        : newProps;
+    } else {
+      newProps = R.dissoc("offIsPrimary", newProps);
+      newProps = R.dissoc("offIsLink", newProps);
+      newProps = R.dissoc("offIsDanger", newProps);
+      newProps = R.dissoc("offIsInfo", newProps);
+      newProps = R.dissoc("offIsSuccess", newProps);
     }
     setButtonProps(newProps);
-  }, [className, offClass, props]);
-  const { on: _1, offClass: _2, ...renderProps } = buttonProps;
+  }, [className, props]);
+  const { on: _1, ...renderProps } = buttonProps;
   const child =
     children instanceof Array && children.length === 2
       ? on
@@ -56,8 +64,14 @@ export const Button = ({
   isLink,
   isInfo,
   isSuccess,
-  grow,
   isOutlined,
+  offIsPrimary,
+  offIsDanger,
+  offIsLink,
+  offIsInfo,
+  offIsSuccess,
+  offIsOutlined,
+  grow,
   ...props
 }: ButtonProps) => {
   const primary = isPrimary ? "is-primary" : "";
@@ -66,9 +80,15 @@ export const Button = ({
   const info = isInfo ? "is-info" : "";
   const success = isSuccess ? "is-success" : "";
   const outlined = isOutlined ? "is-outlined" : "";
+  const offprimary = offIsPrimary ? "is-primary" : "";
+  const offlink = offIsLink ? "is-link" : "";
+  const offdanger = offIsDanger ? "is-danger" : "";
+  const offinfo = offIsInfo ? "is-info" : "";
+  const offsuccess = offIsSuccess ? "is-success" : "";
+  const offoutlined = offIsOutlined ? "is-outlined" : "";
   const propClassName = props.className ? props.className : "";
 
-  const className = `${propClassName} button ${primary} ${link} ${outlined} ${danger} ${info} ${success}`;
+  const className = `${propClassName} button ${primary} ${link} ${outlined} ${danger} ${info} ${success} ${offprimary} ${offdanger} ${offdanger} ${offinfo} ${offlink} ${offsuccess} ${offoutlined}`;
 
   const style = grow ? { flexGrow: 1 } : {};
 

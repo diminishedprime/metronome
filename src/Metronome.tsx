@@ -8,9 +8,8 @@ import TapIn from "./TapIn";
 import Tuner from "./Tuner";
 import Dial from "./Dial";
 import Scales from "./Scales";
-import { usePersistantToggle, useToggle, useSleepLock } from "./hooks";
-import { Button, Buttons, ToggleButton } from "./Common";
-import * as serviceWorker from "./serviceWorker";
+import { usePersistantToggle, useSleepLock } from "./hooks";
+import { Buttons, ToggleButton } from "./Common";
 import * as t from "./types";
 
 const TopSettings = styled.section`
@@ -96,11 +95,11 @@ export default () => {
         <Buttons>
           <TapIn setBPM={setBPM} />
           <ToggleButton
-            on={!playing}
-            offClass="is-danger"
+            on={playing}
+            offIsPrimary
             grow
             isOutlined
-            isPrimary
+            isDanger
             onClick={toggleStart}
           >
             <>Start</>
