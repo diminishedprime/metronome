@@ -1,7 +1,7 @@
 {
   "homepage": "https://diminishedprime.github.io/metronome",
   "name": "metronome",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "private": true,
   "dependencies": {
     "@craco/craco": "^5.2.1",
