@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
 import "./bulma-overrides.sass";
-import styled from "styled-components";
 
 class ErrorBoundary extends React.Component<{}, { error: any }> {
   constructor(props: { error: any }) {

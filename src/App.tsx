@@ -155,7 +155,7 @@ const App: React.FC = () => {
     } else if (playing) {
       initAudioContext(new polyfill.AudioContext());
     }
-  }, [playing]);
+  }, [playing, initAudioContext]);
 
   return (
     <Router basename={process.env.PUBLIC_URL}>
