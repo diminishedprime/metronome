@@ -1,6 +1,7 @@
 import React from "react";
 import Metronome from "./Metronome";
 import Settings from "./Settings";
+import * as polyfill from "./polyfill";
 import Scales from "./Scales";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import Update from "./Update";
@@ -140,21 +141,31 @@ const App: React.FC = () => {
   const { value: audioContext, init: initAudioContext } = useSingleton<
     AudioContext
   >();
+  const [hasAudioContext, setHasAudioContext] = React.useState(true);
   const metronome = useMetronome(audioContext);
+
   const {
     state: { playing }
   } = metronome;
 
   // Initialize AudioContext as a singleton on first start.
   React.useEffect(() => {
-    if (playing) {
-      initAudioContext(new AudioContext());
+    if (polyfill.AudioContext === undefined) {
+      setHasAudioContext(false);
+    } else if (playing) {
+      initAudioContext(new polyfill.AudioContext());
     }
   }, [playing]);
 
   return (
     <Router basename={process.env.PUBLIC_URL}>
       <Wrapper>
+        {!hasAudioContext && (
+          <div>
+            Your browser doesn't support the audioContext api, so this will not
+            work. Sorry :(
+          </div>
+        )}
         <Route
           exact
           path="/"
