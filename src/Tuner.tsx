@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useLayoutEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useToggle } from "./hooks";
 import { ToggleButton, Buttons } from "./Common";
 import styled from "styled-components";

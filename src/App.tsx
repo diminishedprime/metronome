@@ -1,7 +1,9 @@
 import React from "react";
 import Metronome from "./Metronome";
+import Settings from "./Settings";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import Update from "./Update";
+import { useAppSettings } from "./settings";
 import styled, { keyframes } from "styled-components";
 import { maxWidth } from "./Common";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -65,6 +67,7 @@ const TopBar = () => {
   const [showNav, toggleNav] = useToggle(false);
   // TODO - figure out how to animate the nav being hidden.
   // TODO - make it where clicking outside of this element hides it.
+  // TODO - make it where you can swipe from the right of the screen to show the nav.
   return (
     <TopBarWrapper>
       <TopNav className="has-background-primary has-text-light">
@@ -85,7 +88,7 @@ const TopBar = () => {
             Scales
             <NavIcon icon={faMusic} />
           </NavItem>
-          <NavItem to="/">
+          <NavItem to="/settings">
             Settings
             <NavIcon icon={faGear} />
           </NavItem>
@@ -121,11 +124,26 @@ const Wrapper: React.FC = ({ children }) => {
   );
 };
 
+// TODO - add an overall exception handler that prints the stacktrace.
+// TODO - add a button to the overall exception handler that lets you clear local storage.
+// TODO - add an option to the settings to clear local storage.
+// TODO - update components to use the React.FC type.
+
 const App: React.FC = () => {
+  const appSettings = useAppSettings();
   return (
     <Router basename={process.env.PUBLIC_URL}>
       <Wrapper>
-        <Route exact path="/" component={Metronome} />
+        <Route
+          exact
+          path="/"
+          render={() => <Metronome appSettings={appSettings} />}
+        />
+        <Route
+          exact
+          path="/settings"
+          render={() => <Settings appSettings={appSettings} />}
+        />
       </Wrapper>
     </Router>
   );

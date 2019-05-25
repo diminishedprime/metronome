@@ -1,6 +1,7 @@
 import React from "react";
 
 export enum LocalStorageKey {
+  AppSettings = "@mjh/k/app-settings-0",
   SignatureDivisions = "@mjh/k/signature-divisions-3",
   ShowKnown = "@mjh/k/show-known-2",
   ScalesDB = "@mjh/k/scales-db-1",
@@ -172,6 +173,15 @@ export interface State {
   playing: boolean;
   signature: TimeSignature;
   activeDivisions: Array<ActiveDivisions>;
+}
+
+interface AppSettingsState {
+  keepAwake: boolean;
+}
+
+export interface AppSettings {
+  state: AppSettingsState;
+  toggleKeepAwake: () => void;
 }
 
 export interface Metronome {

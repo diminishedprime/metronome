@@ -16,12 +16,15 @@ const TopSettings = styled.section`
   display: flex;
 `;
 
-export default () => {
+interface MetronomeProps {
+  appSettings: t.AppSettings;
+}
+
+export default ({ appSettings }: MetronomeProps) => {
   const [audioContext, setAudioContext] = useState<AudioContext | undefined>();
-  const [wakeLock, toggleWakeLock] = usePersistantToggle(
-    t.LocalStorageKey.WakeLock,
-    false
-  );
+  const {
+    state: { keepAwake }
+  } = appSettings;
   const [showScales, toggleScales] = usePersistantToggle(
     t.LocalStorageKey.ShowScales,
     false
@@ -46,12 +49,12 @@ export default () => {
   } = useMetronome(audioContext);
 
   useEffect(() => {
-    if (wakeLock && playing) {
+    if (keepAwake && playing) {
       lock();
     } else {
       release();
     }
-  }, [playing, wakeLock, lock, release]);
+  }, [playing, keepAwake, lock, release]);
 
   // Initialize AudioContext as a singleton on first start.
   useEffect(() => {
@@ -63,9 +66,6 @@ export default () => {
   return (
     <InnerBody>
       <TopSettings className="buttons">
-        <ToggleButton grow isPrimary on={wakeLock} onClick={toggleWakeLock}>
-          Keep Awake
-        </ToggleButton>
         <ToggleButton grow isPrimary on={showDial} onClick={toggleDial}>
           Dial
         </ToggleButton>
