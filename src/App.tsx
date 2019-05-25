@@ -2,25 +2,95 @@ import React from "react";
 import Metronome from "./Metronome";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import Update from "./Update";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { maxWidth } from "./Common";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faBars as faCoffee,
+  faHome,
+  faCog as faGear,
+  faMusic
+} from "@fortawesome/free-solid-svg-icons";
+import { useToggle } from "./hooks";
 
 const TopBarWrapper = styled.section`
-  padding-top: 10px;
-  padding-bottom: 10px;
   margin-bottom: 10px;
+  margin-left: 0px !important;
+  margin-right: 0px !important;
+  display: flex;
+  flex-direction: column;
+`;
+
+const CenterIcon = styled.span`
+  align-self: center;
+`;
+
+const TopNav = styled.section`
+  display: flex;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  justify-content: space-between;
   > h2 {
     margin: 0 !important;
   }
 `;
 
+const dropDown = keyframes`
+  from {
+font-size: 0px;
+  }
+`;
+
+const NavDropDown = styled.nav`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-right: 10px;
+  align-self: flex-end;
+  > a {
+    animation: ease-in 0.3s ${dropDown};
+    font-size: 1.5rem;
+  }
+`;
+
+const NavItem = styled(Link)``;
+
+const NavIcon = styled(FontAwesomeIcon)`
+  margin-left: 5px;
+`;
+
 const TopBar = () => {
+  const [showNav, toggleNav] = useToggle(false);
+  // TODO - figure out how to animate the nav being hidden.
+  // TODO - make it where clicking outside of this element hides it.
   return (
-    <TopBarWrapper className="has-background-primary has-text-light">
-      <h2 className="is-size-2">(mjh)tronome</h2>
-      <Link style={{ display: "none" }} to="/">
-        Home
-      </Link>
+    <TopBarWrapper>
+      <TopNav className="has-background-primary has-text-light">
+        <Link to="/" className="has-text-white">
+          <h2 className="is-size-4 is-bold">(mjh)tronome</h2>
+        </Link>
+        <CenterIcon onClick={toggleNav}>
+          <FontAwesomeIcon icon={faCoffee} size="2x" />
+        </CenterIcon>
+      </TopNav>
+      {showNav && (
+        <NavDropDown onClick={toggleNav}>
+          <NavItem to="/">
+            Home
+            <NavIcon icon={faHome} />
+          </NavItem>
+          <NavItem to="/">
+            Scales
+            <NavIcon icon={faMusic} />
+          </NavItem>
+          <NavItem to="/">
+            Settings
+            <NavIcon icon={faGear} />
+          </NavItem>
+        </NavDropDown>
+      )}
     </TopBarWrapper>
   );
 };
@@ -29,8 +99,8 @@ const WrapperStyle = styled.div`
   max-width: ${maxWidth};
   margin: 0 auto;
   > * {
-    padding-left: 10px;
-    padding-right: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
   }
 `;
 
