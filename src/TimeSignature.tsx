@@ -181,7 +181,10 @@ const TimeSignature = ({ metronome }: Props) => {
           Clear
         </Button>
       </Divisions>
-      <section className="section is-mobile columns">
+      <section
+        style={{ marginLeft: "5px", marginRight: "5px" }}
+        className="section is-mobile columns"
+      >
         {numerator.map(
           (enabledDivisions: t.EnabledDivisions, beatIdx: number) => (
             <BeatColumn
