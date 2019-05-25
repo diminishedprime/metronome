@@ -88,6 +88,7 @@ export const Button = ({
   const offoutlined = offIsOutlined ? "is-outlined" : "";
   const propClassName = props.className ? props.className : "";
 
+  // TODO - switch to the classname thing that used to come with react.
   const className = `${propClassName} button ${primary} ${link} ${outlined} ${danger} ${info} ${success} ${offprimary} ${offdanger} ${offdanger} ${offinfo} ${offlink} ${offsuccess} ${offoutlined}`;
 
   const style = grow ? { flexGrow: 1 } : {};
