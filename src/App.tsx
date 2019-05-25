@@ -103,6 +103,8 @@ const TopBar = () => {
 const WrapperStyle = styled.div`
   max-width: ${maxWidth};
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
   > * {
     margin-left: 10px;
     margin-right: 10px;
@@ -111,6 +113,8 @@ const WrapperStyle = styled.div`
 
 const FooterStyle = styled.div`
   display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   justify-content: flex-end;
   margin-top: 5px;
 `;
