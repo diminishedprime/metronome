@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import * as R from "ramda";
 import styled from "styled-components";
-import { useToggle, useLocalStorage } from "./hooks";
+import { useLocalStorage } from "./hooks";
 import { Button } from "./Common";
 import * as t from "./types";
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import * as R from "ramda";
-import styled from "styled-components";
 
 interface ButtonProps
   extends React.DetailedHTMLProps<
@@ -38,7 +37,7 @@ export const ToggleButton = (props: ToggleButtonProps) => {
         : newProps;
     }
     setButtonProps(newProps);
-  }, [props.on]);
+  }, [className, offClass, props]);
   const { on: _1, offClass: _2, ...renderProps } = buttonProps;
   const child =
     children instanceof Array && children.length === 2
