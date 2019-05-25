@@ -1,8 +1,10 @@
 import React from "react";
 import Metronome from "./Metronome";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import Update from "./Update";
+import styled from "styled-components";
 
-const Nav = () => {
+const TopBar = () => {
   return (
     <div>
       <Link style={{ display: "none" }} to="/">
@@ -12,11 +14,27 @@ const Nav = () => {
   );
 };
 
+const WrapperStyle = styled.div`
+  max-width: 50em;
+  margin: 0 auto;
+`;
+
+const Wrapper: React.FC = ({ children }) => {
+  return (
+    <WrapperStyle>
+      <Update />
+      <TopBar />
+      {children}
+    </WrapperStyle>
+  );
+};
+
 const App: React.FC = () => {
   return (
     <Router>
-      <Nav />
-      <Route exact path="/" component={Metronome} />
+      <Wrapper>
+        <Route exact path="/" component={Metronome} />
+      </Wrapper>
     </Router>
   );
 };
