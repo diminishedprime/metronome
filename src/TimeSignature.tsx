@@ -93,6 +93,14 @@ const BeatColumn = (props: {
   );
 };
 
+const Divisions = styled.section`
+  display: flex;
+  align-items: baseline;
+  > div {
+    margin-right: 10px;
+  }
+`;
+
 const TimeSignature = ({ metronome }: Props) => {
   const {
     state: {
@@ -150,16 +158,9 @@ const TimeSignature = ({ metronome }: Props) => {
   // TODO - clean up these buttons to not use className.
   return (
     <>
-      <h3
-        className="subtitle is-5"
-        style={{ paddingLeft: "10px", marginBottom: "0" }}
-      >
-        Divisions
-      </h3>
-      <section
-        style={{ marginTop: "10px" }}
-        className="section buttons is-centered"
-      >
+      <section style={{ marginTop: "10px" }} className="section is-centered" />
+      <Divisions>
+        <div className="is-size-5">Division</div>
         <Buttons hasAddons grow style={{ marginRight: "5px" }}>
           {([2, 3, 4, 5, 6] as t.Division[]).map((num: t.Division) => {
             const on = uIenabledDivisions[num];
@@ -179,7 +180,7 @@ const TimeSignature = ({ metronome }: Props) => {
         <Button grow isDanger isOutlined onClick={clearDivisions}>
           Clear
         </Button>
-      </section>
+      </Divisions>
       <section className="section is-mobile columns">
         {numerator.map(
           (enabledDivisions: t.EnabledDivisions, beatIdx: number) => (

@@ -160,42 +160,44 @@ const LearnScales = ({
   const { mode, pitch, bpm } = scale!;
 
   return (
-    <div>
-      <TimeSignature metronome={metronome} />
-      <div
-        style={{ alignSelf: "center", fontWeight: "bold" }}
-        className="control is-expanded is-size-5"
-      >
-        {scaleMode}
-      </div>
-      <div style={{ display: "flex", marginBottom: "5px" }}>
-        <div style={{ alignSelf: "center", marginRight: "10px" }}>
-          {pitch} {mode} @ {bpm}bpm
+    <>
+      <div className="box">
+        <div
+          style={{ alignSelf: "center", fontWeight: "bold" }}
+          className="control is-expanded is-size-5"
+        >
+          {scaleMode}
         </div>
-        <Buttons style={{ flexGrow: 1 }}>
-          <Button isDanger isOutlined grow onClick={addBPM(scale, -10)}>
-            -10
+        <div style={{ display: "flex", marginBottom: "5px" }}>
+          <div style={{ alignSelf: "center", marginRight: "10px" }}>
+            {pitch} {mode} @ {bpm}bpm
+          </div>
+          <Buttons grow hasAddons>
+            <Button isDanger isOutlined grow onClick={addBPM(scale, -10)}>
+              -10
+            </Button>
+            <Button isDanger isOutlined grow onClick={addBPM(scale, -1)}>
+              -
+            </Button>
+            <Button isPrimary isOutlined grow onClick={addBPM(scale, 1)}>
+              +
+            </Button>
+            <Button isPrimary isOutlined grow onClick={addBPM(scale, 10)}>
+              +10
+            </Button>
+          </Buttons>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <Button isDanger isOutlined onClick={reset}>
+            Stop
           </Button>
-          <Button isDanger isOutlined grow onClick={addBPM(scale, -1)}>
-            -
+          <Button isPrimary onClick={nextScale}>
+            {nextScaleText}
           </Button>
-          <Button isPrimary isOutlined grow onClick={addBPM(scale, 1)}>
-            +
-          </Button>
-          <Button isPrimary isOutlined grow onClick={addBPM(scale, 10)}>
-            +10
-          </Button>
-        </Buttons>
+        </div>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <Button isDanger isOutlined onClick={reset}>
-          Stop
-        </Button>
-        <Button isPrimary onClick={nextScale}>
-          {nextScaleText}
-        </Button>
-      </div>
-    </div>
+      <TimeSignature metronome={metronome} />
+    </>
   );
 };
 
@@ -234,7 +236,7 @@ const Scales = ({ metronome }: Props) => {
   };
 
   return (
-    <div className="box" style={{ marginTop: "10px" }}>
+    <div style={{ marginTop: "10px" }}>
       {scaleMode === ScaleMode.NOT_STARTED ? (
         <div style={{ marginBottom: "5px" }}>
           <div style={{ display: "flex", justifyContent: "space-between" }}>

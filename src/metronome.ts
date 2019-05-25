@@ -142,6 +142,7 @@ const useScheduleAhead = (
 
   // TODO - this is super janky.
   // TODO - this would be much nicer with an animation.
+  // TODO - switch this to runAtTime to clear the beat it just set.
   const setActiveBeat = useCallback(
     (beat: t.Beat) => {
       setActiveDivisions(oldBeats => {

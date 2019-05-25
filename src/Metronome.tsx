@@ -38,7 +38,7 @@ const Metronome: React.FC<MetronomeProps> = ({ appSettings, metronome }) => {
   }, [playing, keepAwake, lock, release]);
 
   return (
-    <InnerBody>
+      <>
       {showTuner && <Tuner />}
       <section className="section">
           <Dial initialValue={bpm} addDiff={addBPM}>
@@ -48,33 +48,31 @@ const Metronome: React.FC<MetronomeProps> = ({ appSettings, metronome }) => {
       </section>
       <TimeSignature metronome={metronome} />
       <section className="section">
-        <Buttons hasAddons>
-          <ToggleButton
-            isLink
-            offIsOutlined
-            offIsLink
-            on={showTuner}
-            onClick={toggleTuner}
-          >
-            Tuner
-          </ToggleButton>
-          <TapIn setBPM={setBPM} />
-          <ToggleButton
-            on={playing}
-            offIsPrimary
-            grow
-            isOutlined
-            isDanger
-            onClick={toggleStart}
-          >
-            <>Stop</>
-            <>Start</>
-          </ToggleButton>
-        </Buttons>
+          <Buttons hasAddons>
+              <ToggleButton
+                  isLink
+                  offIsOutlined
+                  offIsLink
+                  on={showTuner}
+                  onClick={toggleTuner}
+              >
+                  Tuner
+              </ToggleButton>
+              <TapIn setBPM={setBPM} />
+              <ToggleButton
+                  on={playing}
+                  offIsPrimary
+                  grow
+                  isOutlined
+                  isDanger
+                  onClick={toggleStart}
+              >
+                  <>Stop</>
+                  <>Start</>
+              </ToggleButton>
+          </Buttons>
       </section>
-    </InnerBody>
+      </>
   );
 };
 export default Metronome;
-
-const InnerBody = styled.div``;
