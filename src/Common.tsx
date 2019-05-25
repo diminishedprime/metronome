@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import * as R from "ramda";
 
+export const maxWidth = "40em";
+
 interface ButtonProps
   extends React.DetailedHTMLProps<
     React.ButtonHTMLAttributes<HTMLButtonElement>,

@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from "react";
 import * as serviceWorker from "./serviceWorker";
-import { Button } from "./Common";
-import styled from "styled-components";
+import { Buttons, Button, maxWidth } from "./Common";
+import styled, { keyframes } from "styled-components";
+
+const rotate = keyframes`
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+`;
 
 const UpdateStyle = styled.section`
   position: absolute;
-  max-width: 50em;
+  max-width: ${maxWidth};
   width: 95%;
+  margin-top: 10px;
   left: 0;
   right: 0;
   margin-left: auto;
@@ -14,10 +24,20 @@ const UpdateStyle = styled.section`
   z-index: 10;
   display: flex !important;
   justify-content: space-between;
+  animation: ease-in 1s ${rotate};
 `;
 
 export default () => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
+
+  const reload = React.useCallback(() => {
+    window.location.reload();
+  }, []);
+
+  const close = React.useCallback(() => {
+    setUpdateAvailable(false);
+  }, []);
+
   useEffect(() => {
     serviceWorker.register({
       onUpdate: () => {
@@ -30,9 +50,14 @@ export default () => {
       {updateAvailable && (
         <UpdateStyle className="box">
           <span>An Update is Available!</span>
-          <Button isPrimary isOutlined onClick={() => window.location.reload()}>
-            Refresh
-          </Button>
+          <Buttons>
+            <Button isPrimary isOutlined onClick={reload}>
+              Refresh
+            </Button>
+            <Button isDanger isOutlined onClick={close}>
+              x
+            </Button>
+          </Buttons>
         </UpdateStyle>
       )}
     </>

@@ -11,7 +11,8 @@ export enum LocalStorageKey {
   ShowScales = "@mjh/k/show-scales-0",
   ShowTuner = "@mjh/k/show-tuner-0",
   ShowDial = "@mjh/k/show-dial-0",
-  Radians = "@mjh/k/radians-0"
+  Radians = "@mjh/k/radians-0",
+  WakeLock = "@mjh/k/wake-lock-0"
 }
 
 export enum Mode {

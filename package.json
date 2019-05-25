@@ -26,7 +26,7 @@
     "vexflow": "^1.2.89"
   },
   "scripts": {
-    "start": "PORT=9999 HOST=0.0.0.0 craco start",
+    "start": "HTTPS=true PORT=9999 HOST=0.0.0.0 craco start",
     "build": "craco build",
     "test": "craco test",
     "eject": "craco eject",
