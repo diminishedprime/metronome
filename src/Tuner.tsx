@@ -120,11 +120,19 @@ const Tuner = () => {
   }, [on, analyser, sampleRate]);
 
   const { octave, note, cents } = freqToPitch(freq || 0);
+  // TODO - add in a graph of the FFT that's label with pitches and neato log bars.
   return (
     <TunerWrapper className="box has-text-centered">
-      <div className="is-size-1">{note + octave}</div>
+      <div className="is-size-1">{on ? note + octave : "Stopped"}</div>
+
       <div>
-        {cents.toFixed(2)} Cents {cents < 0 ? "flat" : "sharp"}
+        {on ? (
+          <>
+            {cents.toFixed(2)} Cents {cents < 0 ? "flat" : "sharp"}
+          </>
+        ) : (
+          "press start to tune"
+        )}
       </div>
       <Buttons className="is-right">
         <ToggleButton on={on} isDanger offIsPrimary onClick={toggleOn}>

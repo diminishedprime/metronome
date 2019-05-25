@@ -145,6 +145,9 @@ const TimeSignature = ({
     setUiEnabledDivisions({ 1: true });
   }, [setUiEnabledDivisions]);
 
+  // TODO - make it where clicking on a division group lets you set the volume & accents for that group.
+  // TODO - add an option to turn on or off the accent at the start of every measure.
+  // TODO - clean up these buttons to not use className.
   return (
     <>
       <h3

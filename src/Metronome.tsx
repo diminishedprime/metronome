@@ -76,6 +76,8 @@ export default () => {
           Tuner
         </ToggleButton>
       </TopSettings>
+
+      {showTuner && <Tuner />}
       {showDial && (
         <section className="section">
           <Dial initialValue={bpm} addDiff={addBPM}>
@@ -102,13 +104,12 @@ export default () => {
             isDanger
             onClick={toggleStart}
           >
-            <>Start</>
             <>Stop</>
+            <>Start</>
           </ToggleButton>
         </Buttons>
       </section>
       {showScales && <Scales startMetronome={start} stopMetronome={stop} />}
-      {showTuner && <Tuner />}
     </InnerBody>
   );
 };
