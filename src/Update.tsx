@@ -19,8 +19,8 @@ const UpdateStyle = styled.section`
   margin-top: 10px;
   left: 0;
   right: 0;
-  margin-left: auto;
-  margin-right: auto;
+  margin-left: auto !important;
+  margin-right: auto !important;
   z-index: 10;
   display: flex !important;
   justify-content: space-between;
