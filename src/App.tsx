@@ -53,7 +53,7 @@ const Wrapper: React.FC = ({ children }) => {
 
 const App: React.FC = () => {
   return (
-    <Router>
+    <Router basename={process.env.PUBLIC_URL}>
       <Wrapper>
         <Route exact path="/" component={Metronome} />
       </Wrapper>
