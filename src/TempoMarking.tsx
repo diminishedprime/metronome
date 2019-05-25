@@ -39,13 +39,13 @@ interface Props {
 const TempoMarking = ({ bpm }: Props) => {
   const markings = fromBPM(bpm);
   return (
-      <div style={{minHeight: '6.5em'}}>
-          {markings.map(({ name, range }, idx) => (
-              <div key={idx} className="has-text-centered">
-                  {name} - {range[0]} - {range[1]}
-              </div>
-          ))}
-              </div>
+    <div style={{ minHeight: "6.5em" }}>
+      {markings.map(({ name, range }, idx) => (
+        <div key={idx} className="has-text-centered">
+          {name} - {range[0]} - {range[1]}
+        </div>
+      ))}
+    </div>
   );
 };
 
