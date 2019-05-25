@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import * as R from "ramda";
+import styled from "styled-components";
 
 export const maxWidth = "40em";
 
@@ -39,12 +40,14 @@ export const ToggleButton = (props: ToggleButtonProps) => {
       newProps = R.dissoc("isDanger", newProps);
       newProps = R.dissoc("isInfo", newProps);
       newProps = R.dissoc("isSuccess", newProps);
+      newProps = R.dissoc("isOutlined", newProps);
     } else {
       newProps = R.dissoc("offIsPrimary", newProps);
       newProps = R.dissoc("offIsLink", newProps);
       newProps = R.dissoc("offIsDanger", newProps);
       newProps = R.dissoc("offIsInfo", newProps);
       newProps = R.dissoc("offIsSuccess", newProps);
+      newProps = R.dissoc("offIsOutlined", newProps);
     }
     setButtonProps(newProps);
   }, [className, props]);
@@ -105,11 +108,35 @@ interface ButtonsProps
     React.HTMLAttributes<HTMLDivElement>,
     HTMLDivElement
   > {
-  classes?: string[];
+  hasAddons?: true;
+  grow?: true | undefined;
 }
 
-export const Buttons = ({ children, className, ...props }: ButtonsProps) => {
-  const classes = `${className} buttons has-addons}`;
-  const allProps = Object.assign(props, { className: classes });
-  return <div {...allProps}>{children}</div>;
+const ButtonsWrapper = styled.div`
+  &:not(:last-child) {
+    margin-bottom: 0 !important;
+  }
+`;
+
+export const Buttons: React.FC<ButtonsProps> = ({
+  children,
+  hasAddons,
+  className: propsClassName = "",
+  // TODO - I might need to pass this down to ButtonsWrapper, but I can't right now without getting a type error.
+  ref,
+  style = {},
+  grow,
+  ...props
+}) => {
+  const addons = hasAddons ? "has-addons" : "";
+  const classes = `${propsClassName} buttons ${addons}`;
+  return (
+    <ButtonsWrapper
+      style={Object.assign(style, { flexGrow: grow ? 1 : "unset" })}
+      {...props}
+      className={classes}
+    >
+      {children}
+    </ButtonsWrapper>
+  );
 };

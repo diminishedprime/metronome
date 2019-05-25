@@ -28,7 +28,7 @@ const TapIn = ({ setBPM }: Props) => {
   };
 
   return (
-    <Button isLink onClick={onTap}>
+    <Button isLink isOutlined onClick={onTap}>
       Tap In
     </Button>
   );

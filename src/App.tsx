@@ -1,9 +1,11 @@
 import React from "react";
 import Metronome from "./Metronome";
 import Settings from "./Settings";
+import Scales from "./Scales";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import Update from "./Update";
 import { useAppSettings } from "./settings";
+import { useMetronome } from "./metronome";
 import styled, { keyframes } from "styled-components";
 import { maxWidth } from "./Common";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -13,7 +15,7 @@ import {
   faCog as faGear,
   faMusic
 } from "@fortawesome/free-solid-svg-icons";
-import { useToggle } from "./hooks";
+import { useToggle, useSingleton } from "./hooks";
 
 const TopBarWrapper = styled.section`
   margin-bottom: 10px;
@@ -84,7 +86,7 @@ const TopBar = () => {
             Home
             <NavIcon icon={faHome} />
           </NavItem>
-          <NavItem to="/">
+          <NavItem to="/scales">
             Scales
             <NavIcon icon={faMusic} />
           </NavItem>
@@ -131,13 +133,35 @@ const Wrapper: React.FC = ({ children }) => {
 
 const App: React.FC = () => {
   const appSettings = useAppSettings();
+  const { value: audioContext, init: initAudioContext } = useSingleton<
+    AudioContext
+  >();
+  const metronome = useMetronome(audioContext);
+  const {
+    state: { playing }
+  } = metronome;
+
+  // Initialize AudioContext as a singleton on first start.
+  React.useEffect(() => {
+    if (playing) {
+      initAudioContext(new AudioContext());
+    }
+  }, [playing]);
+
   return (
     <Router basename={process.env.PUBLIC_URL}>
       <Wrapper>
         <Route
           exact
           path="/"
-          render={() => <Metronome appSettings={appSettings} />}
+          render={() => (
+            <Metronome metronome={metronome} appSettings={appSettings} />
+          )}
+        />
+        <Route
+          exact
+          path="/scales"
+          render={() => <Scales metronome={metronome} />}
         />
         <Route
           exact

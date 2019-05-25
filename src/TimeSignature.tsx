@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import * as R from "ramda";
 import styled from "styled-components";
 import { useLocalStorage } from "./hooks";
-import { Button } from "./Common";
+import { Button, Buttons, ToggleButton } from "./Common";
 import * as t from "./types";
 
 interface Props {
@@ -160,19 +160,22 @@ const TimeSignature = ({
         style={{ marginTop: "10px" }}
         className="section buttons is-centered"
       >
-        {([2, 3, 4, 5, 6] as t.Division[]).map((num: t.Division) => {
-          const isPrimary = uIenabledDivisions[num] || undefined;
-          return (
-            <Button
-              grow
-              isPrimary={isPrimary}
-              key={`division-options-${num}`}
-              onClick={() => toggleDivisionOption(num)}
-            >
-              {num}
-            </Button>
-          );
-        })}
+        <Buttons hasAddons grow style={{ marginRight: "5px" }}>
+          {([2, 3, 4, 5, 6] as t.Division[]).map((num: t.Division) => {
+            const on = uIenabledDivisions[num];
+            return (
+              <ToggleButton
+                grow
+                on={on}
+                isPrimary
+                key={`division-options-${num}`}
+                onClick={() => toggleDivisionOption(num)}
+              >
+                {num}
+              </ToggleButton>
+            );
+          })}
+        </Buttons>
         <Button grow isDanger isOutlined onClick={clearDivisions}>
           Clear
         </Button>
@@ -189,16 +192,18 @@ const TimeSignature = ({
       </section>
       <section className="section buttons is-centered">
         {[1, 2, 3, 4, 5].map(num => {
-          const on = numerator.length === num || undefined;
+          const on = numerator.length === num;
           return (
-            <Button
+            <ToggleButton
               key={`numerator-button-${num}`}
-              isPrimary={on}
+              on={on}
+              isPrimary
+              isOutlined
               grow
               onClick={on ? () => {} : () => setNumerator(num)}
             >
-              {num}/4
-            </Button>
+              <>{num}/4</>
+            </ToggleButton>
           );
         })}
       </section>

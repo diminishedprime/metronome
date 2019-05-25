@@ -13,8 +13,7 @@ enum ScaleMode {
 }
 
 interface Props {
-  startMetronome: (bpm: number) => void;
-  stopMetronome: () => void;
+  metronome: t.Metronome;
 }
 
 const getScaleByFilter = (
@@ -196,9 +195,10 @@ const LearnScales = ({
   );
 };
 
-const Scales = ({ startMetronome, stopMetronome }: Props) => {
-  // TODO - Add a button to start learning a new scale. This will be a scale
-  // that is know known and is not learning.
+// TODO - Add a button to start learning a new scale. This will be a scale
+// that is know known and is not learning.
+const Scales = ({ metronome }: Props) => {
+  const { stop: stopMetronome, start: startMetronome } = metronome;
   const [scalesDB, setScalesDB] = useLocalStorage(
     t.LocalStorageKey.ScalesDB,
     initScalesDB

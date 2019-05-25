@@ -11,6 +11,24 @@ import * as d from "deep-object-diff";
 import * as t from "./types";
 import NoSleep from "nosleep.js";
 
+export const useSingleton = <T>(initialValue?: T) => {
+  const [value, setValue] = useState<T | undefined>(initialValue);
+
+  const setValueOnce = useCallback(
+    (t: T) => {
+      if (!value) {
+        setValue(t);
+      }
+    },
+    [value]
+  );
+
+  return {
+    value: value,
+    init: setValueOnce
+  };
+};
+
 export const useSleepLock = () => {
   const [noSleep] = useState(new NoSleep());
 
