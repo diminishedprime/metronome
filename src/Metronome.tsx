@@ -23,11 +23,10 @@ const Metronome: React.FC<MetronomeProps> = ({ appSettings, metronome }) => {
   );
   const { lock, release } = useSleepLock();
   const {
-    state: { playing, signature, bpm, activeDivisions },
-    toggleStart,
-    setSignature,
-    setBPM,
-    addBPM
+    state: { playing, bpm},
+      toggleStart,
+      setBPM,
+      addBPM
   } = metronome;
 
   useEffect(() => {
@@ -42,18 +41,12 @@ const Metronome: React.FC<MetronomeProps> = ({ appSettings, metronome }) => {
     <InnerBody>
       {showTuner && <Tuner />}
       <section className="section">
-        <Dial initialValue={bpm} addDiff={addBPM}>
-          <div className="has-text-centered is-size-1">{bpm}</div>
-          <TempoMarking bpm={bpm} />
-        </Dial>
+          <Dial initialValue={bpm} addDiff={addBPM}>
+              <div className="has-text-centered is-size-1">{bpm}</div>
+              <TempoMarking bpm={bpm} />
+          </Dial>
       </section>
-
-      <TimeSignature
-        playing={playing}
-        signature={signature}
-        setSignature={setSignature}
-        activeBeats={activeDivisions}
-      />
+      <TimeSignature metronome={metronome} />
       <section className="section">
         <Buttons hasAddons>
           <ToggleButton

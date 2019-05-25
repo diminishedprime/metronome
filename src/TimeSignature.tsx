@@ -6,10 +6,7 @@ import { Button, Buttons, ToggleButton } from "./Common";
 import * as t from "./types";
 
 interface Props {
-  signature: t.TimeSignature;
-  setSignature: React.Dispatch<React.SetStateAction<t.TimeSignature>>;
-  playing: boolean;
-  activeBeats: t.ActiveDivisions[];
+  metronome: t.Metronome;
 }
 
 const SigColumn = styled.div`
@@ -96,12 +93,15 @@ const BeatColumn = (props: {
   );
 };
 
-const TimeSignature = ({
-  playing,
-  signature: { numerator },
-  setSignature,
-  activeBeats
-}: Props) => {
+const TimeSignature = ({ metronome }: Props) => {
+  const {
+    state: {
+      playing,
+      signature: { numerator },
+      activeDivisions: activeBeats
+    },
+    setSignature
+  } = metronome;
   const [hasChanged, setHasChanged] = useState(false);
   const [uIenabledDivisions, setUiEnabledDivisions] = useLocalStorage<
     t.EnabledDivisions

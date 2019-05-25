@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
-
+import TimeSignature from "./TimeSignature";
 import { useLocalStorage, usePersistantToggle } from "./hooks";
 import * as R from "ramda";
 import { Button, Buttons, ToggleButton } from "./Common";
 import { Scale, Mode, ScalesDB, ScaleKey, scaleKeys } from "./types";
 import * as t from "./types";
+
+// TODO make it where I always import * as t for types instead of pulling in the names.
 
 enum ScaleMode {
   NOT_STARTED = "Not Started",
@@ -103,9 +105,9 @@ function shuffle<T>(a: Array<T>) {
 interface LearnScalesProps {
   scalesDB: ScalesDB;
   addBPM: (s: Scale, n: number) => () => void;
-  startMetronome: (bpm: number) => void;
   reset: () => void;
   scaleMode: ScaleMode;
+  metronome: t.Metronome;
 }
 
 const LearnScales = ({
@@ -113,7 +115,8 @@ const LearnScales = ({
   addBPM,
   reset,
   scaleMode,
-  startMetronome
+  metronome,
+  metronome: { start }
 }: LearnScalesProps) => {
   const [scaleKeys, setScales] = useState<Array<ScaleKey>>(() =>
     shuffle(
@@ -144,9 +147,9 @@ const LearnScales = ({
   );
   useEffect(() => {
     if (maybeScale !== undefined) {
-      startMetronome(maybeScale.bpm);
+      start(maybeScale.bpm);
     }
-  }, [maybeScale, startMetronome]);
+  }, [maybeScale, start]);
   const nextScaleText = scaleKeys.length > 1 ? "Next Scale" : "Finish";
 
   // TODO - this error handling makes me sad, I should really do better.
@@ -158,6 +161,7 @@ const LearnScales = ({
 
   return (
     <div>
+      <TimeSignature metronome={metronome} />
       <div
         style={{ alignSelf: "center", fontWeight: "bold" }}
         className="control is-expanded is-size-5"
@@ -198,7 +202,7 @@ const LearnScales = ({
 // TODO - Add a button to start learning a new scale. This will be a scale
 // that is know known and is not learning.
 const Scales = ({ metronome }: Props) => {
-  const { stop: stopMetronome, start: startMetronome } = metronome;
+  const { stop: stopMetronome } = metronome;
   const [scalesDB, setScalesDB] = useLocalStorage(
     t.LocalStorageKey.ScalesDB,
     initScalesDB
@@ -300,10 +304,10 @@ const Scales = ({ metronome }: Props) => {
       ) : (
         <LearnScales
           scaleMode={scaleMode}
-          startMetronome={startMetronome}
           addBPM={addBPM}
           scalesDB={scalesDB}
           reset={() => setScaleMode(ScaleMode.NOT_STARTED)}
+          metronome={metronome}
         />
       )}
     </div>
