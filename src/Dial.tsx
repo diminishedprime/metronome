@@ -1,5 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { useLocalStorage } from "./hooks";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useLayoutEffect
+} from "react";
+import { useLocalStorage, useDetectChangedValue } from "./hooks";
 import styled from "styled-components";
 import * as t from "./types";
 
@@ -33,14 +39,13 @@ const InfiniKnob = ({
   addDiff,
   children
 }: React.PropsWithChildren<Props>) => {
-  const [radians, setRadians] = useLocalStorage(
-    t.LocalStorageKey.Radians,
+  const [stateRadians, setRadians] = useState(
     (initialValue * (Math.PI * 3)) / 2
   );
   const radiansRef = useRef(Math.PI);
   useEffect(() => {
-    radiansRef.current = radians;
-  }, [radians]);
+    radiansRef.current = stateRadians;
+  }, [stateRadians]);
 
   const [mouseDown, setMouseDown] = useState(false);
   const mouseDownRef = useRef(false);
@@ -56,10 +61,10 @@ const InfiniKnob = ({
 
   const knobContainer = useRef<HTMLDivElement>(null);
 
-  const onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+  const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     setMouseDown(true);
     e.preventDefault();
-  };
+  }, []);
 
   const onMouseUp = useCallback((_: MouseEvent) => {
     setMouseDown(false);
@@ -125,22 +130,47 @@ const InfiniKnob = ({
     };
   }, [onMouseMove, onMouseUp]);
 
-  const onTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+  const onTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     const t = e.changedTouches;
     const t0 = t[0];
     moveKnob(t0);
-  };
+  }, []);
 
-  const top =
-    size / 2 +
-    Math.sin(radians) * (size / 4) +
-    (Math.sin(radians) * size) / 16 -
-    size / 6;
-  const left =
-    size / 2 +
-    Math.cos(radians) * (size / 4) +
-    (Math.cos(radians) * size) / 16 -
-    size / 6;
+  const [uiRadians, setUiRadians] = useState(stateRadians);
+  useLayoutEffect(() => {
+    let animationFrame: number = 0;
+
+    const tick = () => {
+      loop();
+      setUiRadians(radiansRef.current);
+    };
+
+    const loop = () => {
+      animationFrame = requestAnimationFrame(tick);
+    };
+    loop();
+
+    return () => {
+      cancelAnimationFrame(animationFrame);
+    };
+  }, []);
+
+  const top = React.useMemo(
+    () =>
+      size / 2 +
+      Math.sin(uiRadians) * (size / 4) +
+      (Math.sin(uiRadians) * size) / 16 -
+      size / 6,
+    [uiRadians]
+  );
+  const left = React.useMemo(
+    () =>
+      size / 2 +
+      Math.cos(uiRadians) * (size / 4) +
+      (Math.cos(uiRadians) * size) / 16 -
+      size / 6,
+    [uiRadians]
+  );
 
   return (
     <Outer ref={knobContainer} className="has-background-primary">
