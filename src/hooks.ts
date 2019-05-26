@@ -163,7 +163,7 @@ export const useFixAudioContextForios = () => {
 
   const fixAudioContext = useCallback(() => {
     console.log("i fix");
-    if (!polyfill.AudioContext) {
+    if (polyfill.AudioContext === undefined) {
       setHasRun(true);
       return;
     }
