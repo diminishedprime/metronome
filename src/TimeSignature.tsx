@@ -201,8 +201,10 @@ const BeatWrapper = styled.div`
 const BeatsWrapper = styled.div`
   display: flex;
   flex-grow: 1;
+  margin-bottom: 10px;
 `;
 
+// TODO - the selected division values should reset when you stop the metronome.
 // TODO - If not playing, this should show the boring gray background.
 const BeatRowItem: React.FC<{
   on: boolean;
