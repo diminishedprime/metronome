@@ -66,7 +66,7 @@ export enum LocalStorageKey {
   AppSettings = "@mjh/k/app-settings-0",
   SignatureDivisions = "@mjh/k/signature-divisions-3",
   ShowKnown = "@mjh/k/show-known-2",
-  ScalesDB = "@mjh/k/scales-db-1",
+  ScalesDB = "@mjh/k/scales-db-2",
   ActiveBeats = "@mjh/k/active-beats-2",
   TimeSignature = "@mjh/k/signature-3",
   BPM = "@mjh/k/bpm-0",
@@ -200,8 +200,13 @@ export interface Scale {
   bpm: number;
 }
 
-export type ScalesDB = {
-  [pitch: string]: {
-    [mode: string]: Scale;
-  };
-}; // Map<Pitch, Map<Mode, Scale>>;
+export type ScalesDB = immutable.Set<Scale>;
+
+export interface Scales {
+  getScale: (filter: (s: Scale) => boolean) => Scale | undefined;
+  getScales: (filter: (s: Scale) => boolean) => ScalesDB;
+  addScale: (s: Scale) => void;
+  toggleLearning: (s: Scale) => void;
+  toggleKnown: (s: Scale) => void;
+  addBPM: (s: Scale, bpm: number) => void;
+}
