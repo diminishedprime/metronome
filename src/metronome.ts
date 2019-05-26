@@ -1,12 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import * as R from "ramda";
 import * as t from "./types";
-import {
-  useLocalStorage,
-  useAdvice,
-  useAudioBuffer,
-  useFixAudioContextForios
-} from "./hooks";
+import { useLocalStorage, useAdvice, useAudioBuffer } from "./hooks";
 import Deque from "double-ended-queue";
 import { runAtTime } from "./util";
 import * as immutable from "immutable";
@@ -114,7 +109,7 @@ const addBeatsToQueue = (
 const intervalError = 0.1;
 
 const useScheduleAhead = (
-  audioContext: AudioContext | undefined,
+  audioContext: t.MAudioContext,
   state: t.State,
   setActiveDivisions: React.Dispatch<
     React.SetStateAction<immutable.List<t.ActiveDivisions>>
@@ -194,6 +189,8 @@ const useScheduleAhead = (
     if (
       delay !== undefined &&
       audioContext !== undefined &&
+      audioContext !== "not-supported" &&
+      audioContext !== "pending" &&
       buffer !== undefined
     ) {
       const beatsQueue = new Deque<t.Beat>();
@@ -252,10 +249,7 @@ const clampBPM = (bpm: number) => R.clamp(10, 250, bpm);
 
 const defaultBeat = immutable.Map<t.Division, boolean>().set(1, true);
 
-export const useMetronome = (
-  audioContext: AudioContext | undefined
-): t.Metronome => {
-  const hasFixed = useFixAudioContextForios();
+export const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
   const [playing, setPlaying] = useState(false);
   const [bpm, setBPM] = useAdvice(
     useLocalStorage(t.LocalStorageKey.BPM, 90),
@@ -268,10 +262,15 @@ export const useMetronome = (
   const [activeDivisions, setActiveDivisions] = useState(
     resetActiveBeats(signature.numerator)
   );
+
   const state: t.State = {
     bpm,
     playing,
-    ready: hasFixed,
+    pending: audioContext === "pending",
+    ready:
+      audioContext !== undefined &&
+      audioContext !== "pending" &&
+      audioContext !== "not-supported",
     signature,
     activeDivisions
   };

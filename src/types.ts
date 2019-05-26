@@ -174,6 +174,7 @@ export interface TimeSignature {
 
 export interface State {
   ready: boolean;
+  pending: boolean;
   bpm: number;
   playing: boolean;
   signature: TimeSignature;
@@ -198,3 +199,9 @@ export interface Metronome {
   addBPM: (bpmToAdd: number) => void;
   state: State;
 }
+
+export type MAudioContext =
+  | AudioContext
+  | "pending"
+  | "not-supported"
+  | undefined;

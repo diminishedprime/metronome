@@ -143,12 +143,17 @@ export const useDetectChangedValue = (...values: any[]) => {
 };
 
 export const useAudioBuffer = (
-  audioContext: AudioContext | undefined,
+  audioContext: t.MAudioContext,
   url: string
 ): AudioBuffer | undefined => {
   const [buffer, updateBuffer] = useState<AudioBuffer>();
   useEffect(() => {
-    if (audioContext !== undefined) {
+    if (
+      // TODO - refactor this out into a helper method if possible.
+      audioContext !== undefined &&
+      audioContext !== "not-supported" &&
+      audioContext !== "pending"
+    ) {
       fetch(url)
         .then(response => response.arrayBuffer())
         .then(buffer => audioContext.decodeAudioData(buffer))
@@ -158,48 +163,47 @@ export const useAudioBuffer = (
   return buffer;
 };
 
-export const useFixAudioContextForios = () => {
-  const [hasRun, setHasRun] = React.useState(false);
+export const useAudioContext = ():
+  | AudioContext
+  | undefined
+  | "pending"
+  | "not-supported" => {
+  const [audioContext, setAudioContext] = React.useState<
+    AudioContext | "not-supported" | "pending" | undefined
+  >();
+  const audioContextRef = React.useRef<AudioContext>();
+  const [hasFixed, setHasFixed] = React.useState(false);
 
   const fixAudioContext = useCallback(() => {
-    console.log("i fix");
-    if (polyfill.AudioContext === undefined) {
-      setHasRun(true);
-      return;
+    if (!hasFixed) {
+      if (audioContextRef.current !== undefined) {
+        setAudioContext("pending");
+        audioContextRef.current.resume().then(() => {
+          setHasFixed(true);
+          setAudioContext(audioContextRef.current);
+          document.removeEventListener("touchstart", fixAudioContext);
+          document.removeEventListener("click", fixAudioContext);
+          document.removeEventListener("touchend", fixAudioContext);
+        });
+      }
     }
-    const audioContext = new polyfill.AudioContext();
-
-    // Create empty buffer
-    var buffer = audioContext.createBuffer(1, 1, 22050);
-    var source = audioContext.createBufferSource();
-    source.buffer = buffer;
-    // Connect to output (speakers)
-    source.connect(audioContext.destination);
-    // Play sound
-    const polySource = source as any;
-    if (polySource.start) {
-      polySource.start(0);
-    } else if (polySource.play) {
-      polySource.play(0);
-    } else if (polySource.noteOn) {
-      polySource.noteOn(0);
-    }
-    setHasRun(true);
-  }, [setHasRun]);
+  }, [hasFixed, setHasFixed]);
 
   React.useEffect(() => {
-    if (hasRun) {
-      console.log("removing the listeners");
-      document.removeEventListener("touchstart", fixAudioContext);
-      document.removeEventListener("click", fixAudioContext);
-      document.removeEventListener("touchend", fixAudioContext);
+    if (polyfill.AudioContext === undefined) {
+      setAudioContext("not-supported");
     } else {
-      console.log("adding the listeners");
-      document.addEventListener("touchstart", fixAudioContext);
-      document.addEventListener("click", fixAudioContext);
-      document.addEventListener("touchend", fixAudioContext);
+      const context = new polyfill.AudioContext();
+      audioContextRef.current = context;
+      if (context.state === "suspended") {
+        document.addEventListener("touchstart", fixAudioContext);
+        document.addEventListener("click", fixAudioContext);
+        document.addEventListener("touchend", fixAudioContext);
+      } else {
+        setAudioContext(context);
+      }
     }
-  }, [hasRun]);
+  }, [fixAudioContext]);
 
-  return hasRun;
+  return audioContext;
 };

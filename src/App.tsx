@@ -1,7 +1,6 @@
 import React from "react";
 import Metronome from "./Metronome";
 import Settings from "./Settings";
-import * as polyfill from "./polyfill";
 import Scales from "./Scales";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import Update from "./Update";
@@ -16,7 +15,8 @@ import {
   faCog as faGear,
   faMusic
 } from "@fortawesome/free-solid-svg-icons";
-import { useToggle, useSingleton, useFixAudioContextForios } from "./hooks";
+import { useToggle } from "./hooks";
+import * as hooks from "./hooks";
 
 const TopBarWrapper = styled.section`
   margin-bottom: 10px;
@@ -131,36 +131,18 @@ const Wrapper: React.FC = ({ children }) => {
   );
 };
 
-// TODO - add an overall exception handler that prints the stacktrace.
 // TODO - add a button to the overall exception handler that lets you clear local storage.
 // TODO - add an option to the settings to clear local storage.
 // TODO - update components to use the React.FC type.
-
 const App: React.FC = () => {
   const appSettings = useAppSettings();
-  const { value: audioContext, init: initAudioContext } = useSingleton<
-    AudioContext
-  >();
-  const [hasAudioContext, setHasAudioContext] = React.useState(true);
+  const audioContext = hooks.useAudioContext();
   const metronome = useMetronome(audioContext);
-
-  const playing = React.useMemo(() => metronome.state.playing, [
-    metronome.state.playing
-  ]);
-
-  // Initialize AudioContext as a singleton on first start.
-  React.useEffect(() => {
-    if (polyfill.AudioContext === undefined) {
-      setHasAudioContext(false);
-    } else if (playing) {
-      initAudioContext(new polyfill.AudioContext());
-    }
-  }, [playing, initAudioContext]);
 
   return (
     <Router basename={process.env.PUBLIC_URL}>
       <Wrapper>
-        {!hasAudioContext && (
+        {audioContext === "not-supported" && (
           <div>
             Your browser doesn't support the audioContext api, so this will not
             work. Sorry :(

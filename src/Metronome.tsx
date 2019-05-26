@@ -40,8 +40,8 @@ const Metronome: React.FC<MetronomeProps> = ({ appSettings, metronome }) => {
   ]);
   // TODO - I don't know if this is actually necessary or not.
   const bpm = React.useMemo(() => metronome.state.bpm, [metronome.state.bpm]);
-  const ready = React.useMemo(() => metronome.state.ready, [
-    metronome.state.ready
+  const pending = React.useMemo(() => metronome.state.pending, [
+    metronome.state.pending
   ]);
   const addBPM = React.useMemo(() => {
     return metronome.addBPM;
@@ -61,7 +61,7 @@ const Metronome: React.FC<MetronomeProps> = ({ appSettings, metronome }) => {
 
   return (
     <>
-      {!ready && <FullPage>Tap to enable audio.</FullPage>}
+      {pending && <FullPage>Tap to enable audio.</FullPage>}
       {showTuner && <Tuner />}
       <section className="section">
         <Dial initialValue={bpm} addDiff={addBPM}>
@@ -88,7 +88,7 @@ const Metronome: React.FC<MetronomeProps> = ({ appSettings, metronome }) => {
             grow
             isOutlined
             isDanger
-            disabled={!ready}
+            disabled={pending}
             onClick={toggleStart}
           >
             <>Stop</>
