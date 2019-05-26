@@ -1,6 +1,67 @@
 import React from "react";
 import * as immutable from "immutable";
 
+export interface Beat {
+  time: number;
+  pitch: number;
+  gain: number;
+  buffer: AudioBuffer;
+  divisions: Division;
+  divisionIndex: number;
+  divisionLength: number;
+  currentBeat: number;
+}
+
+export type Division = 1 | 2 | 3 | 4 | 5 | 6;
+
+export type ActiveDivisions = immutable.Map<Division, immutable.List<boolean>>;
+
+// TODO - these names are sooo bad.
+export type ActiveDivisonss = immutable.List<ActiveDivisions>;
+
+export type EnabledDivisions = immutable.Map<Division, boolean>;
+
+export type Numerator = immutable.List<EnabledDivisions>;
+
+export interface TimeSignature {
+  denominator: number;
+  numerator: Numerator;
+}
+
+export interface State {
+  ready: boolean;
+  pending: boolean;
+  bpm: number;
+  playing: boolean;
+  signature: TimeSignature;
+  activeDivisions: ActiveDivisonss;
+}
+
+interface AppSettingsState {
+  keepAwake: boolean;
+}
+
+export interface AppSettings {
+  state: AppSettingsState;
+  toggleKeepAwake: () => void;
+}
+
+export interface Metronome {
+  toggleStart: () => void;
+  start: (bpm?: number) => void;
+  stop: () => void;
+  setBPM: React.Dispatch<React.SetStateAction<number>>;
+  setSignature: React.Dispatch<React.SetStateAction<TimeSignature>>;
+  addBPM: (bpmToAdd: number) => void;
+  state: State;
+}
+
+export type MAudioContext =
+  | AudioContext
+  | "pending"
+  | "not-supported"
+  | undefined;
+
 export enum LocalStorageKey {
   AppSettings = "@mjh/k/app-settings-0",
   SignatureDivisions = "@mjh/k/signature-divisions-3",
@@ -144,64 +205,3 @@ export type ScalesDB = {
     [mode: string]: Scale;
   };
 }; // Map<Pitch, Map<Mode, Scale>>;
-
-export interface Beat {
-  time: number;
-  pitch: number;
-  gain: number;
-  buffer: AudioBuffer;
-  divisions: Division;
-  divisionIndex: number;
-  divisionLength: number;
-  currentBeat: number;
-}
-
-export type Division = 1 | 2 | 3 | 4 | 5 | 6;
-
-export type ActiveDivisions = immutable.Map<Division, immutable.List<boolean>>;
-
-// TODO - these names are sooo bad.
-export type ActiveDivisonss = immutable.List<ActiveDivisions>;
-
-export type EnabledDivisions = immutable.Map<Division, boolean>;
-
-export type Numerator = immutable.List<EnabledDivisions>;
-
-export interface TimeSignature {
-  denominator: number;
-  numerator: Numerator;
-}
-
-export interface State {
-  ready: boolean;
-  pending: boolean;
-  bpm: number;
-  playing: boolean;
-  signature: TimeSignature;
-  activeDivisions: ActiveDivisonss;
-}
-
-interface AppSettingsState {
-  keepAwake: boolean;
-}
-
-export interface AppSettings {
-  state: AppSettingsState;
-  toggleKeepAwake: () => void;
-}
-
-export interface Metronome {
-  toggleStart: () => void;
-  start: (bpm?: number) => void;
-  stop: () => void;
-  setBPM: React.Dispatch<React.SetStateAction<number>>;
-  setSignature: React.Dispatch<React.SetStateAction<TimeSignature>>;
-  addBPM: (bpmToAdd: number) => void;
-  state: State;
-}
-
-export type MAudioContext =
-  | AudioContext
-  | "pending"
-  | "not-supported"
-  | undefined;
