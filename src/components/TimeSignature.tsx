@@ -217,7 +217,7 @@ const Beat: React.FC<{
 };
 
 const Beats: React.FC<{
-  activeBeats: t.ActiveDivisonss;
+  activeBeats: t.ActiveBeats;
 }> = ({ activeBeats }) => {
   return (
     <BeatsWrapper>

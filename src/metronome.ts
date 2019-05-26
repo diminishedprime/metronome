@@ -112,7 +112,7 @@ const useScheduleAhead = (
   audioContext: t.MAudioContext,
   state: t.State,
   setActiveDivisions: React.Dispatch<
-    React.SetStateAction<immutable.List<t.ActiveDivisions>>
+    React.SetStateAction<immutable.List<t.ActiveBeat>>
   >
 ) => {
   const scheduleAhead = 0.3;
@@ -150,22 +150,20 @@ const useScheduleAhead = (
   // TODO - If the division changes, we should reset all active beats to false.
   const setActiveBeat = useCallback(
     (beat: t.Beat) => {
-      setActiveDivisions(
-        (oldActiveDivisions: immutable.List<t.ActiveDivisions>) => {
-          const old = oldActiveDivisions.getIn([
-            beat.currentBeat,
-            beat.divisions,
-            beat.divisionIndex
-          ]);
-          if (old === undefined) {
-            return oldActiveDivisions;
-          }
-          return oldActiveDivisions.setIn(
-            [beat.currentBeat, beat.divisions, beat.divisionIndex],
-            !old
-          );
+      setActiveDivisions((oldActiveDivisions: immutable.List<t.ActiveBeat>) => {
+        const old = oldActiveDivisions.getIn([
+          beat.currentBeat,
+          beat.divisions,
+          beat.divisionIndex
+        ]);
+        if (old === undefined) {
+          return oldActiveDivisions;
         }
-      );
+        return oldActiveDivisions.setIn(
+          [beat.currentBeat, beat.divisions, beat.divisionIndex],
+          !old
+        );
+      });
     },
     [setActiveDivisions]
   );
@@ -234,7 +232,7 @@ const useScheduleAhead = (
 
 const resetActiveBeats = (
   beats: immutable.List<t.EnabledDivisions>
-): immutable.List<t.ActiveDivisions> =>
+): immutable.List<t.ActiveBeat> =>
   immutable.List(
     beats.map((enabledDivisions: t.EnabledDivisions) =>
       enabledDivisions.reduce((acc, b, d) => {

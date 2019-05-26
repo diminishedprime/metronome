@@ -14,10 +14,9 @@ export interface Beat {
 
 export type Division = 1 | 2 | 3 | 4 | 5 | 6;
 
-export type ActiveDivisions = immutable.Map<Division, immutable.List<boolean>>;
-
-// TODO - these names are sooo bad.
-export type ActiveDivisonss = immutable.List<ActiveDivisions>;
+export type ActiveDivision = immutable.List<boolean>;
+export type ActiveBeat = immutable.Map<Division, ActiveDivision>;
+export type ActiveBeats = immutable.List<ActiveBeat>;
 
 export type EnabledDivisions = immutable.Map<Division, boolean>;
 
@@ -34,7 +33,7 @@ export interface State {
   bpm: number;
   playing: boolean;
   signature: TimeSignature;
-  activeBeats: ActiveDivisonss;
+  activeBeats: ActiveBeats;
 }
 
 interface AppSettingsState {
