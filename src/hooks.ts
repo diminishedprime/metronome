@@ -1,4 +1,4 @@
-import {
+import React, {
   useState,
   Dispatch,
   SetStateAction,
@@ -8,6 +8,7 @@ import {
 } from "react";
 import * as R from "ramda";
 import * as d from "deep-object-diff";
+import * as polyfill from "./polyfill";
 import * as t from "./types";
 import NoSleep from "nosleep.js";
 
@@ -155,4 +156,50 @@ export const useAudioBuffer = (
     }
   }, [url, audioContext]);
   return buffer;
+};
+
+export const useFixAudioContextForios = () => {
+  const [hasRun, setHasRun] = React.useState(false);
+
+  const fixAudioContext = useCallback(() => {
+    console.log("i fix");
+    if (!polyfill.AudioContext) {
+      setHasRun(true);
+      return;
+    }
+    const audioContext = new polyfill.AudioContext();
+
+    // Create empty buffer
+    var buffer = audioContext.createBuffer(1, 1, 22050);
+    var source = audioContext.createBufferSource();
+    source.buffer = buffer;
+    // Connect to output (speakers)
+    source.connect(audioContext.destination);
+    // Play sound
+    const polySource = source as any;
+    if (polySource.start) {
+      polySource.start(0);
+    } else if (polySource.play) {
+      polySource.play(0);
+    } else if (polySource.noteOn) {
+      polySource.noteOn(0);
+    }
+    setHasRun(true);
+  }, [setHasRun]);
+
+  React.useEffect(() => {
+    if (hasRun) {
+      console.log("removing the listeners");
+      document.removeEventListener("touchstart", fixAudioContext);
+      document.removeEventListener("click", fixAudioContext);
+      document.removeEventListener("touchend", fixAudioContext);
+    } else {
+      console.log("adding the listeners");
+      document.addEventListener("touchstart", fixAudioContext);
+      document.addEventListener("click", fixAudioContext);
+      document.addEventListener("touchend", fixAudioContext);
+    }
+  }, [hasRun]);
+
+  return hasRun;
 };

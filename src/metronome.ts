@@ -1,7 +1,12 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import * as R from "ramda";
 import * as t from "./types";
-import { useLocalStorage, useAdvice, useAudioBuffer } from "./hooks";
+import {
+  useLocalStorage,
+  useAdvice,
+  useAudioBuffer,
+  useFixAudioContextForios
+} from "./hooks";
 import Deque from "double-ended-queue";
 import { runAtTime } from "./util";
 import * as immutable from "immutable";
@@ -250,6 +255,7 @@ const defaultBeat = immutable.Map<t.Division, boolean>().set(1, true);
 export const useMetronome = (
   audioContext: AudioContext | undefined
 ): t.Metronome => {
+  const hasFixed = useFixAudioContextForios();
   const [playing, setPlaying] = useState(false);
   const [bpm, setBPM] = useAdvice(
     useLocalStorage(t.LocalStorageKey.BPM, 90),
@@ -265,6 +271,7 @@ export const useMetronome = (
   const state: t.State = {
     bpm,
     playing,
+    ready: hasFixed,
     signature,
     activeDivisions
   };

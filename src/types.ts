@@ -173,6 +173,7 @@ export interface TimeSignature {
 }
 
 export interface State {
+  ready: boolean;
   bpm: number;
   playing: boolean;
   signature: TimeSignature;

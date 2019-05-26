@@ -7,6 +7,20 @@ import Dial from "./Dial";
 import { usePersistantToggle, useSleepLock } from "./hooks";
 import { Buttons, ToggleButton } from "./Common";
 import * as t from "./types";
+import styled from "styled-components";
+
+const FullPage = styled.div`
+  margin: 0 !important;
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  text-align: center;
+`;
 
 interface MetronomeProps {
   metronome: t.Metronome;
@@ -26,6 +40,9 @@ const Metronome: React.FC<MetronomeProps> = ({ appSettings, metronome }) => {
   ]);
   // TODO - I don't know if this is actually necessary or not.
   const bpm = React.useMemo(() => metronome.state.bpm, [metronome.state.bpm]);
+  const ready = React.useMemo(() => metronome.state.ready, [
+    metronome.state.ready
+  ]);
   const addBPM = React.useMemo(() => {
     return metronome.addBPM;
   }, [metronome.addBPM]);
@@ -44,6 +61,7 @@ const Metronome: React.FC<MetronomeProps> = ({ appSettings, metronome }) => {
 
   return (
     <>
+      {!ready && <FullPage>Tap to enable audio.</FullPage>}
       {showTuner && <Tuner />}
       <section className="section">
         <Dial initialValue={bpm} addDiff={addBPM}>
@@ -70,6 +88,7 @@ const Metronome: React.FC<MetronomeProps> = ({ appSettings, metronome }) => {
             grow
             isOutlined
             isDanger
+            disabled={!ready}
             onClick={toggleStart}
           >
             <>Stop</>

@@ -16,7 +16,7 @@ import {
   faCog as faGear,
   faMusic
 } from "@fortawesome/free-solid-svg-icons";
-import { useToggle, useSingleton } from "./hooks";
+import { useToggle, useSingleton, useFixAudioContextForios } from "./hooks";
 
 const TopBarWrapper = styled.section`
   margin-bottom: 10px;
@@ -144,9 +144,9 @@ const App: React.FC = () => {
   const [hasAudioContext, setHasAudioContext] = React.useState(true);
   const metronome = useMetronome(audioContext);
 
-  const {
-    state: { playing }
-  } = metronome;
+  const playing = React.useMemo(() => metronome.state.playing, [
+    metronome.state.playing
+  ]);
 
   // Initialize AudioContext as a singleton on first start.
   React.useEffect(() => {
