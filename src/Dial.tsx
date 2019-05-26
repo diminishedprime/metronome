@@ -1,11 +1,5 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-  useLayoutEffect
-} from "react";
-import { useLocalStorage, useDetectChangedValue } from "./hooks";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import * as hooks from "./hooks";
 import styled from "styled-components";
 import * as t from "./types";
 
@@ -39,7 +33,8 @@ const InfiniKnob = ({
   addDiff,
   children
 }: React.PropsWithChildren<Props>) => {
-  const [stateRadians, setRadians] = useState(
+  const [stateRadians, setRadians] = hooks.useLocalStorage(
+    t.LocalStorageKey.Radians,
     (initialValue * (Math.PI * 3)) / 2
   );
   const radiansRef = useRef(Math.PI);
@@ -130,46 +125,30 @@ const InfiniKnob = ({
     };
   }, [onMouseMove, onMouseUp]);
 
-  const onTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    const t = e.changedTouches;
-    const t0 = t[0];
-    moveKnob(t0);
-  }, []);
-
-  const [uiRadians, setUiRadians] = useState(stateRadians);
-  useLayoutEffect(() => {
-    let animationFrame: number = 0;
-
-    const tick = () => {
-      loop();
-      setUiRadians(radiansRef.current);
-    };
-
-    const loop = () => {
-      animationFrame = requestAnimationFrame(tick);
-    };
-    loop();
-
-    return () => {
-      cancelAnimationFrame(animationFrame);
-    };
-  }, []);
+  const onTouchMove = useCallback(
+    (e: React.TouchEvent<HTMLDivElement>) => {
+      const t = e.changedTouches;
+      const t0 = t[0];
+      moveKnob(t0);
+    },
+    [moveKnob]
+  );
 
   const top = React.useMemo(
     () =>
       size / 2 +
-      Math.sin(uiRadians) * (size / 4) +
-      (Math.sin(uiRadians) * size) / 16 -
+      Math.sin(stateRadians) * (size / 4) +
+      (Math.sin(stateRadians) * size) / 16 -
       size / 6,
-    [uiRadians]
+    [stateRadians, size]
   );
   const left = React.useMemo(
     () =>
       size / 2 +
-      Math.cos(uiRadians) * (size / 4) +
-      (Math.cos(uiRadians) * size) / 16 -
+      Math.cos(stateRadians) * (size / 4) +
+      (Math.cos(stateRadians) * size) / 16 -
       size / 6,
-    [uiRadians]
+    [stateRadians, size]
   );
 
   return (

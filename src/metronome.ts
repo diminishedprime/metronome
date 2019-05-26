@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import * as R from "ramda";
 import * as t from "./types";
 import { useLocalStorage, useAdvice, useAudioBuffer } from "./hooks";
@@ -167,7 +167,7 @@ const useScheduleAhead = (
         }
       );
     },
-    [setActiveDivisions, audioContext]
+    [setActiveDivisions]
   );
 
   // TODO - because the ui callbacks run in the future, I can get in a weird
@@ -296,11 +296,14 @@ export const useMetronome = (
   useScheduleAhead(audioContext, state, setActiveDivisions);
 
   // External API Things.
-  const addBPM = (bpmToAdd: number) => {
-    setBPM(R.add(bpmToAdd));
-  };
+  const addBPM = React.useCallback(
+    (bpmToAdd: number) => {
+      setBPM(R.add(bpmToAdd));
+    },
+    [setBPM]
+  );
 
-  const toggleStart = () => setPlaying(R.not);
+  const toggleStart = React.useCallback(() => setPlaying(R.not), [setPlaying]);
 
   const start = useCallback(
     (bpm?: number) => {

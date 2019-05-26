@@ -74,14 +74,16 @@ const Divisions = styled.section`
 `;
 
 const TimeSignature = ({ metronome }: Props) => {
-  const {
-    state: {
-      playing,
-      signature: { numerator },
-      activeDivisions: activeBeats
-    },
-    setSignature
-  } = metronome;
+  const setSignature = React.useMemo(() => metronome.setSignature, [
+    metronome.setSignature
+  ]);
+  const activeBeats = React.useMemo(() => metronome.state.activeDivisions, [
+    metronome.state.activeDivisions
+  ]);
+  const numerator = React.useMemo(() => metronome.state.signature.numerator, [
+    metronome.state.signature.numerator
+  ]);
+
   const [hasChanged, setHasChanged] = useState(false);
   const [uIenabledDivisions, setUiEnabledDivisions] = useState<
     t.EnabledDivisions
@@ -211,11 +213,9 @@ const BeatRowItem: React.FC<{
   beatRows: number;
 }> = ({ on, beatRows }) => {
   const className = React.useMemo(() => {
-    console.log("something changed");
     return on ? "has-background-primary" : "has-background-link";
   }, [on]);
   const height = React.useMemo(() => {
-    console.log("height changed");
     return 70 / beatRows;
   }, [beatRows]);
   return (
