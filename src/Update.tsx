@@ -27,6 +27,7 @@ const UpdateStyle = styled.section`
   animation: ease-in 1s ${rotate};
 `;
 
+let hasRegistered = false;
 export default () => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
@@ -39,12 +40,15 @@ export default () => {
   }, []);
 
   useEffect(() => {
-    serviceWorker.register({
-      onUpdate: () => {
-        setUpdateAvailable(true);
-      }
-    });
-  });
+    if (!hasRegistered) {
+      serviceWorker.register({
+        onUpdate: () => {
+          setUpdateAvailable(true);
+        }
+      });
+    }
+    hasRegistered = true;
+  }, []);
   return (
     <>
       {updateAvailable && (
