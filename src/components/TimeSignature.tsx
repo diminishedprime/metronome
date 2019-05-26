@@ -21,8 +21,8 @@ const TimeSignature = ({ metronome }: Props) => {
   const setSignature = React.useMemo(() => metronome.setSignature, [
     metronome.setSignature
   ]);
-  const activeBeats = React.useMemo(() => metronome.state.activeDivisions, [
-    metronome.state.activeDivisions
+  const activeBeats = React.useMemo(() => metronome.state.activeBeats, [
+    metronome.state.activeBeats
   ]);
   const numerator = React.useMemo(() => metronome.state.signature.numerator, [
     metronome.state.signature.numerator

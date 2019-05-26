@@ -259,7 +259,7 @@ export const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
     denominator: 4,
     numerator: immutable.List([defaultBeat, defaultBeat, defaultBeat])
   });
-  const [activeDivisions, setActiveDivisions] = useState(
+  const [activeBeats, setActiveBeats] = useState(
     resetActiveBeats(signature.numerator)
   );
 
@@ -272,7 +272,7 @@ export const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
       audioContext !== "pending" &&
       audioContext !== "not-supported",
     signature,
-    activeDivisions
+    activeBeats
   };
   const { numerator } = signature;
 
@@ -287,19 +287,19 @@ export const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
   useEffect(() => {
     // TODO - This would be fancier if when the next beat can still happen, it
     // didn't clear the active beat in the UI.
-    setActiveDivisions(resetActiveBeats(numerator));
-  }, [numerator, signature, setActiveDivisions]);
+    setActiveBeats(resetActiveBeats(numerator));
+  }, [numerator, signature, setActiveBeats]);
 
   useEffect(() => {
     if (!playing) {
-      setActiveDivisions(resetActiveBeats(numerator));
+      setActiveBeats(resetActiveBeats(numerator));
       setTimeout(() => {
-        setActiveDivisions(resetActiveBeats(numerator));
+        setActiveBeats(resetActiveBeats(numerator));
       }, 300);
     }
-  }, [playing, numerator, setActiveDivisions]);
+  }, [playing, numerator, setActiveBeats]);
 
-  useScheduleAhead(audioContext, state, setActiveDivisions);
+  useScheduleAhead(audioContext, state, setActiveBeats);
 
   // External API Things.
   const addBPM = React.useCallback(

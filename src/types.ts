@@ -34,7 +34,7 @@ export interface State {
   bpm: number;
   playing: boolean;
   signature: TimeSignature;
-  activeDivisions: ActiveDivisonss;
+  activeBeats: ActiveDivisonss;
 }
 
 interface AppSettingsState {
