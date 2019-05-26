@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import * as R from "ramda";
 import styled from "styled-components";
 import classnames from "classnames";
 
 export const maxWidth = "40em";
 
-interface ButtonProps
-  extends React.DetailedHTMLProps<
-    React.ButtonHTMLAttributes<HTMLButtonElement>,
-    HTMLButtonElement
-  > {
+type ReactButton = React.DetailedHTMLProps<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  HTMLButtonElement
+>;
+interface ButtonProps extends ReactButton {
   primary?: true;
   isPrimary?: true;
   isLink?: true;
@@ -47,25 +47,25 @@ const onProps = [
   "isOutlined"
 ];
 
-export const ToggleButton = (props: ToggleButtonProps) => {
+export const ToggleButton: React.FC<ToggleButtonProps> = ({ on, ...props }) => {
   const renderProps = React.useMemo(() => {
-    const toRemove = props.on ? offProps : onProps;
+    const toRemove = on ? offProps : onProps;
     return R.omit(toRemove, props);
-  }, [props]);
+  }, [on, props]);
 
   const child = React.useMemo(
     () =>
       props.children instanceof Array && props.children.length === 2
-        ? props.on
+        ? on
           ? props.children[0]
           : props.children[1]
         : props.children,
-    [props]
+    [props, on]
   );
   return <Button {...renderProps}>{child}</Button>;
 };
 
-export const Button = ({
+export const Button: React.FC<ButtonProps> = ({
   isPrimary,
   isDanger,
   isLink,
@@ -79,24 +79,42 @@ export const Button = ({
   offIsSuccess,
   offIsOutlined,
   grow,
+  className: propsClassName,
   ...props
-}: ButtonProps) => {
-  const className = classnames("button", props.className, {
-    "is-primary": isPrimary || offIsPrimary,
-    "is-link": isLink || offIsLink,
-    "is-danger": isDanger || offIsDanger,
-    "is-info": isInfo || offIsInfo,
-    "is-success": isSuccess || offIsSuccess,
-    "is-outlined": isOutlined || offIsOutlined
-  });
-
-  const style = grow ? { flexGrow: 1 } : {};
-
-  return (
-    <button style={style} {...{ ...props, className }}>
-      {props.children}
-    </button>
+}) => {
+  const className = React.useMemo(
+    () =>
+      classnames("button", propsClassName, {
+        "is-primary": isPrimary || offIsPrimary,
+        "is-link": isLink || offIsLink,
+        "is-danger": isDanger || offIsDanger,
+        "is-info": isInfo || offIsInfo,
+        "is-success": isSuccess || offIsSuccess,
+        "is-outlined": isOutlined || offIsOutlined,
+        "is-grow": grow
+      }),
+    [
+      propsClassName,
+      grow,
+      isPrimary,
+      offIsPrimary,
+      isLink,
+      offIsLink,
+      isDanger,
+      offIsDanger,
+      isInfo,
+      offIsInfo,
+      isOutlined,
+      offIsOutlined,
+      isSuccess,
+      offIsSuccess
+    ]
   );
+  const renderProps = React.useMemo(() => {
+    return { ...props, className };
+  }, [props, className]);
+
+  return <button {...renderProps}>{props.children}</button>;
 };
 
 interface ButtonsProps
@@ -117,21 +135,21 @@ const ButtonsWrapper = styled.div`
 export const Buttons: React.FC<ButtonsProps> = ({
   children,
   hasAddons,
-  // TODO - I might need to pass this down to ButtonsWrapper, but I can't right now without getting a type error.
   ref,
-  style = {},
+  className: propsClassName,
   grow,
   ...props
 }) => {
-  const className = classnames(props.className, "buttons", {
-    "has-addons": hasAddons
-  });
+  const className = React.useMemo(
+    () =>
+      classnames(propsClassName, "buttons", {
+        "has-addons": hasAddons,
+        "is-grow": grow
+      }),
+    [hasAddons, grow, propsClassName]
+  );
   return (
-    <ButtonsWrapper
-      style={Object.assign(style, { flexGrow: grow ? 1 : "unset" })}
-      {...props}
-      className={className}
-    >
+    <ButtonsWrapper ref={ref as any} {...props} className={className}>
       {children}
     </ButtonsWrapper>
   );
