@@ -62,12 +62,13 @@ export type MAudioContext =
   | undefined;
 
 export enum LocalStorageKey {
+  EnabledDivisions = "@mjh/k/enabled-divisions-0",
   AppSettings = "@mjh/k/app-settings-0",
   SignatureDivisions = "@mjh/k/signature-divisions-3",
   ShowKnown = "@mjh/k/show-known-2",
   ScalesDB = "@mjh/k/scales-db-1",
   ActiveBeats = "@mjh/k/active-beats-2",
-  TimeSignature = "@mjh/k/signature-2",
+  TimeSignature = "@mjh/k/signature-3",
   BPM = "@mjh/k/bpm-0",
   KnownScales = "@mjh/k/known-scales-0",
   ShowScales = "@mjh/k/show-scales-0",

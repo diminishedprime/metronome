@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import * as R from "ramda";
 import styled from "styled-components";
 import { Button, Buttons, ToggleButton } from "./Common";
+import * as hooks from "../hooks";
 import * as t from "../types";
 import * as immutable from "immutable";
 
@@ -29,9 +30,12 @@ const TimeSignature = ({ metronome }: Props) => {
   ]);
 
   const [hasChanged, setHasChanged] = useState(false);
-  const [uIenabledDivisions, setUiEnabledDivisions] = useState<
+  const [uIenabledDivisions, setUiEnabledDivisions] = hooks.useLocalStorage<
     t.EnabledDivisions
-  >(immutable.Map<t.Division, boolean>().set(1, true));
+  >(
+    t.LocalStorageKey.EnabledDivisions,
+    immutable.Map<t.Division, boolean>().set(1, true)
+  );
   const setNumerator = useCallback(
     (numerator: number) => {
       setHasChanged(true);

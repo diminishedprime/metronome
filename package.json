@@ -28,6 +28,8 @@
     "react-router-dom": "^5.0.0",
     "react-scripts": "3.0.0",
     "styled-components": "^4.2.0",
+    "transit-immutable-js": "^0.7.0",
+    "transit-js": "^0.8.861",
     "typescript": "3.4.5"
   },
   "scripts": {

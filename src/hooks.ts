@@ -10,6 +10,7 @@ import * as R from "ramda";
 import * as d from "deep-object-diff";
 import * as polyfill from "./polyfill";
 import * as t from "./types";
+import * as transit from "transit-immutable-js";
 import NoSleep from "nosleep.js";
 
 export const useSingleton = <T>(initialValue?: T) => {
@@ -55,15 +56,15 @@ export const useLocalStorage = <T>(
   override: boolean = false
 ): [T, Dispatch<SetStateAction<T>>] => {
   const [value, setValue] = useState(() => {
-    let firstValue;
+    let firstValue: T;
     const fromLocal = localStorage.getItem(key);
     if (fromLocal !== null && fromLocal !== undefined && !override) {
-      firstValue = JSON.parse(fromLocal);
+      firstValue = transit.fromJSON(fromLocal);
     } else {
       firstValue =
         initialValue instanceof Function ? initialValue() : initialValue;
     }
-    window.localStorage.setItem(key, JSON.stringify(firstValue));
+    window.localStorage.setItem(key, transit.toJSON(firstValue));
     return firstValue;
   });
 
@@ -72,7 +73,7 @@ export const useLocalStorage = <T>(
       setValue((oldValue: T) => {
         const newValue =
           valueAction instanceof Function ? valueAction(oldValue) : valueAction;
-        window.localStorage.setItem(key, JSON.stringify(newValue));
+        window.localStorage.setItem(key, transit.toJSON(newValue));
         return newValue;
       });
     },

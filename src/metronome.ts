@@ -4,7 +4,9 @@ import * as t from "./types";
 import { useLocalStorage, useAdvice, useAudioBuffer } from "./hooks";
 import Deque from "double-ended-queue";
 import { runAtTime } from "./util";
+import * as hooks from "./hooks";
 import * as immutable from "immutable";
+
 const click = require("./click.wav");
 
 const scheduleNote = (
@@ -253,10 +255,19 @@ export const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
     useLocalStorage(t.LocalStorageKey.BPM, 90),
     clampBPM
   );
-  const [signature, setSignature] = useState<t.TimeSignature>({
-    denominator: 4,
-    numerator: immutable.List([defaultBeat, defaultBeat, defaultBeat])
-  });
+  const [signature, setSignature] = hooks.useLocalStorage<t.TimeSignature>(
+    t.LocalStorageKey.TimeSignature,
+    {
+      denominator: 4,
+      numerator: immutable.List([
+        defaultBeat,
+        defaultBeat,
+        defaultBeat,
+        defaultBeat
+      ])
+    }
+  );
+
   const [activeBeats, setActiveBeats] = useState(
     resetActiveBeats(signature.numerator)
   );
