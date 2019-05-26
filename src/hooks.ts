@@ -77,7 +77,6 @@ export const useLocalStorage = <T>(
     },
     [key]
   );
-
   return [value, setNewValue];
 };
 

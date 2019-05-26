@@ -9,11 +9,12 @@ export const runAtTime = (
   timeToRun: number,
   callback: () => void
 ) => {
-  const now = audioContext.currentTime;
-  if (timeToRun <= now) {
-    callback();
-  } else {
-    const sleepTime = ((timeToRun - now) / 2) * 1000;
-    setTimeout(() => runAtTime(audioContext, timeToRun, callback), sleepTime);
-  }
+  // const now = audioContext.currentTime;
+  // if (timeToRun <= now) {
+  //   callback();
+  // } else {
+  //   const sleepTime = ((timeToRun - now) / 2) * 1000;
+  //   setTimeout(() => runAtTime(audioContext, timeToRun, callback), sleepTime);
+  // }
+  setTimeout(callback, (timeToRun - audioContext.currentTime) * 1000);
 };

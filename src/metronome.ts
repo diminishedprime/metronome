@@ -4,6 +4,7 @@ import * as t from "./types";
 import { useLocalStorage, useAdvice, useAudioBuffer } from "./hooks";
 import Deque from "double-ended-queue";
 import { runAtTime } from "./util";
+import * as immutable from "immutable";
 const click = require("./click.wav");
 
 const scheduleNote = (
@@ -30,10 +31,10 @@ const beatsFor = (
   buffer: AudioBuffer,
   currentBeat: number
 ): Array<t.Beat> => {
-  const beats = [];
-  for (const key in divisions) {
-    if (divisions[key]) {
-      let divisionOption = parseInt(key, 10) as t.Division;
+  const beats: Array<t.Beat> = [];
+  divisions
+    .filter(a => a)
+    .forEach((_, divisionOption) => {
       const noteOffset = secondsPerBeat / divisionOption;
       for (
         let divisionIndex = 0;
@@ -41,8 +42,10 @@ const beatsFor = (
         divisionIndex++
       ) {
         const time = startOfBeatTime + divisionIndex * noteOffset;
+        const divisionLength = noteOffset;
         const beat: t.Beat = {
           time,
+          divisionLength,
           pitch: 220,
           gain: 1.0 * 0.5,
           buffer,
@@ -52,8 +55,7 @@ const beatsFor = (
         };
         beats.push(beat);
       }
-    }
-  }
+    });
   beats.sort((a, b) => a.time - b.time);
   return beats;
 };
@@ -109,7 +111,9 @@ const intervalError = 0.1;
 const useScheduleAhead = (
   audioContext: AudioContext | undefined,
   state: t.State,
-  setActiveDivisions: React.Dispatch<React.SetStateAction<t.ActiveDivisions[]>>
+  setActiveDivisions: React.Dispatch<
+    React.SetStateAction<immutable.List<t.ActiveDivisions>>
+  >
 ) => {
   const scheduleAhead = 0.3;
   const { playing } = state;
@@ -136,43 +140,34 @@ const useScheduleAhead = (
 
   const nextBeat = () => {
     setBeatToSchedule(
-      old => (old + 1) % stateRef.current.signature.numerator.length
+      old => (old + 1) % stateRef.current.signature.numerator.size
     );
   };
 
   // TODO - this is super janky.
   // TODO - this would be much nicer with an animation.
   // TODO - switch this to runAtTime to clear the beat it just set.
+  // TODO - If the division changes, we should reset all active beats to false.
   const setActiveBeat = useCallback(
     (beat: t.Beat) => {
-      setActiveDivisions(oldBeats => {
-        const withNewBeat = R.adjust(
-          beat.currentBeat,
-          (activeBeat: t.ActiveDivisions) => {
-            return { ...activeBeat, [beat.divisions]: beat.divisionIndex };
-          },
-          oldBeats
-        );
-        let lastBeatIdx = beat.currentBeat - 1;
-        if (lastBeatIdx < 0) {
-          if (oldBeats.length === 1) {
-            return withNewBeat;
+      setActiveDivisions(
+        (oldActiveDivisions: immutable.List<t.ActiveDivisions>) => {
+          const old = oldActiveDivisions.getIn([
+            beat.currentBeat,
+            beat.divisions,
+            beat.divisionIndex
+          ]);
+          if (old === undefined) {
+            return oldActiveDivisions;
           }
-          lastBeatIdx = stateRef.current.signature.numerator.length - 1;
+          return oldActiveDivisions.setIn(
+            [beat.currentBeat, beat.divisions, beat.divisionIndex],
+            !old
+          );
         }
-        return R.adjust(
-          lastBeatIdx,
-          (activeBeat: t.ActiveDivisions) => {
-            return Object.keys(activeBeat).reduce(
-              (acc, key) => ({ ...acc, [key]: undefined }),
-              {}
-            );
-          },
-          withNewBeat
-        );
-      });
+      );
     },
-    [setActiveDivisions]
+    [setActiveDivisions, audioContext]
   );
 
   // TODO - because the ui callbacks run in the future, I can get in a weird
@@ -203,11 +198,9 @@ const useScheduleAhead = (
         const {
           signature: { numerator }
         } = stateRef.current;
-        const beatIdx = Math.min(
-          beatToScheduleRef.current,
-          numerator.length - 1
-        );
-        const currentBeat = numerator[beatIdx];
+        const beatIdx = Math.min(beatToScheduleRef.current, numerator.size - 1);
+        const currentBeat = numerator.get(beatIdx)!;
+
         addBeatsToQueue(
           stateRef.current,
           nextNoteTimeRef,
@@ -237,12 +230,22 @@ const useScheduleAhead = (
   ]);
 };
 
-const resetActiveBeats = (beats: t.EnabledDivisions[]): t.ActiveDivisions[] =>
-  beats.map((enabledDivisions: t.EnabledDivisions) =>
-    R.mapObjIndexed(() => undefined, enabledDivisions)
+const resetActiveBeats = (
+  beats: immutable.List<t.EnabledDivisions>
+): immutable.List<t.ActiveDivisions> =>
+  immutable.List(
+    beats.map((enabledDivisions: t.EnabledDivisions) =>
+      enabledDivisions.reduce((acc, b, d) => {
+        return b
+          ? acc.set(d, immutable.List(R.range(0, d).map(() => true)))
+          : acc;
+      }, immutable.Map<t.Division, immutable.List<boolean>>())
+    )
   );
 
 const clampBPM = (bpm: number) => R.clamp(10, 250, bpm);
+
+const defaultBeat = immutable.Map<t.Division, boolean>().set(1, true);
 
 export const useMetronome = (
   audioContext: AudioContext | undefined
@@ -252,17 +255,13 @@ export const useMetronome = (
     useLocalStorage(t.LocalStorageKey.BPM, 90),
     clampBPM
   );
-  const [signature, setSignature] = useLocalStorage<t.TimeSignature>(
-    t.LocalStorageKey.TimeSignature,
-    {
-      denominator: 4,
-      numerator: [{ 1: true }, { 1: true }, { 1: true }]
-    }
+  const [signature, setSignature] = useState<t.TimeSignature>({
+    denominator: 4,
+    numerator: immutable.List([defaultBeat, defaultBeat, defaultBeat])
+  });
+  const [activeDivisions, setActiveDivisions] = useState(
+    resetActiveBeats(signature.numerator)
   );
-  const [activeDivisions, setActiveDivisions] = useLocalStorage<
-    t.ActiveDivisions[]
-  >(t.LocalStorageKey.ActiveBeats, resetActiveBeats(signature.numerator));
-
   const state: t.State = {
     bpm,
     playing,

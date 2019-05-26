@@ -1,4 +1,5 @@
 import React from "react";
+import * as immutable from "immutable";
 
 export enum LocalStorageKey {
   AppSettings = "@mjh/k/app-settings-0",
@@ -151,28 +152,31 @@ export interface Beat {
   buffer: AudioBuffer;
   divisions: Division;
   divisionIndex: number;
+  divisionLength: number;
   currentBeat: number;
 }
 
 export type Division = 1 | 2 | 3 | 4 | 5 | 6;
 
-export type ActiveDivisions = {
-  [divisionOption: number]: number | undefined;
-};
-export type EnabledDivisions = {
-  [divisionOption: number]: boolean;
-};
+export type ActiveDivisions = immutable.Map<Division, immutable.List<boolean>>;
+
+// TODO - these names are sooo bad.
+export type ActiveDivisonss = immutable.List<ActiveDivisions>;
+
+export type EnabledDivisions = immutable.Map<Division, boolean>;
+
+export type Numerator = immutable.List<EnabledDivisions>;
 
 export interface TimeSignature {
   denominator: number;
-  numerator: EnabledDivisions[];
+  numerator: Numerator;
 }
 
 export interface State {
   bpm: number;
   playing: boolean;
   signature: TimeSignature;
-  activeDivisions: Array<ActiveDivisions>;
+  activeDivisions: ActiveDivisonss;
 }
 
 interface AppSettingsState {
