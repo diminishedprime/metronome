@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import TimeSignature from "./TimeSignature";
-import { useLocalStorage, usePersistantToggle } from "./hooks";
+import { useLocalStorage, usePersistantToggle } from "../hooks";
 import * as R from "ramda";
 import { Button, Buttons, ToggleButton } from "./Common";
-import { Scale, Mode, ScalesDB, ScaleKey, scaleKeys } from "./types";
-import * as t from "./types";
+import { Scale, Mode, ScalesDB, ScaleKey, scaleKeys } from "../types";
+import * as t from "../types";
 
 // TODO make it where I always import * as t for types instead of pulling in the names.
 

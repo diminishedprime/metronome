@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useToggle } from "./hooks";
+import { useToggle } from "../hooks";
 import { ToggleButton, Buttons } from "./Common";
 import styled from "styled-components";
-import * as polyfill from "./polyfill";
+import * as polyfill from "../polyfill";
 
 const noteIdx: { [note: number]: string } = {
   0: "A",

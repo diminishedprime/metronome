@@ -4,9 +4,9 @@ import TimeSignature from "./TimeSignature";
 import TapIn from "./TapIn";
 import Tuner from "./Tuner";
 import Dial from "./Dial";
-import { usePersistantToggle, useSleepLock } from "./hooks";
+import { usePersistantToggle, useSleepLock } from "../hooks";
 import { Buttons, ToggleButton } from "./Common";
-import * as t from "./types";
+import * as t from "../types";
 import styled from "styled-components";
 
 const FullPage = styled.div`

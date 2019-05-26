@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import App from "./App";
+import App from "./components/App";
 import "./bulma-overrides.sass";
 
 class ErrorBoundary extends React.Component<{}, { error: any }> {

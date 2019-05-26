@@ -4,8 +4,8 @@ import Settings from "./Settings";
 import Scales from "./Scales";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import Update from "./Update";
-import { useAppSettings } from "./settings";
-import { useMetronome } from "./metronome";
+import { useAppSettings } from "../settings";
+import { useMetronome } from "../metronome";
 import styled, { keyframes } from "styled-components";
 import { maxWidth } from "./Common";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -15,8 +15,8 @@ import {
   faCog as faGear,
   faMusic
 } from "@fortawesome/free-solid-svg-icons";
-import { useToggle } from "./hooks";
-import * as hooks from "./hooks";
+import { useToggle } from "../hooks";
+import * as hooks from "../hooks";
 
 const TopBarWrapper = styled.section`
   margin-bottom: 10px;

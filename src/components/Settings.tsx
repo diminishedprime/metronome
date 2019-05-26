@@ -1,5 +1,5 @@
 import React from "react";
-import * as t from "./types";
+import * as t from "../types";
 import styled from "styled-components";
 
 interface SettingsProps {

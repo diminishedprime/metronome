@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import * as serviceWorker from "./serviceWorker";
+import * as serviceWorker from "../serviceWorker";
 import { Buttons, Button, maxWidth } from "./Common";
 import styled, { keyframes } from "styled-components";
 

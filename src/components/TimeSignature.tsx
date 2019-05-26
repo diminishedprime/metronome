@@ -2,68 +2,12 @@ import React, { useState, useCallback, useEffect } from "react";
 import * as R from "ramda";
 import styled from "styled-components";
 import { Button, Buttons, ToggleButton } from "./Common";
-import * as t from "./types";
+import * as t from "../types";
 import * as immutable from "immutable";
 
 interface Props {
   metronome: t.Metronome;
 }
-
-// const BeatColumnRow = ({
-//   playing,
-//   activeBeats,
-//   beatIdx,
-//   division,
-//   divisionIdx,
-//   enabledDivisions: beatDivisions
-// }: {
-//   division: string;
-//   playing: boolean;
-//   activeBeats: t.ActiveDivisions[];
-//   divisionIdx: number;
-//   beatIdx: number;
-//   enabledDivisions: t.EnabledDivisions;
-// }) => {
-//   const divisions = parseInt(division, 10);
-//   return (
-//     <SigColumns key={`d${divisions}`}>
-//       {R.range(0, divisions).map(idx => {
-//         const bg =
-//           playing &&
-//           activeBeats[beatIdx] &&
-//           activeBeats[beatIdx][divisions] &&
-//           activeBeats[beatIdx][divisions][idx]
-//             ? beatIdx === 0
-//               ? "has-background-info"
-//               : "has-background-primary"
-//             : "has-background-light";
-//         const marginTop = divisions === 1 ? 0 : 5;
-//         const marginLeft = idx === 0 ? 0 : 10 / divisions;
-//         const marginRight = idx === divisions - 1 ? 0 : 10 / divisions;
-//         return (
-//           <SigColumn
-//             key={`d${divisions}-${idx}`}
-//             className={`${bg} has-text-centered`}
-//             style={{
-//               justifyContent: "center",
-//               height:
-//                 70 /
-//                   Object.keys(beatDivisions).filter(
-//                     key => beatDivisions[key as any]
-//                   ).length -
-//                 marginTop,
-//               marginLeft,
-//               marginRight,
-//               marginTop
-//             }}
-//           >
-//             {divisionIdx === 0 && beatIdx + 1}
-//           </SigColumn>
-//         );
-//       })}
-//     </SigColumns>
-//   );
-// };
 
 const Divisions = styled.section`
   display: flex;

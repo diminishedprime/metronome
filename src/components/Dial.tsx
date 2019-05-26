@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import * as hooks from "./hooks";
+import * as hooks from "../hooks";
 import styled from "styled-components";
-import * as t from "./types";
+import * as t from "../types";
 
 const Outer = styled.div`
   margin: auto;
