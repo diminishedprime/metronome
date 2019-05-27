@@ -140,18 +140,21 @@ const useScheduleAhead = (audioContext: t.MAudioContext) => {
   // TODO: - because the ui callbacks run in the future, I can get in a weird
   // spot state-wise. I should figure out a way to either cancel them running
   // when the number of divisions changes.
-  const updateUi = React.useCallback((audioContext: AudioContext, beat: t.Beat) => {
-    // We ovewrite activeBeats here because it's definitely changing.
-    runAtTime(audioContext, beat.time, () => {
-      if (store.getState().metronomeState.playing) {
-        // TODO: - this is super janky.
-        // TODO: - this would be much nicer with an animation.
-        // TODO: - switch this to runAtTime to clear the beat it just set.
-        // TODO: - If the division changes, we should reset all active beats to false.
-        redux.updateActiveBeat(beat);
-      }
-    });
-  }, []);
+  const updateUi = React.useCallback(
+    (audioContext: AudioContext, beat: t.Beat) => {
+      // We ovewrite activeBeats here because it's definitely changing.
+      runAtTime(audioContext, beat.time, () => {
+        if (store.getState().metronomeState.playing) {
+          // TODO: - this is super janky.
+          // TODO: - this would be much nicer with an animation.
+          // TODO: - switch this to runAtTime to clear the beat it just set.
+          // TODO: - If the division changes, we should reset all active beats to false.
+          redux.updateActiveBeat(beat);
+        }
+      });
+    },
+    []
+  );
 
   React.useEffect(() => {
     if (
