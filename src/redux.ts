@@ -51,10 +51,11 @@ export const setPlaying = (action: React.SetStateAction<boolean>) => {
 
 export const setBPM = (action: React.SetStateAction<number>) => {
   // TODO - figure out a cleaner way to manage this.
-  const nextValue =
+  const nextValue = clampBPM(
     action instanceof Function
       ? action(store.getState().metronomeState.bpm)
-      : action;
+      : action
+  );
   util.toLocalStorage(t.LocalStorageKey.BPM, nextValue);
   store.dispatch({ type: ActionType.SetBpm, action: nextValue });
 };
@@ -189,11 +190,10 @@ const rootReducer = (
         ...store,
         metronomeState: {
           ...store.metronomeState,
-          bpm: clampBPM(
+          bpm:
             action.action instanceof Function
               ? action.action(store.metronomeState.bpm)
               : action.action
-          )
         }
       };
     default:
