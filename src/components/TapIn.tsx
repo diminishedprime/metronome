@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import * as R from "ramda";
 import { Button } from "./Common";
 import * as redux from "../redux";
@@ -12,7 +12,7 @@ const calculateBPM = R.pipe(
 );
 
 const TapIn: React.FC = () => {
-  const [taps, setTaps] = useState<number[]>([]);
+  const [taps, setTaps] = React.useState<number[]>([]);
 
   const onTap = () => {
     const now = performance.now();

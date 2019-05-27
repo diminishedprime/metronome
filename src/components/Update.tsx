@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import * as serviceWorker from "../serviceWorker";
 import { Buttons, Button, maxWidth } from "./Common";
 import styled, { keyframes } from "styled-components";
@@ -29,7 +29,7 @@ const UpdateStyle = styled.section`
 
 let hasRegistered = false;
 export default () => {
-  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [updateAvailable, setUpdateAvailable] = React.useState(false);
 
   const reload = React.useCallback(() => {
     window.location.reload();
@@ -39,7 +39,7 @@ export default () => {
     setUpdateAvailable(false);
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!hasRegistered) {
       serviceWorker.register({
         onUpdate: () => {

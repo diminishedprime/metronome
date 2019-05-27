@@ -4,10 +4,10 @@ import TimeSignature from "./TimeSignature";
 import TapIn from "./TapIn";
 import Tuner from "./Tuner";
 import Dial from "./Dial";
-import { usePersistantToggle, useSleepLock } from "../hooks";
 import { Buttons, ToggleButton } from "./Common";
 import useMetronome from "../metronome";
 import * as t from "../types";
+import * as hooks from "../hooks";
 import styled from "styled-components";
 import * as redux from "../redux";
 
@@ -50,7 +50,7 @@ const Metronome: React.FC<MetronomeProps> = ({ audioContext }) => {
   useMetronome(audioContext);
 
   // TODO: - this should be saved in appSettings.
-  const [showTuner, toggleTuner] = usePersistantToggle(
+  const [showTuner, toggleTuner] = hooks.usePersistantToggle(
     t.LocalStorageKey.ShowTuner,
     false
   );

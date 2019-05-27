@@ -14,7 +14,6 @@ import {
   faCog as faGear,
   faMusic
 } from "@fortawesome/free-solid-svg-icons";
-import { useToggle } from "../hooks";
 import * as hooks from "../hooks";
 
 const TopBarWrapper = React.memo(styled.section`
@@ -66,7 +65,7 @@ const NavIcon = React.memo(styled(FontAwesomeIcon)`
 `);
 
 const TopBar = React.memo(() => {
-  const [showNav, toggleNav] = useToggle(false);
+  const [showNav, toggleNav] = hooks.useToggle(false);
   // TODO: - figure out how to animate the nav being hidden.
   // TODO: - make it where clicking outside of this element hides it.
   // TODO: - make it where you can swipe from the right of the screen to show the nav.

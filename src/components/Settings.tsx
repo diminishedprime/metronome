@@ -1,5 +1,4 @@
 import React from "react";
-import * as t from "../types";
 import * as redux from "../redux";
 import styled from "styled-components";
 

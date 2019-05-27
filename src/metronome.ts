@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useRef } from "react";
+import React from "react";
 import * as R from "ramda";
 import * as t from "./types";
 import { useAudioBuffer } from "./hooks";
@@ -120,12 +120,12 @@ const useScheduleAhead = (audioContext: t.MAudioContext) => {
   const buffer = useAudioBuffer(audioContext, click);
 
   const scheduleAhead = 0.3;
-  const nextNoteTimeRef = useRef<number>(0);
+  const nextNoteTimeRef = React.useRef<number>(0);
   const delay = playing ? (scheduleAhead * 1000) / 2 : undefined;
 
   // TODO: this should probably be updated when the numerator changes.
-  const beatToSchedule = useRef(0);
-  useEffect(() => {
+  const beatToSchedule = React.useRef(0);
+  React.useEffect(() => {
     if (!playing) {
       beatToSchedule.current = 0;
     }
@@ -140,7 +140,7 @@ const useScheduleAhead = (audioContext: t.MAudioContext) => {
   // TODO: - because the ui callbacks run in the future, I can get in a weird
   // spot state-wise. I should figure out a way to either cancel them running
   // when the number of divisions changes.
-  const updateUi = useCallback((audioContext: AudioContext, beat: t.Beat) => {
+  const updateUi = React.useCallback((audioContext: AudioContext, beat: t.Beat) => {
     // We ovewrite activeBeats here because it's definitely changing.
     runAtTime(audioContext, beat.time, () => {
       if (store.getState().metronomeState.playing) {
@@ -153,7 +153,7 @@ const useScheduleAhead = (audioContext: t.MAudioContext) => {
     });
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (
       delay !== undefined &&
       audioContext !== undefined &&
@@ -221,14 +221,14 @@ const useMetronome = (audioContext: t.MAudioContext) => {
   const numerator = redux.useSelector(
     s => s.metronomeState.signature.numerator
   );
-  useEffect(() => {
+  React.useEffect(() => {
     // TODO: - This would be fancier if when the next beat can still happen, it
     // didn't clear the active beat in the UI.
     redux.resetActivebeats();
   }, [numerator]);
 
   // If the metronome stops playing, we should reset the active beats.
-  useEffect(() => {
+  React.useEffect(() => {
     if (!playing) {
       redux.resetActivebeats();
     }

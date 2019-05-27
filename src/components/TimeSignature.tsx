@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React from "react";
 import * as R from "ramda";
 import styled from "styled-components";
 import { Button, Buttons, ToggleButton } from "./Common";
@@ -60,7 +60,7 @@ const TimeSignature = () => {
     a => a.metronomeState.signature.numerator
   );
 
-  const [hasChanged, setHasChanged] = useState(false);
+  const [hasChanged, setHasChanged] = React.useState(false);
   const [uIenabledDivisions, setUiEnabledDivisions] = hooks.useLocalStorage<
     t.EnabledDivisions
   >(
@@ -68,7 +68,7 @@ const TimeSignature = () => {
     immutable.Map<t.Division, boolean>().set(1, true)
   );
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (hasChanged) {
       setSignature(old => ({
         ...old,
@@ -79,7 +79,7 @@ const TimeSignature = () => {
     }
   }, [uIenabledDivisions, hasChanged, setSignature]);
 
-  const toggleDivisionOption = useCallback(
+  const toggleDivisionOption = React.useCallback(
     (divisionOption: t.Division) => {
       setHasChanged(true);
       setUiEnabledDivisions(old => {
@@ -91,7 +91,7 @@ const TimeSignature = () => {
     [setUiEnabledDivisions]
   );
 
-  const clearDivisions = useCallback(() => {
+  const clearDivisions = React.useCallback(() => {
     setUiEnabledDivisions(immutable.Map<t.Division, boolean>().set(1, true));
   }, [setUiEnabledDivisions]);
 

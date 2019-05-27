@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React from "react";
 import * as hooks from "../hooks";
 import styled from "styled-components";
 import * as t from "../types";
@@ -36,32 +36,32 @@ const Inner: React.FC<InnerProps> = ({
     t.LocalStorageKey.Radians,
     (Math.PI * 3) / 2
   );
-  const radiansRef = useRef(Math.PI);
-  useEffect(() => {
+  const radiansRef = React.useRef(Math.PI);
+  React.useEffect(() => {
     radiansRef.current = stateRadians;
   }, [stateRadians]);
-  const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+  const onMouseDown = React.useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     setMouseDown(true);
     e.preventDefault();
   }, []);
 
-  const [mouseDown, setMouseDown] = useState(false);
-  const mouseDownRef = useRef(false);
-  useEffect(() => {
+  const [mouseDown, setMouseDown] = React.useState(false);
+  const mouseDownRef = React.useRef(false);
+  React.useEffect(() => {
     mouseDownRef.current = mouseDown;
   }, [mouseDown]);
 
-  const [totalDiff, setTotalDiff] = useState(0);
-  const totalDiffRef = useRef(0);
-  useEffect(() => {
+  const [totalDiff, setTotalDiff] = React.useState(0);
+  const totalDiffRef = React.useRef(0);
+  React.useEffect(() => {
     totalDiffRef.current = totalDiff;
   }, [totalDiff]);
 
-  const onMouseUp = useCallback((_: MouseEvent) => {
+  const onMouseUp = React.useCallback((_: MouseEvent) => {
     setMouseDown(false);
   }, []);
 
-  const addToBuffer = useCallback(
+  const addToBuffer = React.useCallback(
     (diff: number) => {
       const threshold = 0.2;
       if (Math.abs(totalDiffRef.current) < threshold) {
@@ -74,7 +74,7 @@ const Inner: React.FC<InnerProps> = ({
     [addDiff]
   );
 
-  const moveKnob = useCallback(
+  const moveKnob = React.useCallback(
     (e: React.Touch | React.MouseEvent | MouseEvent) => {
       if (knobContainer !== null) {
         const { clientX, clientY } = e;
@@ -105,7 +105,7 @@ const Inner: React.FC<InnerProps> = ({
     [addToBuffer, setRadians, knobContainer]
   );
 
-  const onTouchMove = useCallback(
+  const onTouchMove = React.useCallback(
     (e: React.TouchEvent<HTMLDivElement>) => {
       const t = e.changedTouches;
       const t0 = t[0];
@@ -114,7 +114,7 @@ const Inner: React.FC<InnerProps> = ({
     [moveKnob]
   );
 
-  const onMouseMove = useCallback(
+  const onMouseMove = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement> | MouseEvent) => {
       if (mouseDownRef.current) {
         moveKnob(e);
@@ -142,7 +142,7 @@ const Inner: React.FC<InnerProps> = ({
     [uiRadians, size]
   );
 
-  useEffect(() => {
+  React.useEffect(() => {
     window.addEventListener("mouseup", onMouseUp);
     window.addEventListener("mousemove", onMouseMove);
     return () => {
@@ -174,7 +174,7 @@ const InfiniKnob = ({
   addDiff,
   children
 }: React.PropsWithChildren<Props>) => {
-  const [knobContainer, setKnobContainer] = useState<HTMLDivElement | null>(
+  const [knobContainer, setKnobContainer] = React.useState<HTMLDivElement | null>(
     null
   );
 

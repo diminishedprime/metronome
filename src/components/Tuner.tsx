@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useToggle } from "../hooks";
 import { ToggleButton, Buttons } from "./Common";
 import styled from "styled-components";
@@ -61,20 +61,20 @@ const freqToPitch = (freq: number) => {
 
 const Tuner = React.memo(() => {
   const [on, toggleOn] = useToggle(false);
-  const [analyser, setAnalyser] = useState<AnalyserNode>();
-  const [sampleRate, setSampleRate] = useState<number>();
-  const [freq, setFreq] = useState<number>(440);
-  const [audioContext, setAudioContext] = useState<AudioContext>();
+  const [analyser, setAnalyser] = React.useState<AnalyserNode>();
+  const [sampleRate, setSampleRate] = React.useState<number>();
+  const [freq, setFreq] = React.useState<number>(440);
+  const [audioContext, setAudioContext] = React.useState<AudioContext>();
 
   // Initailize the AudioContext when user turns on the tuner.
-  useEffect(() => {
+  React.useEffect(() => {
     if (on && !audioContext && polyfill.AudioContext !== undefined) {
       setAudioContext(new polyfill.AudioContext());
     }
   }, [on, audioContext]);
 
   // Prompt for microphone when user turns on the tuner.
-  useEffect(() => {
+  React.useEffect(() => {
     if (on && audioContext) {
       setSampleRate(audioContext.sampleRate);
       const mediaDevices = navigator.mediaDevices;
@@ -97,7 +97,7 @@ const Tuner = React.memo(() => {
     }
   }, [on, audioContext]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (on && analyser && sampleRate) {
       const tick = () => {
         const bufferLength = analyser.frequencyBinCount;

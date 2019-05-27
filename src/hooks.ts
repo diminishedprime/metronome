@@ -1,11 +1,4 @@
-import React, {
-  useState,
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useRef
-} from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import * as R from "ramda";
 import * as d from "deep-object-diff";
 import * as polyfill from "./polyfill";
@@ -14,9 +7,9 @@ import * as transit from "transit-immutable-js";
 import NoSleep from "nosleep.js";
 
 export const useSingleton = <T>(initialValue?: T) => {
-  const [value, setValue] = useState<T | undefined>(initialValue);
+  const [value, setValue] = React.useState<T | undefined>(initialValue);
 
-  const setValueOnce = useCallback(
+  const setValueOnce = React.useCallback(
     (t: T) => {
       if (!value) {
         setValue(t);
@@ -32,7 +25,7 @@ export const useSingleton = <T>(initialValue?: T) => {
 };
 
 export const useSleepLock = (shouldSleep: boolean) => {
-  const [noSleep] = useState(new NoSleep());
+  const [noSleep] = React.useState(new NoSleep());
 
   React.useEffect(() => {
     if (shouldSleep) {
@@ -51,7 +44,7 @@ export const useLocalStorage = <T>(
   initialValue: T | (() => T),
   override: boolean = false
 ): [T, Dispatch<SetStateAction<T>>] => {
-  const [value, setValue] = useState(() => {
+  const [value, setValue] = React.useState(() => {
     let firstValue: T;
     const fromLocal = localStorage.getItem(key);
     if (fromLocal !== null && fromLocal !== undefined && !override) {
@@ -64,7 +57,7 @@ export const useLocalStorage = <T>(
     return firstValue;
   });
 
-  const setNewValue: Dispatch<SetStateAction<T>> = useCallback(
+  const setNewValue: Dispatch<SetStateAction<T>> = React.useCallback(
     (valueAction: SetStateAction<T>) => {
       setValue((oldValue: T) => {
         const newValue =
@@ -83,7 +76,7 @@ export const usePersistantToggle = (
   initialValue: boolean
 ): [boolean, () => void] => {
   const [storageValue, setStorageValue] = useLocalStorage(key, initialValue);
-  const toggle = useCallback(() => {
+  const toggle = React.useCallback(() => {
     setStorageValue(R.not);
   }, [setStorageValue]);
   return [storageValue, toggle];
@@ -93,8 +86,8 @@ export const useToggle = (
   initialValue: boolean,
   sideEffect = (toggleState: boolean) => {}
 ): [boolean, () => void] => {
-  const [value, setValue] = useState(initialValue);
-  const toggle = useCallback(
+  const [value, setValue] = React.useState(initialValue);
+  const toggle = React.useCallback(
     () =>
       setValue((old: boolean) => {
         const newValue = !old;
@@ -110,7 +103,7 @@ export const useAdvice = <T>(
   [originalT, originalSetter]: [T, React.Dispatch<React.SetStateAction<T>>],
   advice: (t: T) => T
 ): [T, React.Dispatch<React.SetStateAction<T>>] => {
-  const newSetter = useCallback(
+  const newSetter = React.useCallback(
     (action: React.SetStateAction<T>) => {
       originalSetter(oldT =>
         advice(action instanceof Function ? action(oldT) : action)
@@ -123,9 +116,9 @@ export const useAdvice = <T>(
 };
 
 export const useDetectChangedValue = (...values: any[]) => {
-  const oldValues = useRef<any[]>(values);
+  const oldValues = React.useRef<any[]>(values);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const lastValues = oldValues.current;
     const newValues = values;
     lastValues.forEach((lastValue: any, index: number) => {
@@ -143,8 +136,8 @@ export const useAudioBuffer = (
   audioContext: t.MAudioContext,
   url: string
 ): AudioBuffer | undefined => {
-  const [buffer, updateBuffer] = useState<AudioBuffer>();
-  useEffect(() => {
+  const [buffer, updateBuffer] = React.useState<AudioBuffer>();
+  React.useEffect(() => {
     if (
       // TODO: - refactor this out into a helper method if possible.
       audioContext !== undefined &&
@@ -171,7 +164,7 @@ export const useAudioContext = ():
   const audioContextRef = React.useRef<AudioContext>();
   const [hasFixed, setHasFixed] = React.useState(false);
 
-  const fixAudioContext = useCallback(() => {
+  const fixAudioContext = React.useCallback(() => {
     if (!hasFixed) {
       if (audioContextRef.current !== undefined) {
         setAudioContext("pending");
