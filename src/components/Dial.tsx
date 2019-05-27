@@ -167,11 +167,11 @@ const InfiniKnob = ({
   );
 };
 
-const ChildContainer = styled.div`
+const ChildContainer = React.memo(styled.div`
   align-self: center;
   margin: auto;
   z-index: 1;
   pointer-events: none;
-`;
+`);
 
 export default InfiniKnob;
