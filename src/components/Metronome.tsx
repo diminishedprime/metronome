@@ -77,6 +77,12 @@ const Metronome: React.FC<MetronomeProps> = ({ appSettings, audioContext }) => {
     }
   }, [playing, keepAwake, lock, release]);
 
+  React.useEffect(() => {
+    if (audioContext !== "pending" && audioContext !== undefined) {
+      redux.setPending(false);
+    }
+  }, [audioContext]);
+
   return (
     <>
       {pending && <FullPage>Tap to enable audio.</FullPage>}

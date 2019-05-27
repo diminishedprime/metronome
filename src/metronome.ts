@@ -236,12 +236,6 @@ const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
   const playing = redux.useSelector(s => s.metronomeState.playing);
 
   useEffect(() => {
-    if (audioContext !== "pending" && audioContext !== undefined) {
-      redux.setPending(false);
-    }
-  }, [audioContext]);
-
-  useEffect(() => {
     // TODO - This would be fancier if when the next beat can still happen, it
     // didn't clear the active beat in the UI.
     redux.resetActivebeats();
