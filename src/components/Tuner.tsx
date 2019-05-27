@@ -59,7 +59,7 @@ const freqToPitch = (freq: number) => {
   return Object.assign(note, { originalFrequency: freq, difference, cents });
 };
 
-const Tuner = () => {
+const Tuner = React.memo(() => {
   const [on, toggleOn] = useToggle(false);
   const [analyser, setAnalyser] = useState<AnalyserNode>();
   const [sampleRate, setSampleRate] = useState<number>();
@@ -143,7 +143,7 @@ const Tuner = () => {
       </Buttons>
     </TunerWrapper>
   );
-};
+});
 
 const TunerWrapper = styled.section`
   margin-top: 10px;

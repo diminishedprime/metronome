@@ -10,13 +10,48 @@ interface Props {
   metronome: t.Metronome;
 }
 
-const Divisions = styled.section`
+interface DivisionsProps {
+  uiEnabledDivisions: t.EnabledDivisions;
+  toggleDivisionOption: (option: t.Division) => void;
+  clearDivisions: () => void;
+}
+
+const DivisionsWrapper = React.memo(styled.section`
   display: flex;
   align-items: baseline;
   > div {
     margin-right: 10px;
   }
-`;
+`);
+
+const Divisions: React.FC<DivisionsProps> = React.memo(
+  ({ uiEnabledDivisions, toggleDivisionOption, clearDivisions }) => {
+    return (
+      <DivisionsWrapper>
+        <div className="is-size-5">Division</div>
+        <Buttons hasAddons grow style={{ marginRight: "5px" }}>
+          {([2, 3, 4, 5, 6] as t.Division[]).map((num: t.Division) => {
+            const on = uiEnabledDivisions.get(num)!;
+            return (
+              <ToggleButton
+                grow
+                on={on}
+                isPrimary
+                key={`division-options-${num}`}
+                onClick={() => toggleDivisionOption(num)}
+              >
+                {num}
+              </ToggleButton>
+            );
+          })}
+        </Buttons>
+        <Button grow isDanger isOutlined onClick={clearDivisions}>
+          Clear
+        </Button>
+      </DivisionsWrapper>
+    );
+  }
+);
 
 const TimeSignature = ({ metronome }: Props) => {
   const setSignature = React.useMemo(() => metronome.setSignature, [
@@ -35,18 +70,6 @@ const TimeSignature = ({ metronome }: Props) => {
   >(
     t.LocalStorageKey.EnabledDivisions,
     immutable.Map<t.Division, boolean>().set(1, true)
-  );
-  const setNumerator = useCallback(
-    (numerator: number) => {
-      setHasChanged(true);
-      setSignature(old => ({
-        ...old,
-        numerator: immutable.List(
-          R.range(0, numerator).map(() => uIenabledDivisions)
-        )
-      }));
-    },
-    [uIenabledDivisions, setSignature]
   );
 
   useEffect(() => {
@@ -79,36 +102,47 @@ const TimeSignature = ({ metronome }: Props) => {
   // TODO - make it where clicking on a division group lets you set the volume & accents for that group.
   // TODO - add an option to turn on or off the accent at the start of every measure.
   // TODO - clean up these buttons to not use className.
+
+  const [currentNumerator, setCurrentNumerator] = React.useState(
+    numerator.size
+  );
+
+  React.useEffect(() => {
+    setSignature(old => ({
+      ...old,
+      numerator: immutable.List(
+        R.range(0, currentNumerator).map(() => uIenabledDivisions)
+      )
+    }));
+  }, [currentNumerator]);
+
   return (
     <>
-      <section style={{ marginTop: "10px" }} className="section is-centered" />
-      <Divisions>
-        <div className="is-size-5">Division</div>
-        <Buttons hasAddons grow style={{ marginRight: "5px" }}>
-          {([2, 3, 4, 5, 6] as t.Division[]).map((num: t.Division) => {
-            const on = uIenabledDivisions.get(num)!;
-            return (
-              <ToggleButton
-                grow
-                on={on}
-                isPrimary
-                key={`division-options-${num}`}
-                onClick={() => toggleDivisionOption(num)}
-              >
-                {num}
-              </ToggleButton>
-            );
-          })}
-        </Buttons>
-        <Button grow isDanger isOutlined onClick={clearDivisions}>
-          Clear
-        </Button>
-      </Divisions>
       <Beats activeBeats={activeBeats} />
+      <Divisions
+        uiEnabledDivisions={uIenabledDivisions}
+        toggleDivisionOption={toggleDivisionOption}
+        clearDivisions={clearDivisions}
+      />
+      <Signature
+        currentNumerator={numerator.size}
+        setCurrentNumerator={setCurrentNumerator}
+      />
+    </>
+  );
+};
 
+interface SignatureProps {
+  setCurrentNumerator: (numerator: number) => void;
+  currentNumerator: number;
+}
+
+const Signature: React.FC<SignatureProps> = React.memo(
+  ({ setCurrentNumerator, currentNumerator }) => {
+    return (
       <section className="section buttons is-centered">
         {[1, 2, 3, 4, 5].map(num => {
-          const on = numerator.size === num;
+          const on = currentNumerator === num;
           return (
             <ToggleButton
               key={`numerator-button-${num}`}
@@ -116,50 +150,50 @@ const TimeSignature = ({ metronome }: Props) => {
               isPrimary
               isOutlined
               grow
-              onClick={on ? () => {} : () => setNumerator(num)}
+              onClick={on ? () => {} : () => setCurrentNumerator(num)}
             >
               <>{num}/4</>
             </ToggleButton>
           );
         })}
       </section>
-    </>
-  );
-};
+    );
+  }
+);
 
 // TODO - margin should be calculated based on number of divisions.
-const BeatRowItemWrapper = styled.div`
+const BeatRowItemWrapper = React.memo(styled.div`
   width: 1px;
   margin-left: 1px;
   margin-right: 1px;
   flex-grow: 1;
-`;
+`);
 
 // TODO - margin should be calculated based on number of beats.
-const BeatRowWrapper = styled.div`
+const BeatRowWrapper = React.memo(styled.div`
   display: flex;
   flex-grow: 1;
-`;
+`);
 
 // TODO - margin should be calculated based on number of beats.
-const BeatWrapper = styled.div`
+const BeatWrapper = React.memo(styled.div`
   display: flex;
   flex-grow: 1;
   flex-direction: column;
-`;
+`);
 
-const BeatsWrapper = styled.div`
+const BeatsWrapper = React.memo(styled.div`
   display: flex;
   flex-grow: 1;
   margin-bottom: 10px;
-`;
+`);
 
 // TODO - the selected division values should reset when you stop the metronome.
 // TODO - If not playing, this should show the boring gray background.
 const BeatRowItem: React.FC<{
   on: boolean;
   beatRows: number;
-}> = ({ on, beatRows }) => {
+}> = React.memo(({ on, beatRows }) => {
   const className = React.useMemo(() => {
     return on ? "has-background-primary" : "has-background-link";
   }, [on]);
@@ -175,7 +209,7 @@ const BeatRowItem: React.FC<{
       }}
     />
   );
-};
+});
 
 const BeatRow: React.FC<{
   bools: immutable.List<boolean>;
@@ -183,7 +217,7 @@ const BeatRow: React.FC<{
   beatNumber: number;
   beatRows: number;
   rowIndex: number;
-}> = ({ bools, beatNumber, rowIndex, beatRows }) => {
+}> = React.memo(({ bools, beatNumber, rowIndex, beatRows }) => {
   const j = rowIndex;
   const index = beatNumber;
   return (
@@ -197,12 +231,12 @@ const BeatRow: React.FC<{
       ))}
     </BeatRowWrapper>
   );
-};
+});
 
 const Beat: React.FC<{
   beat: immutable.Map<t.Division, immutable.List<boolean>>;
   index: number;
-}> = ({ beat, index }) => {
+}> = React.memo(({ beat, index }) => {
   const things = beat.entrySeq();
   return (
     <BeatWrapper key={`${index}`}>
@@ -218,11 +252,11 @@ const Beat: React.FC<{
       ))}
     </BeatWrapper>
   );
-};
+});
 
 const Beats: React.FC<{
   activeBeats: t.ActiveBeats;
-}> = ({ activeBeats }) => {
+}> = React.memo(({ activeBeats }) => {
   return (
     <BeatsWrapper>
       {activeBeats.map((beat, beatNumber) => (
@@ -230,6 +264,6 @@ const Beats: React.FC<{
       ))}
     </BeatsWrapper>
   );
-};
+});
 
 export default TimeSignature;

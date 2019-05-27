@@ -70,6 +70,30 @@ const Metronome: React.FC<MetronomeProps> = ({ appSettings, metronome }) => {
         </Dial>
       </section>
       <TimeSignature metronome={metronome} />
+      <Controls
+        showTuner={showTuner}
+        toggleTuner={toggleTuner}
+        toggleStart={toggleStart}
+        playing={playing}
+        setBPM={setBPM}
+        pending={pending}
+      />
+    </>
+  );
+};
+
+interface ControlsProps {
+  showTuner: boolean;
+  toggleTuner: () => void;
+  playing: boolean;
+  toggleStart: () => void;
+  setBPM: (bpm: number) => void;
+  pending: boolean;
+}
+
+const Controls: React.FC<ControlsProps> = React.memo(
+  ({ showTuner, toggleTuner, playing, toggleStart, setBPM, pending }) => {
+    return (
       <section className="section">
         <Buttons hasAddons>
           <ToggleButton
@@ -96,7 +120,7 @@ const Metronome: React.FC<MetronomeProps> = ({ appSettings, metronome }) => {
           </ToggleButton>
         </Buttons>
       </section>
-    </>
-  );
-};
+    );
+  }
+);
 export default Metronome;
