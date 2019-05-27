@@ -249,7 +249,7 @@ const clampBPM = (bpm: number) => R.clamp(10, 250, bpm);
 
 const defaultBeat = immutable.Map<t.Division, boolean>().set(1, true);
 
-export const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
+const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
   const [playing, setPlaying] = useState(false);
   const [bpm, setBPM] = useAdvice(
     useLocalStorage(t.LocalStorageKey.BPM, 90),
@@ -344,3 +344,4 @@ export const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
     state
   };
 };
+export default useMetronome;

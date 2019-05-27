@@ -6,6 +6,7 @@ import Tuner from "./Tuner";
 import Dial from "./Dial";
 import { usePersistantToggle, useSleepLock } from "../hooks";
 import { Buttons, ToggleButton } from "./Common";
+import useMetronome from "../metronome";
 import * as t from "../types";
 import styled from "styled-components";
 
@@ -23,10 +24,11 @@ const FullPage = styled.div`
 `;
 
 interface MetronomeProps {
-  metronome: t.Metronome;
+  audioContext: t.MAudioContext;
   appSettings: t.AppSettings;
 }
-const Metronome: React.FC<MetronomeProps> = ({ appSettings, metronome }) => {
+const Metronome: React.FC<MetronomeProps> = ({ appSettings, audioContext }) => {
+  const metronome = useMetronome(audioContext);
   const {
     state: { keepAwake }
   } = appSettings;

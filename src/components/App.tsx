@@ -5,7 +5,6 @@ import Scales from "./Scales";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import Update from "./Update";
 import { useAppSettings } from "../settings";
-import { useMetronome } from "../metronome";
 import styled, { keyframes } from "styled-components";
 import { maxWidth } from "./Common";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -18,19 +17,19 @@ import {
 import { useToggle } from "../hooks";
 import * as hooks from "../hooks";
 
-const TopBarWrapper = styled.section`
+const TopBarWrapper = React.memo(styled.section`
   margin-bottom: 10px;
   margin-left: 0px !important;
   margin-right: 0px !important;
   display: flex;
   flex-direction: column;
-`;
+`);
 
-const CenterIcon = styled.span`
+const CenterIcon = React.memo(styled.span`
   align-self: center;
-`;
+`);
 
-const TopNav = styled.section`
+const TopNav = React.memo(styled.section`
   display: flex;
   padding-top: 5px;
   padding-bottom: 5px;
@@ -40,7 +39,7 @@ const TopNav = styled.section`
   > h2 {
     margin: 0 !important;
   }
-`;
+`);
 
 const dropDown = keyframes`
   from {
@@ -48,7 +47,7 @@ font-size: 0px;
   }
 `;
 
-const NavDropDown = styled.nav`
+const NavDropDown = React.memo(styled.nav`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -58,15 +57,15 @@ const NavDropDown = styled.nav`
     animation: ease-in 0.3s ${dropDown};
     font-size: 1.5rem;
   }
-`;
+`);
 
-const NavItem = styled(Link)``;
+const NavItem = React.memo(styled(Link)``);
 
-const NavIcon = styled(FontAwesomeIcon)`
+const NavIcon = React.memo(styled(FontAwesomeIcon)`
   margin-left: 5px;
-`;
+`);
 
-const TopBar = () => {
+const TopBar = React.memo(() => {
   const [showNav, toggleNav] = useToggle(false);
   // TODO - figure out how to animate the nav being hidden.
   // TODO - make it where clicking outside of this element hides it.
@@ -99,9 +98,9 @@ const TopBar = () => {
       )}
     </TopBarWrapper>
   );
-};
+});
 
-const WrapperStyle = styled.div`
+const WrapperStyle = React.memo(styled.div`
   max-width: ${maxWidth};
   margin: 0 auto;
   display: flex;
@@ -110,17 +109,17 @@ const WrapperStyle = styled.div`
     margin-left: 10px;
     margin-right: 10px;
   }
-`;
+`);
 
-const FooterStyle = styled.div`
+const FooterStyle = React.memo(styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   justify-content: flex-end;
   margin-top: 5px;
-`;
+`);
 
-const Wrapper: React.FC = ({ children }) => {
+const Wrapper: React.FC = React.memo(({ children }) => {
   return (
     <WrapperStyle>
       <Update />
@@ -129,7 +128,7 @@ const Wrapper: React.FC = ({ children }) => {
       <FooterStyle>{`v${process.env.REACT_APP_VERSION}`}</FooterStyle>
     </WrapperStyle>
   );
-};
+});
 
 // TODO - add a button to the overall exception handler that lets you clear local storage.
 // TODO - add an option to the settings to clear local storage.
@@ -137,8 +136,6 @@ const Wrapper: React.FC = ({ children }) => {
 const App: React.FC = () => {
   const appSettings = useAppSettings();
   const audioContext = hooks.useAudioContext();
-  const metronome = useMetronome(audioContext);
-
   return (
     <Router basename={process.env.PUBLIC_URL}>
       <Wrapper>
@@ -152,13 +149,13 @@ const App: React.FC = () => {
           exact
           path="/"
           render={() => (
-            <Metronome metronome={metronome} appSettings={appSettings} />
+            <Metronome audioContext={audioContext} appSettings={appSettings} />
           )}
         />
         <Route
           exact
           path="/scales"
-          render={() => <Scales metronome={metronome} />}
+          render={() => <Scales audioContext={audioContext} />}
         />
         <Route
           exact
