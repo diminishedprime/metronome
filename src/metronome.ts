@@ -62,6 +62,7 @@ const beatsFor = (
   return beats;
 };
 
+let lastTime = -1;
 const playBeatsTill = (
   beatsQueue: Deque<t.Beat>,
   intervalLength: number,
@@ -72,9 +73,13 @@ const playBeatsTill = (
   const scheduleTil = now + intervalLength + intervalError;
   while (beatsQueue.peekFront() && beatsQueue.peekFront()!.time < scheduleTil) {
     const first = beatsQueue.shift()!;
-    if (first.divisionIndex !== 0 || first.divisions === 1) {
+    // Since the beats are sorted by time in the queue, we can use this trick to
+    // only schedule one for each click.
+    // TODO - This does mean that if we have a custotm sound for each division, it could be messy on one.
+    if (first.time !== lastTime) {
       scheduleNote(audioContext, first);
     }
+    lastTime = first.time;
     updateUi(audioContext, first);
   }
 };
