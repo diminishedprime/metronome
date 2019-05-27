@@ -81,7 +81,7 @@ const playBeatsTill = (
 
 // TODO - I should clean this up if possible. It takes way too many arguments.
 const addBeatsToQueue = (
-  state: t.MetronomeState,
+  bpm: number,
   nextNoteTime: React.MutableRefObject<number>,
   currentBeat: t.EnabledDivisions,
   beatIdx: number,
@@ -91,7 +91,6 @@ const addBeatsToQueue = (
   beatsQueue: Deque<t.Beat>,
   nextBeat: () => void
 ) => {
-  const { bpm } = state;
   const secondsPerBeat = 60.0 / bpm;
   const divisions = currentBeat;
   if (nextNoteTime.current < currentTime + scheduleAhead) {
@@ -110,30 +109,41 @@ const addBeatsToQueue = (
 
 const intervalError = 0.1;
 
+const useSelectorRef = <T>(selector: (a: redux.ReduxState) => T) => {
+  const val = redux.useSelector(selector);
+  const valRef = React.useRef(val);
+  React.useEffect(() => {
+    valRef.current = val;
+  }, [val]);
+  return valRef;
+};
+
 const useScheduleAhead = (audioContext: t.MAudioContext) => {
-  const state = redux.useSelector(a => a.metronomeState);
-  const { playing } = state;
-  const scheduleAhead = 0.3;
+  const playing = redux.useSelector(a => a.metronomeState.playing);
+  const playingRef = useSelectorRef(a => a.metronomeState.playing);
+  const bpmRef = useSelectorRef(a => a.metronomeState.bpm);
+  const numeratorRef = useSelectorRef(
+    a => a.metronomeState.signature.numerator
+  );
+  const numberOfBeatsRef = useSelectorRef(
+    a => a.metronomeState.signature.numerator.size
+  );
   const buffer = useAudioBuffer(audioContext, click);
+
+  const scheduleAhead = 0.3;
   const nextNoteTimeRef = useRef<number>(0);
   const delay = playing ? (scheduleAhead * 1000) / 2 : undefined;
 
-  const stateRef = useRef<t.MetronomeState>(state);
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
-
   const beatToScheduleRef = useRef(0);
   useEffect(() => {
-    if (!state.playing) {
+    if (!playing) {
       beatToScheduleRef.current = 0;
     }
-  }, [state.playing]);
+  }, [playing]);
 
   const nextBeat = () => {
     let old = beatToScheduleRef.current;
-    beatToScheduleRef.current =
-      (old + 1) % stateRef.current.signature.numerator.size;
+    beatToScheduleRef.current = (old + 1) % numberOfBeatsRef.current;
   };
 
   // TODO - because the ui callbacks run in the future, I can get in a weird
@@ -142,9 +152,7 @@ const useScheduleAhead = (audioContext: t.MAudioContext) => {
   const updateUi = useCallback((audioContext: AudioContext, beat: t.Beat) => {
     // We ovewrite activeBeats here because it's definitely changing.
     runAtTime(audioContext, beat.time, () => {
-      if (stateRef.current.playing) {
-        // setActiveBeat(beat);
-
+      if (playingRef.current) {
         // TODO - this is super janky.
         // TODO - this would be much nicer with an animation.
         // TODO - switch this to runAtTime to clear the beat it just set.
@@ -166,22 +174,24 @@ const useScheduleAhead = (audioContext: t.MAudioContext) => {
       const firstClickTime = audioContext.currentTime + 0.3;
       nextNoteTimeRef.current = firstClickTime;
       const tick = () => {
-        const {
-          signature: { numerator }
-        } = stateRef.current;
-        const beatIdx = Math.min(beatToScheduleRef.current, numerator.size - 1);
-        const currentBeat = numerator.get(beatIdx)!;
-        addBeatsToQueue(
-          stateRef.current,
-          nextNoteTimeRef,
-          currentBeat,
+        const beatIdx = Math.min(
           beatToScheduleRef.current,
-          audioContext.currentTime,
-          scheduleAhead,
-          buffer,
-          beatsQueue,
-          nextBeat
+          numberOfBeatsRef.current - 1
         );
+        const currentBeat = numeratorRef.current.get(beatIdx);
+        if (currentBeat !== undefined) {
+          addBeatsToQueue(
+            bpmRef.current,
+            nextNoteTimeRef,
+            currentBeat,
+            beatToScheduleRef.current,
+            audioContext.currentTime,
+            scheduleAhead,
+            buffer,
+            beatsQueue,
+            nextBeat
+          );
+        }
         playBeatsTill(beatsQueue, delay / 1000, audioContext, updateUi);
       };
       tick();
@@ -193,7 +203,7 @@ const useScheduleAhead = (audioContext: t.MAudioContext) => {
   }, [delay, buffer, audioContext, updateUi]);
 };
 
-const resetActiveBeats = (
+export const resetActiveBeats = (
   beats: immutable.List<t.EnabledDivisions>
 ): immutable.List<t.ActiveBeat> =>
   immutable.List(
@@ -206,51 +216,11 @@ const resetActiveBeats = (
     )
   );
 
-// const defaultBeat = immutable.Map<t.Division, boolean>().set(1, true);
-
 const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
-  // const [playing, setPlaying] = useState(false);
-  // const [bpm, setBPM] = useAdvice(
-  //   useLocalStorage(t.LocalStorageKey.BPM, 90),
-  //   clampBPM
-  // );
-  // const [signature, setSignature] = hooks.useLocalStorage<t.TimeSignature>(
-  //   t.LocalStorageKey.TimeSignature,
-  //   {
-  //     denominator: 4,
-  //     numerator: immutable.List([
-  //       defaultBeat,
-  //       defaultBeat,
-  //       defaultBeat,
-  //       defaultBeat
-  //     ])
-  //   }
-  // );
-
-  // const state: t.MetronomeState = {
-  //   bpm,
-  //   playing,
-  //   pending: audioContext === "pending",
-  //   ready:
-  //     audioContext !== undefined &&
-  //     audioContext !== "pending" &&
-  //     audioContext !== "not-supported",
-  //   signature
-  // };
-  // const { numerator } = signature;
-
-  // const bpmRef = useRef(bpm);
-  // useEffect(() => {
-  //   bpmRef.current = bpm;
-  // }, [bpm]);
-
-  // Effects for updating state.
-
   // If the time signature changes, we need to reset the active subdivisions.
   const numerator = redux.useSelector(
     s => s.metronomeState.signature.numerator
   );
-  const signature = redux.useSelector(s => s.metronomeState.signature);
   const playing = redux.useSelector(s => s.metronomeState.playing);
 
   useEffect(() => {
@@ -262,17 +232,17 @@ const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
   useEffect(() => {
     // TODO - This would be fancier if when the next beat can still happen, it
     // didn't clear the active beat in the UI.
-    redux.setActiveBeats(resetActiveBeats(numerator));
-  }, [numerator, signature]);
+    redux.resetActivebeats();
+  }, [numerator]);
 
   useEffect(() => {
     if (!playing) {
-      redux.setActiveBeats(resetActiveBeats(numerator));
+      redux.resetActivebeats();
       setTimeout(() => {
-        redux.setActiveBeats(resetActiveBeats(numerator));
+        redux.resetActivebeats();
       }, 300);
     }
-  }, [playing, numerator]);
+  }, [playing]);
 
   useScheduleAhead(audioContext);
 

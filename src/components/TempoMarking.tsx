@@ -63,7 +63,7 @@ const TempoMarking = React.memo(
       </div>
     );
   },
-  ({ bpm: old }, { bpm: nu }) => !fromBPM(old).equals(fromBPM(nu))
+  ({ bpm: old }, { bpm: nu }) => fromBPM(old).equals(fromBPM(nu))
 );
 
 const Wrap = () => {

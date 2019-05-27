@@ -3,6 +3,7 @@ import * as t from "./types";
 import * as immutable from "immutable";
 import * as reactRedux from "react-redux";
 import * as R from "ramda";
+import * as metronome from "./metronome";
 
 // TODO these should live in types.
 export enum ActionType {
@@ -50,6 +51,14 @@ export const setActiveBeats = (activeBeats: t.ActiveBeats) => {
     type: ActionType.SetActiveBeats,
     value: activeBeats
   });
+};
+
+export const resetActivebeats = () => {
+  setActiveBeats(
+    metronome.resetActiveBeats(
+      store.getState().metronomeState.signature.numerator
+    )
+  );
 };
 
 export const updateActiveBeat = (beat: t.Beat) => {
