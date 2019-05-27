@@ -141,26 +141,29 @@ const useScheduleAhead = (audioContext: t.MAudioContext) => {
     }
   }, [playing]);
 
-  const nextBeat = () => {
+  const nextBeat = React.useCallback(() => {
     let old = beatToScheduleRef.current;
     beatToScheduleRef.current = (old + 1) % numberOfBeatsRef.current;
-  };
+  }, [numberOfBeatsRef]);
 
   // TODO - because the ui callbacks run in the future, I can get in a weird
   // spot state-wise. I should figure out a way to either cancel them running
   // when the number of divisions changes.
-  const updateUi = useCallback((audioContext: AudioContext, beat: t.Beat) => {
-    // We ovewrite activeBeats here because it's definitely changing.
-    runAtTime(audioContext, beat.time, () => {
-      if (playingRef.current) {
-        // TODO - this is super janky.
-        // TODO - this would be much nicer with an animation.
-        // TODO - switch this to runAtTime to clear the beat it just set.
-        // TODO - If the division changes, we should reset all active beats to false.
-        redux.updateActiveBeat(beat);
-      }
-    });
-  }, []);
+  const updateUi = useCallback(
+    (audioContext: AudioContext, beat: t.Beat) => {
+      // We ovewrite activeBeats here because it's definitely changing.
+      runAtTime(audioContext, beat.time, () => {
+        if (playingRef.current) {
+          // TODO - this is super janky.
+          // TODO - this would be much nicer with an animation.
+          // TODO - switch this to runAtTime to clear the beat it just set.
+          // TODO - If the division changes, we should reset all active beats to false.
+          redux.updateActiveBeat(beat);
+        }
+      });
+    },
+    [playingRef]
+  );
 
   useEffect(() => {
     if (
@@ -200,7 +203,16 @@ const useScheduleAhead = (audioContext: t.MAudioContext) => {
         clearInterval(id);
       };
     }
-  }, [delay, buffer, audioContext, updateUi]);
+  }, [
+    delay,
+    buffer,
+    audioContext,
+    updateUi,
+    bpmRef,
+    numberOfBeatsRef,
+    numeratorRef,
+    nextBeat
+  ]);
 };
 
 export const resetActiveBeats = (
