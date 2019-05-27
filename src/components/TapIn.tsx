@@ -1,10 +1,7 @@
 import React, { useState } from "react";
 import * as R from "ramda";
 import { Button } from "./Common";
-
-interface Props {
-  setBPM: (bpm: number) => void;
-}
+import * as redux from "../redux";
 
 const calculateBPM = R.pipe(
   (tapTimes: number[]) => R.aperture(2, tapTimes),
@@ -14,7 +11,7 @@ const calculateBPM = R.pipe(
   Math.trunc
 );
 
-const TapIn = ({ setBPM }: Props) => {
+const TapIn: React.FC = () => {
   const [taps, setTaps] = useState<number[]>([]);
 
   const onTap = () => {
@@ -22,7 +19,7 @@ const TapIn = ({ setBPM }: Props) => {
     const newTaps = R.append(now, taps).filter(tap => now - tap < 3000);
     if (newTaps.length > 1) {
       const bpm = calculateBPM(newTaps);
-      setBPM(bpm);
+      redux.setBPM(bpm);
     }
     setTaps(newTaps);
   };

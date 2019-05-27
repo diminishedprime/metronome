@@ -3,6 +3,7 @@ import TimeSignature from "./TimeSignature";
 import * as hooks from "../hooks";
 import * as util from "../util";
 import * as t from "../types";
+import * as redux from "../redux";
 import { Button, Buttons, ToggleButton } from "./Common";
 import useScales from "../scales";
 import useMetronome from "../metronome";
@@ -43,7 +44,6 @@ const ScalesGroup = ({
 
 interface LearnScalesProps {
   scales: t.Scales;
-  metronome: t.Metronome;
   reset: () => void;
   scaleMode: ScaleMode;
 }
@@ -51,8 +51,7 @@ interface LearnScalesProps {
 const LearnScales: React.FC<LearnScalesProps> = ({
   scales,
   reset,
-  scaleMode,
-  metronome
+  scaleMode
 }) => {
   const { getScales, getScale, addBPM } = scales;
   const [scaleKeys, setScales] = React.useState<Array<t.ScaleKey>>(() =>
@@ -71,8 +70,7 @@ const LearnScales: React.FC<LearnScalesProps> = ({
     )
   );
 
-  const start = React.useCallback(metronome.start, [metronome.start]);
-
+  const start = redux.start();
   const nextScale = () => {
     setScales(old => {
       const nu = old.slice(1);
@@ -89,7 +87,7 @@ const LearnScales: React.FC<LearnScalesProps> = ({
   );
   React.useEffect(() => {
     if (maybeScale !== undefined) {
-      start(maybeScale.bpm);
+      redux.start(maybeScale.bpm);
     }
   }, [maybeScale, start]);
   const nextScaleText = scaleKeys.length > 1 ? "Next Scale" : "Finish";
@@ -138,7 +136,7 @@ const LearnScales: React.FC<LearnScalesProps> = ({
           </Button>
         </div>
       </div>
-      <TimeSignature metronome={metronome} />
+      <TimeSignature />
     </>
   );
 };
@@ -150,9 +148,7 @@ interface ScalesProps {
 // TODO - Add a button to start learning a new scale. This will be a scale
 // that is know known and is not learning.
 const Scales: React.FC<ScalesProps> = ({ audioContext }) => {
-  // TODO wrap this in a useCallback.
-  const metronome = useMetronome(audioContext);
-  const { stop: stopMetronome } = metronome;
+  useMetronome(audioContext);
 
   const [scaleMode, setScaleMode] = React.useState(ScaleMode.NOT_STARTED);
   const [showKnown, toggleShowKnown] = hooks.usePersistantToggle(
@@ -162,9 +158,9 @@ const Scales: React.FC<ScalesProps> = ({ audioContext }) => {
 
   React.useEffect(() => {
     if (scaleMode === ScaleMode.NOT_STARTED) {
-      stopMetronome();
+      redux.stop();
     }
-  }, [scaleMode, stopMetronome]);
+  }, [scaleMode]);
 
   const scales = useScales();
   const { getScale, getScales, toggleLearning, toggleKnown } = scales;
@@ -238,7 +234,6 @@ const Scales: React.FC<ScalesProps> = ({ audioContext }) => {
           scaleMode={scaleMode}
           scales={scales}
           reset={() => setScaleMode(ScaleMode.NOT_STARTED)}
-          metronome={metronome}
         />
       )}
     </div>

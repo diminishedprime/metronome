@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import TempoMarking from "./TempoMarking";
 import TimeSignature from "./TimeSignature";
 import TapIn from "./TapIn";
@@ -29,19 +29,15 @@ interface MetronomeProps {
   appSettings: t.AppSettings;
 }
 
-interface DialSectionProps {
-  addBPM: (bpm: number) => void;
-}
-
 const BPM = () => {
   const bpm = redux.useSelector(a => a.metronomeState.bpm);
   return <div className="has-text-centered is-size-1">{bpm}</div>;
 };
 
-const DialSection: React.FC<DialSectionProps> = React.memo(({ addBPM }) => {
+const DialSection: React.FC = React.memo(() => {
   return (
     <section className="section">
-      <Dial addDiff={addBPM}>
+      <Dial addDiff={redux.addBPM}>
         <BPM />
         <TempoMarking />
       </Dial>
@@ -50,53 +46,29 @@ const DialSection: React.FC<DialSectionProps> = React.memo(({ addBPM }) => {
 });
 
 const Metronome: React.FC<MetronomeProps> = ({ appSettings, audioContext }) => {
-  const metronome = useMetronome(audioContext);
-
+  const playing = redux.useSelector(a => a.metronomeState.playing);
+  const pending = redux.useSelector(a => a.metronomeState.pending);
+  // TODO app settings should just be in redux too.
   const {
     state: { keepAwake }
   } = appSettings;
+
+  useMetronome(audioContext);
+  useSleepLock(keepAwake && playing);
+
+  // TODO - this should be saved in appSettings.
   const [showTuner, toggleTuner] = usePersistantToggle(
     t.LocalStorageKey.ShowTuner,
     false
   );
-  const { lock, release } = useSleepLock();
-
-  const playing = redux.useSelector(a => a.metronomeState.playing);
-  const pending = redux.useSelector(a => a.metronomeState.pending);
-  const addBPM = React.useCallback(metronome.addBPM, [metronome.addBPM]);
-  const setBPM = React.useCallback(metronome.setBPM, [metronome.setBPM]);
-  const toggleStart = React.useCallback(metronome.toggleStart, [
-    metronome.toggleStart
-  ]);
-
-  useEffect(() => {
-    if (keepAwake && playing) {
-      lock();
-    } else {
-      release();
-    }
-  }, [playing, keepAwake, lock, release]);
-
-  React.useEffect(() => {
-    if (audioContext !== "pending" && audioContext !== undefined) {
-      redux.setPending(false);
-    }
-  }, [audioContext]);
 
   return (
     <>
       {pending && <FullPage>Tap to enable audio.</FullPage>}
       {showTuner && <Tuner />}
-      <DialSection addBPM={addBPM} />
-      <TimeSignature metronome={metronome} />
-      <Controls
-        showTuner={showTuner}
-        toggleTuner={toggleTuner}
-        toggleStart={toggleStart}
-        playing={playing}
-        setBPM={setBPM}
-        pending={pending}
-      />
+      <DialSection />
+      <TimeSignature />
+      <Controls showTuner={showTuner} toggleTuner={toggleTuner} />
     </>
   );
 };
@@ -104,14 +76,12 @@ const Metronome: React.FC<MetronomeProps> = ({ appSettings, audioContext }) => {
 interface ControlsProps {
   showTuner: boolean;
   toggleTuner: () => void;
-  playing: boolean;
-  toggleStart: () => void;
-  setBPM: (bpm: number) => void;
-  pending: boolean;
 }
 
 const Controls: React.FC<ControlsProps> = React.memo(
-  ({ showTuner, toggleTuner, playing, toggleStart, setBPM, pending }) => {
+  ({ showTuner, toggleTuner }) => {
+    const playing = redux.useSelector(a => a.metronomeState.playing);
+    const pending = redux.useSelector(a => a.metronomeState.pending);
     return (
       <section className="section">
         <Buttons hasAddons>
@@ -124,7 +94,7 @@ const Controls: React.FC<ControlsProps> = React.memo(
           >
             Tuner
           </ToggleButton>
-          <TapIn setBPM={setBPM} />
+          <TapIn />
           <ToggleButton
             on={playing}
             offIsPrimary
@@ -132,7 +102,7 @@ const Controls: React.FC<ControlsProps> = React.memo(
             isOutlined
             isDanger
             disabled={pending}
-            onClick={toggleStart}
+            onClick={redux.toggleStart}
           >
             <>Stop</>
             <>Start</>

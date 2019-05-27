@@ -59,6 +59,10 @@ export const setBPM = (action: React.SetStateAction<number>) => {
   store.dispatch({ type: ActionType.SetBpm, action: nextValue });
 };
 
+export const addBPM = (action: number) => {
+  setBPM(old => old + action);
+};
+
 export const setActiveBeats = (activeBeats: t.ActiveBeats) => {
   store.dispatch({
     type: ActionType.SetActiveBeats,
@@ -79,6 +83,20 @@ export const updateActiveBeat = (beat: t.Beat) => {
     type: ActionType.UpdateActiveBeats,
     value: beat
   });
+};
+
+export const toggleStart = () => {
+  setPlaying(a => !a);
+};
+
+export const start = (bpm?: number) => {
+  if (bpm !== undefined) {
+    setBPM(bpm);
+  }
+  setPlaying(true);
+};
+export const stop = () => {
+  setPlaying(false);
 };
 
 const defaultBeat = immutable.Map<t.Division, boolean>().set(1, true);

@@ -54,10 +54,8 @@ const Divisions: React.FC<DivisionsProps> = React.memo(
   }
 );
 
-const TimeSignature = ({ metronome }: Props) => {
-  const setSignature = React.useMemo(() => metronome.setSignature, [
-    metronome.setSignature
-  ]);
+const TimeSignature = () => {
+  const setSignature = redux.setSignature;
   const numerator = redux.useSelector(
     a => a.metronomeState.signature.numerator
   );

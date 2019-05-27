@@ -31,21 +31,16 @@ export const useSingleton = <T>(initialValue?: T) => {
   };
 };
 
-export const useSleepLock = () => {
+export const useSleepLock = (shouldSleep: boolean) => {
   const [noSleep] = useState(new NoSleep());
 
-  const lock = useCallback(() => {
-    noSleep.enable();
-  }, [noSleep]);
-
-  const release = useCallback(() => {
-    noSleep.disable();
-  }, [noSleep]);
-
-  return {
-    lock,
-    release
-  };
+  React.useEffect(() => {
+    if (shouldSleep) {
+      noSleep.enable();
+    } else {
+      noSleep.disable();
+    }
+  }, [shouldSleep, noSleep]);
 };
 
 // TODO - add in some logic to do simple migrations. Otherwise, we get stuck
@@ -207,4 +202,33 @@ export const useAudioContext = ():
   }, [fixAudioContext]);
 
   return audioContext;
+};
+
+export const useAnimationFrameDebounce = <T>(value: T) => {
+  const [debouncedValue, setDebouncedValue] = React.useState(value);
+  const valueRef = React.useRef<T>(value);
+
+  React.useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
+
+  React.useEffect(() => {
+    let animationFrame = -1;
+
+    const tick = () => {
+      loop();
+      setDebouncedValue(valueRef.current);
+    };
+
+    const loop = () => {
+      animationFrame = requestAnimationFrame(tick);
+    };
+    loop();
+
+    return () => {
+      cancelAnimationFrame(animationFrame);
+    };
+  }, []);
+
+  return debouncedValue;
 };
