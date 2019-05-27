@@ -114,7 +114,7 @@ const TimeSignature = ({ metronome }: Props) => {
         R.range(0, currentNumerator).map(() => uIenabledDivisions)
       )
     }));
-  }, [currentNumerator]);
+  }, [currentNumerator, setSignature, uIenabledDivisions]);
 
   return (
     <>

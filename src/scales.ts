@@ -66,7 +66,7 @@ const useScales = (): t.Scales => {
         );
       }
     },
-    [scalesDB]
+    [scalesDB, setScalesDB]
   );
   const toggleLearningPublic = React.useCallback(
     (s: t.Scale) => {
@@ -77,7 +77,7 @@ const useScales = (): t.Scales => {
         );
       }
     },
-    [scalesDB]
+    [scalesDB, setScalesDB]
   );
   const toggleKnownPublic = React.useCallback(
     (s: t.Scale) => {
@@ -88,7 +88,7 @@ const useScales = (): t.Scales => {
         );
       }
     },
-    [scalesDB]
+    [scalesDB, setScalesDB]
   );
 
   // TODO - these should probably use a ref so they don't change as often.
