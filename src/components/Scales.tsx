@@ -167,6 +167,8 @@ interface ScalesProps {
 
 // TODO: - Add a button to start learning a new scale. This will be a scale
 // that is know known and is not learning.
+// TODO: - use my piano keyboard component from my blog to show 3 octaves of the
+// current scale.
 const Scales: React.FC<ScalesProps> = ({ audioContext }) => {
   useMetronome(audioContext);
 
