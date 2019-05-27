@@ -1,6 +1,7 @@
 import React from "react";
 import * as immutable from "immutable";
 import * as R from "ramda";
+import * as redux from "../redux";
 
 interface Marking {
   high: number;
@@ -37,10 +38,6 @@ const fromBPM = R.memoizeWith(
     markings.filter(({ high, low }) => inRange(high, low, bpm))
 );
 
-interface Props {
-  bpm: number;
-}
-
 interface MarkingProps {
   name: string;
   low: number;
@@ -56,7 +53,7 @@ const Marking: React.FC<MarkingProps> = React.memo(({ name, low, high }) => {
 });
 
 const TempoMarking = React.memo(
-  ({ bpm }: Props) => {
+  ({ bpm }: { bpm: number }) => {
     const markings = fromBPM(bpm);
     return (
       <div style={{ minHeight: "6.5em" }}>
@@ -66,7 +63,12 @@ const TempoMarking = React.memo(
       </div>
     );
   },
-  ({ bpm: old }, { bpm: newbpm }) => fromBPM(old).equals(fromBPM(newbpm))
+  ({ bpm: old }, { bpm: nu }) => !fromBPM(old).equals(fromBPM(nu))
 );
 
-export default TempoMarking;
+const Wrap = () => {
+  const bpm = redux.useSelector(a => a.metronomeState.bpm);
+  return <TempoMarking bpm={bpm} />;
+};
+
+export default Wrap;

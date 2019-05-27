@@ -22,20 +22,18 @@ const Inner = styled.div`
 `;
 
 interface Props {
-  initialValue: number;
   addDiff: (diff: number) => void;
   size?: number;
 }
 
 const InfiniKnob = ({
   size = 300,
-  initialValue,
   addDiff,
   children
 }: React.PropsWithChildren<Props>) => {
   const [stateRadians, setRadians] = hooks.useLocalStorage(
     t.LocalStorageKey.Radians,
-    (initialValue * (Math.PI * 3)) / 2
+    (Math.PI * 3) / 2
   );
   const radiansRef = useRef(Math.PI);
   useEffect(() => {

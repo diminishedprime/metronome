@@ -28,8 +28,30 @@ interface MetronomeProps {
   audioContext: t.MAudioContext;
   appSettings: t.AppSettings;
 }
+
+interface DialSectionProps {
+  addBPM: (bpm: number) => void;
+}
+
+const BPM = () => {
+  const bpm = redux.useSelector(a => a.metronomeState.bpm);
+  return <div className="has-text-centered is-size-1">{bpm}</div>;
+};
+
+const DialSection: React.FC<DialSectionProps> = React.memo(({ addBPM }) => {
+  return (
+    <section className="section">
+      <Dial addDiff={addBPM}>
+        <BPM />
+        <TempoMarking />
+      </Dial>
+    </section>
+  );
+});
+
 const Metronome: React.FC<MetronomeProps> = ({ appSettings, audioContext }) => {
   const metronome = useMetronome(audioContext);
+
   const {
     state: { keepAwake }
   } = appSettings;
@@ -40,7 +62,6 @@ const Metronome: React.FC<MetronomeProps> = ({ appSettings, audioContext }) => {
   const { lock, release } = useSleepLock();
 
   const playing = redux.useSelector(a => a.metronomeState.playing);
-  const bpm = redux.useSelector(a => a.metronomeState.bpm);
   const pending = redux.useSelector(a => a.metronomeState.pending);
   const addBPM = React.useCallback(metronome.addBPM, [metronome.addBPM]);
   const setBPM = React.useCallback(metronome.setBPM, [metronome.setBPM]);
@@ -60,12 +81,7 @@ const Metronome: React.FC<MetronomeProps> = ({ appSettings, audioContext }) => {
     <>
       {pending && <FullPage>Tap to enable audio.</FullPage>}
       {showTuner && <Tuner />}
-      <section className="section">
-        <Dial initialValue={bpm} addDiff={addBPM}>
-          <div className="has-text-centered is-size-1">{bpm}</div>
-          <TempoMarking bpm={bpm} />
-        </Dial>
-      </section>
+      <DialSection addBPM={addBPM} />
       <TimeSignature metronome={metronome} />
       <Controls
         showTuner={showTuner}

@@ -72,6 +72,8 @@ const defaultSignature = {
 };
 
 const clampBPM = (bpm: number) => R.clamp(10, 250, bpm);
+
+// TODO - figure out how to add a local storage thing for hydration???
 const rootReducer = (
   store: ReduxState = {
     activeBeats: immutable.List(),
@@ -151,7 +153,10 @@ const rootReducer = (
         }
       };
     default:
-      console.log(action, "was not handled");
+      // @ts-ignore - It's too smart for us here, but this is safe.
+      if (!(action.type as any).startsWith("@@redux")) {
+        console.log(action, "was not handled");
+      }
       return store;
   }
 };
