@@ -7,6 +7,10 @@ import { Button, Buttons, ToggleButton } from "./Common";
 import useScales from "../scales";
 import useMetronome from "../metronome";
 
+// TODO - clean up the rendering here. It redraws way too much on a change.
+// TODO - store the scales as a sorted set instead of a set that gets sorted
+// every time.
+
 enum ScaleMode {
   NOT_STARTED = "not-started",
   KNOWN = "known",

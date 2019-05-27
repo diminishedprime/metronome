@@ -4,6 +4,7 @@ import * as immutable from "immutable";
 import * as reactRedux from "react-redux";
 import * as R from "ramda";
 import * as metronome from "./metronome";
+import * as util from "./util";
 
 // TODO these should live in types.
 export enum ActionType {
@@ -31,7 +32,13 @@ export interface ReduxState {
 }
 
 export const setSignature = (action: React.SetStateAction<t.TimeSignature>) => {
-  store.dispatch({ type: ActionType.SetSignature, action });
+  // TODO - figure out a cleaner way to manage this.
+  const nextValue =
+    action instanceof Function
+      ? action(store.getState().metronomeState.signature)
+      : action;
+  util.toLocalStorage(t.LocalStorageKey.TimeSignature, nextValue);
+  store.dispatch({ type: ActionType.SetSignature, action: nextValue });
 };
 
 export const setPending = (action: RSA<boolean>) => {
@@ -43,7 +50,13 @@ export const setPlaying = (action: React.SetStateAction<boolean>) => {
 };
 
 export const setBPM = (action: React.SetStateAction<number>) => {
-  store.dispatch({ type: ActionType.SetBpm, action });
+  // TODO - figure out a cleaner way to manage this.
+  const nextValue =
+    action instanceof Function
+      ? action(store.getState().metronomeState.bpm)
+      : action;
+  util.toLocalStorage(t.LocalStorageKey.BPM, nextValue);
+  store.dispatch({ type: ActionType.SetBpm, action: nextValue });
 };
 
 export const setActiveBeats = (activeBeats: t.ActiveBeats) => {
@@ -79,21 +92,25 @@ const defaultSignature = {
     defaultBeat
   ])
 };
+const defaultStore = {
+  activeBeats: immutable.List(),
+  metronomeState: {
+    ready: false,
+    pending: true,
+    bpm: util.fromLocalStorage(t.LocalStorageKey.BPM, 60),
+    playing: false,
+    signature: util.fromLocalStorage(
+      t.LocalStorageKey.TimeSignature,
+      defaultSignature
+    )
+  }
+};
 
 const clampBPM = (bpm: number) => R.clamp(10, 250, bpm);
 
 // TODO - figure out how to add a local storage thing for hydration???
 const rootReducer = (
-  store: ReduxState = {
-    activeBeats: immutable.List(),
-    metronomeState: {
-      ready: false,
-      pending: true,
-      bpm: 60,
-      playing: false,
-      signature: defaultSignature
-    }
-  },
+  store: ReduxState = defaultStore,
   action: Action
 ): ReduxState => {
   switch (action.type) {
