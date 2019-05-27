@@ -33,7 +33,6 @@ export interface State {
   bpm: number;
   playing: boolean;
   signature: TimeSignature;
-  activeBeats: ActiveBeats;
 }
 
 interface AppSettingsState {

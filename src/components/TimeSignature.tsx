@@ -5,6 +5,8 @@ import { Button, Buttons, ToggleButton } from "./Common";
 import * as hooks from "../hooks";
 import * as t from "../types";
 import * as immutable from "immutable";
+import * as reactRedux from "react-redux";
+import * as redux from "../redux";
 
 interface Props {
   metronome: t.Metronome;
@@ -56,9 +58,6 @@ const Divisions: React.FC<DivisionsProps> = React.memo(
 const TimeSignature = ({ metronome }: Props) => {
   const setSignature = React.useMemo(() => metronome.setSignature, [
     metronome.setSignature
-  ]);
-  const activeBeats = React.useMemo(() => metronome.state.activeBeats, [
-    metronome.state.activeBeats
   ]);
   const numerator = React.useMemo(() => metronome.state.signature.numerator, [
     metronome.state.signature.numerator
@@ -118,7 +117,7 @@ const TimeSignature = ({ metronome }: Props) => {
 
   return (
     <>
-      <Beats activeBeats={activeBeats} />
+      <Beats />
       <Divisions
         uiEnabledDivisions={uIenabledDivisions}
         toggleDivisionOption={toggleDivisionOption}
@@ -254,9 +253,11 @@ const Beat: React.FC<{
   );
 });
 
-const Beats: React.FC<{
-  activeBeats: t.ActiveBeats;
-}> = React.memo(({ activeBeats }) => {
+const Beats: React.FC = React.memo(() => {
+  // TODO - once this hook is standardized, remove the weird casts.
+  const activeBeats: t.ActiveBeats = (reactRedux as any).useSelector(
+    (a: redux.ReduxState) => a.activeBeats
+  );
   return (
     <BeatsWrapper>
       {activeBeats.map((beat, beatNumber) => (

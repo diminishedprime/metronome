@@ -2,6 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom";
 import App from "./components/App";
 import "./bulma-overrides.sass";
+import { Provider } from "react-redux";
+import { store } from "./redux";
 
 class ErrorBoundary extends React.Component<{}, { error: any }> {
   constructor(props: { error: any }) {
@@ -40,8 +42,10 @@ class ErrorBoundary extends React.Component<{}, { error: any }> {
 }
 
 ReactDOM.render(
-  <ErrorBoundary>
-    <App />
-  </ErrorBoundary>,
+  <Provider store={store}>
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  </Provider>,
   document.getElementById("root")
 );

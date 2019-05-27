@@ -6,6 +6,7 @@ import Deque from "double-ended-queue";
 import { runAtTime } from "./util";
 import * as hooks from "./hooks";
 import * as immutable from "immutable";
+import * as redux from "./redux";
 
 const click = require("./click.wav");
 
@@ -110,13 +111,7 @@ const addBeatsToQueue = (
 
 const intervalError = 0.1;
 
-const useScheduleAhead = (
-  audioContext: t.MAudioContext,
-  state: t.State,
-  setActiveDivisions: React.Dispatch<
-    React.SetStateAction<immutable.List<t.ActiveBeat>>
-  >
-) => {
+const useScheduleAhead = (audioContext: t.MAudioContext, state: t.State) => {
   const scheduleAhead = 0.3;
   const { playing } = state;
   const buffer = useAudioBuffer(audioContext, click);
@@ -141,44 +136,23 @@ const useScheduleAhead = (
       (old + 1) % stateRef.current.signature.numerator.size;
   };
 
-  // TODO - this is super janky.
-  // TODO - this would be much nicer with an animation.
-  // TODO - switch this to runAtTime to clear the beat it just set.
-  // TODO - If the division changes, we should reset all active beats to false.
-  const setActiveBeat = useCallback(
-    (beat: t.Beat) => {
-      setActiveDivisions((oldActiveDivisions: immutable.List<t.ActiveBeat>) => {
-        const old = oldActiveDivisions.getIn([
-          beat.currentBeat,
-          beat.divisions,
-          beat.divisionIndex
-        ]);
-        if (old === undefined) {
-          return oldActiveDivisions;
-        }
-        return oldActiveDivisions.setIn(
-          [beat.currentBeat, beat.divisions, beat.divisionIndex],
-          !old
-        );
-      });
-    },
-    [setActiveDivisions]
-  );
-
   // TODO - because the ui callbacks run in the future, I can get in a weird
   // spot state-wise. I should figure out a way to either cancel them running
   // when the number of divisions changes.
-  const updateUi = useCallback(
-    (audioContext: AudioContext, beat: t.Beat) => {
-      // We ovewrite activeBeats here because it's definitely changing.
-      runAtTime(audioContext, beat.time, () => {
-        if (stateRef.current.playing) {
-          setActiveBeat(beat);
-        }
-      });
-    },
-    [setActiveBeat]
-  );
+  const updateUi = useCallback((audioContext: AudioContext, beat: t.Beat) => {
+    // We ovewrite activeBeats here because it's definitely changing.
+    runAtTime(audioContext, beat.time, () => {
+      if (stateRef.current.playing) {
+        // setActiveBeat(beat);
+
+        // TODO - this is super janky.
+        // TODO - this would be much nicer with an animation.
+        // TODO - switch this to runAtTime to clear the beat it just set.
+        // TODO - If the division changes, we should reset all active beats to false.
+        redux.updateActiveBeat(beat);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (
@@ -217,14 +191,7 @@ const useScheduleAhead = (
         clearInterval(id);
       };
     }
-  }, [
-    delay,
-    buffer,
-    audioContext,
-    setActiveDivisions,
-    setActiveBeat,
-    updateUi
-  ]);
+  }, [delay, buffer, audioContext, updateUi]);
 };
 
 const resetActiveBeats = (
@@ -263,10 +230,6 @@ const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
     }
   );
 
-  const [activeBeats, setActiveBeats] = useState(
-    resetActiveBeats(signature.numerator)
-  );
-
   const state: t.State = {
     bpm,
     playing,
@@ -275,8 +238,7 @@ const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
       audioContext !== undefined &&
       audioContext !== "pending" &&
       audioContext !== "not-supported",
-    signature,
-    activeBeats
+    signature
   };
   const { numerator } = signature;
 
@@ -291,25 +253,26 @@ const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
   useEffect(() => {
     // TODO - This would be fancier if when the next beat can still happen, it
     // didn't clear the active beat in the UI.
-    setActiveBeats(resetActiveBeats(numerator));
-  }, [numerator, signature, setActiveBeats]);
+    redux.setActiveBeats(resetActiveBeats(numerator));
+  }, [numerator, signature]);
 
   useEffect(() => {
     if (!playing) {
-      setActiveBeats(resetActiveBeats(numerator));
+      redux.setActiveBeats(resetActiveBeats(numerator));
       setTimeout(() => {
-        setActiveBeats(resetActiveBeats(numerator));
+        redux.setActiveBeats(resetActiveBeats(numerator));
       }, 300);
     }
-  }, [playing, numerator, setActiveBeats]);
+  }, [playing, numerator]);
 
-  useScheduleAhead(audioContext, state, setActiveBeats);
+  useScheduleAhead(audioContext, state);
 
   // External API Things.
   const addBPM = React.useCallback(
     (bpmToAdd: number) => {
       setBPM(R.add(bpmToAdd));
     },
+
     [setBPM]
   );
 
