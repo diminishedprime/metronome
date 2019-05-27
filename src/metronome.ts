@@ -82,7 +82,7 @@ const playBeatsTill = (
 
 // TODO - I should clean this up if possible. It takes way too many arguments.
 const addBeatsToQueue = (
-  state: t.State,
+  state: t.MetronomeState,
   nextNoteTime: React.MutableRefObject<number>,
   currentBeat: t.EnabledDivisions,
   beatIdx: number,
@@ -111,14 +111,17 @@ const addBeatsToQueue = (
 
 const intervalError = 0.1;
 
-const useScheduleAhead = (audioContext: t.MAudioContext, state: t.State) => {
+const useScheduleAhead = (
+  audioContext: t.MAudioContext,
+  state: t.MetronomeState
+) => {
   const scheduleAhead = 0.3;
   const { playing } = state;
   const buffer = useAudioBuffer(audioContext, click);
   const nextNoteTimeRef = useRef<number>(0);
   const delay = playing ? (scheduleAhead * 1000) / 2 : undefined;
 
-  const stateRef = useRef<t.State>(state);
+  const stateRef = useRef<t.MetronomeState>(state);
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
@@ -230,7 +233,7 @@ const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
     }
   );
 
-  const state: t.State = {
+  const state: t.MetronomeState = {
     bpm,
     playing,
     pending: audioContext === "pending",
