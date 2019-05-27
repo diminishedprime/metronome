@@ -128,22 +128,17 @@ const useScheduleAhead = (
     stateRef.current = state;
   }, [state]);
 
-  const [beatToSchedule, setBeatToSchedule] = useState<number>(0);
+  const beatToScheduleRef = useRef(0);
   useEffect(() => {
     if (!state.playing) {
-      setBeatToSchedule(0);
+      beatToScheduleRef.current = 0;
     }
   }, [state.playing]);
 
-  const beatToScheduleRef = useRef(beatToSchedule);
-  useEffect(() => {
-    beatToScheduleRef.current = beatToSchedule;
-  }, [beatToSchedule]);
-
   const nextBeat = () => {
-    setBeatToSchedule(
-      old => (old + 1) % stateRef.current.signature.numerator.size
-    );
+    let old = beatToScheduleRef.current;
+    beatToScheduleRef.current =
+      (old + 1) % stateRef.current.signature.numerator.size;
   };
 
   // TODO - this is super janky.
