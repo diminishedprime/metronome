@@ -51,7 +51,6 @@ export interface Metronome {
   setBPM: React.Dispatch<React.SetStateAction<number>>;
   setSignature: React.Dispatch<React.SetStateAction<TimeSignature>>;
   addBPM: (bpmToAdd: number) => void;
-  state: MetronomeState;
 }
 
 export type MAudioContext =

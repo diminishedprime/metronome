@@ -5,7 +5,6 @@ import { Button, Buttons, ToggleButton } from "./Common";
 import * as hooks from "../hooks";
 import * as t from "../types";
 import * as immutable from "immutable";
-import * as reactRedux from "react-redux";
 import * as redux from "../redux";
 
 interface Props {
@@ -59,9 +58,9 @@ const TimeSignature = ({ metronome }: Props) => {
   const setSignature = React.useMemo(() => metronome.setSignature, [
     metronome.setSignature
   ]);
-  const numerator = React.useMemo(() => metronome.state.signature.numerator, [
-    metronome.state.signature.numerator
-  ]);
+  const numerator = redux.useSelector(
+    a => a.metronomeState.signature.numerator
+  );
 
   const [hasChanged, setHasChanged] = useState(false);
   const [uIenabledDivisions, setUiEnabledDivisions] = hooks.useLocalStorage<
@@ -254,10 +253,7 @@ const Beat: React.FC<{
 });
 
 const Beats: React.FC = React.memo(() => {
-  // TODO - once this hook is standardized, remove the weird casts.
-  const activeBeats: t.ActiveBeats = (reactRedux as any).useSelector(
-    (a: redux.ReduxState) => a.activeBeats
-  );
+  const activeBeats: t.ActiveBeats = redux.useSelector(a => a.activeBeats);
   return (
     <BeatsWrapper>
       {activeBeats.map((beat, beatNumber) => (

@@ -9,6 +9,7 @@ import { Buttons, ToggleButton } from "./Common";
 import useMetronome from "../metronome";
 import * as t from "../types";
 import styled from "styled-components";
+import * as redux from "../redux";
 
 const FullPage = styled.div`
   margin: 0 !important;
@@ -37,19 +38,13 @@ const Metronome: React.FC<MetronomeProps> = ({ appSettings, audioContext }) => {
     false
   );
   const { lock, release } = useSleepLock();
-  const playing = React.useMemo(() => metronome.state.playing, [
-    metronome.state.playing
-  ]);
-  // TODO - I don't know if this is actually necessary or not.
-  const bpm = React.useMemo(() => metronome.state.bpm, [metronome.state.bpm]);
-  const pending = React.useMemo(() => metronome.state.pending, [
-    metronome.state.pending
-  ]);
-  const addBPM = React.useMemo(() => {
-    return metronome.addBPM;
-  }, [metronome.addBPM]);
-  const setBPM = React.useMemo(() => metronome.setBPM, [metronome.setBPM]);
-  const toggleStart = React.useMemo(() => metronome.toggleStart, [
+
+  const playing = redux.useSelector(a => a.metronomeState.playing);
+  const bpm = redux.useSelector(a => a.metronomeState.bpm);
+  const pending = redux.useSelector(a => a.metronomeState.pending);
+  const addBPM = React.useCallback(metronome.addBPM, [metronome.addBPM]);
+  const setBPM = React.useCallback(metronome.setBPM, [metronome.setBPM]);
+  const toggleStart = React.useCallback(metronome.toggleStart, [
     metronome.toggleStart
   ]);
 

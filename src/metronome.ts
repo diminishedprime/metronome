@@ -1,10 +1,9 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useCallback, useRef } from "react";
 import * as R from "ramda";
 import * as t from "./types";
-import { useLocalStorage, useAdvice, useAudioBuffer } from "./hooks";
+import { useAudioBuffer } from "./hooks";
 import Deque from "double-ended-queue";
 import { runAtTime } from "./util";
-import * as hooks from "./hooks";
 import * as immutable from "immutable";
 import * as redux from "./redux";
 
@@ -111,12 +110,10 @@ const addBeatsToQueue = (
 
 const intervalError = 0.1;
 
-const useScheduleAhead = (
-  audioContext: t.MAudioContext,
-  state: t.MetronomeState
-) => {
-  const scheduleAhead = 0.3;
+const useScheduleAhead = (audioContext: t.MAudioContext) => {
+  const state = redux.useSelector(a => a.metronomeState);
   const { playing } = state;
+  const scheduleAhead = 0.3;
   const buffer = useAudioBuffer(audioContext, click);
   const nextNoteTimeRef = useRef<number>(0);
   const delay = playing ? (scheduleAhead * 1000) / 2 : undefined;
@@ -174,7 +171,6 @@ const useScheduleAhead = (
         } = stateRef.current;
         const beatIdx = Math.min(beatToScheduleRef.current, numerator.size - 1);
         const currentBeat = numerator.get(beatIdx)!;
-
         addBeatsToQueue(
           stateRef.current,
           nextNoteTimeRef,
@@ -210,49 +206,59 @@ const resetActiveBeats = (
     )
   );
 
-const clampBPM = (bpm: number) => R.clamp(10, 250, bpm);
-
-const defaultBeat = immutable.Map<t.Division, boolean>().set(1, true);
+// const defaultBeat = immutable.Map<t.Division, boolean>().set(1, true);
 
 const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
-  const [playing, setPlaying] = useState(false);
-  const [bpm, setBPM] = useAdvice(
-    useLocalStorage(t.LocalStorageKey.BPM, 90),
-    clampBPM
-  );
-  const [signature, setSignature] = hooks.useLocalStorage<t.TimeSignature>(
-    t.LocalStorageKey.TimeSignature,
-    {
-      denominator: 4,
-      numerator: immutable.List([
-        defaultBeat,
-        defaultBeat,
-        defaultBeat,
-        defaultBeat
-      ])
-    }
-  );
+  // const [playing, setPlaying] = useState(false);
+  // const [bpm, setBPM] = useAdvice(
+  //   useLocalStorage(t.LocalStorageKey.BPM, 90),
+  //   clampBPM
+  // );
+  // const [signature, setSignature] = hooks.useLocalStorage<t.TimeSignature>(
+  //   t.LocalStorageKey.TimeSignature,
+  //   {
+  //     denominator: 4,
+  //     numerator: immutable.List([
+  //       defaultBeat,
+  //       defaultBeat,
+  //       defaultBeat,
+  //       defaultBeat
+  //     ])
+  //   }
+  // );
 
-  const state: t.MetronomeState = {
-    bpm,
-    playing,
-    pending: audioContext === "pending",
-    ready:
-      audioContext !== undefined &&
-      audioContext !== "pending" &&
-      audioContext !== "not-supported",
-    signature
-  };
-  const { numerator } = signature;
+  // const state: t.MetronomeState = {
+  //   bpm,
+  //   playing,
+  //   pending: audioContext === "pending",
+  //   ready:
+  //     audioContext !== undefined &&
+  //     audioContext !== "pending" &&
+  //     audioContext !== "not-supported",
+  //   signature
+  // };
+  // const { numerator } = signature;
 
-  const bpmRef = useRef(bpm);
-  useEffect(() => {
-    bpmRef.current = bpm;
-  }, [bpm]);
+  // const bpmRef = useRef(bpm);
+  // useEffect(() => {
+  //   bpmRef.current = bpm;
+  // }, [bpm]);
 
   // Effects for updating state.
 
   // If the time signature changes, we need to reset the active subdivisions.
+  const numerator = redux.useSelector(
+    s => s.metronomeState.signature.numerator
+  );
+  const signature = redux.useSelector(s => s.metronomeState.signature);
+  const playing = redux.useSelector(s => s.metronomeState.playing);
+
+  useEffect(() => {
+    if (audioContext !== "pending" && audioContext !== undefined) {
+      redux.setPending(false);
+    }
+  }, [audioContext]);
+
   useEffect(() => {
     // TODO - This would be fancier if when the next beat can still happen, it
     // didn't clear the active beat in the UI.
@@ -268,32 +274,28 @@ const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
     }
   }, [playing, numerator]);
 
-  useScheduleAhead(audioContext, state);
+  useScheduleAhead(audioContext);
 
   // External API Things.
-  const addBPM = React.useCallback(
-    (bpmToAdd: number) => {
-      setBPM(R.add(bpmToAdd));
-    },
+  const addBPM = React.useCallback((bpmToAdd: number) => {
+    redux.setBPM(R.add(bpmToAdd));
+  }, []);
 
-    [setBPM]
-  );
+  const toggleStart = React.useCallback(() => redux.setPlaying(R.not), []);
 
-  const toggleStart = React.useCallback(() => setPlaying(R.not), [setPlaying]);
+  const start = useCallback((bpm?: number) => {
+    if (bpm !== undefined) {
+      redux.setBPM(bpm);
+    }
+    redux.setPlaying(true);
+  }, []);
 
-  const start = useCallback(
-    (bpm?: number) => {
-      if (bpm !== undefined) {
-        setBPM(bpm);
-      }
-      setPlaying(true);
-    },
-    [setPlaying, setBPM]
-  );
+  const stop = React.useCallback(() => {
+    redux.setPlaying(false);
+  }, []);
 
-  const stop = useCallback(() => {
-    setPlaying(false);
-  }, [setPlaying]);
+  const setSignature = React.useCallback(redux.setSignature, []);
+  const setBPM = React.useCallback(redux.setBPM, []);
 
   return {
     toggleStart,
@@ -301,8 +303,7 @@ const useMetronome = (audioContext: t.MAudioContext): t.Metronome => {
     start,
     stop,
     setBPM,
-    addBPM,
-    state
+    addBPM
   };
 };
 export default useMetronome;
