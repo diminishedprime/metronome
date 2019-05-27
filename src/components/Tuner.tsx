@@ -121,7 +121,7 @@ const Tuner = React.memo(() => {
   }, [on, analyser, sampleRate]);
 
   const { octave, note, cents } = freqToPitch(freq || 0);
-  // TODO - add in a graph of the FFT that's label with pitches and neato log bars.
+  // TODO: - add in a graph of the FFT that's label with pitches and neato log bars.
   return (
     <TunerWrapper className="box has-text-centered">
       <div className="is-size-1">{on ? note + octave : "Stopped"}</div>

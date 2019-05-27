@@ -35,7 +35,7 @@ export interface MetronomeState {
   signature: TimeSignature;
 }
 
-interface AppSettingsState {
+export interface AppSettingsState {
   keepAwake: boolean;
 }
 
@@ -107,7 +107,7 @@ export enum Pitch {
   G_Sharp = "G#"
 }
 
-// TODO - this seems promising to be able to iterate through all options, just need to add them all in.
+// TODO: - this seems promising to be able to iterate through all options, just need to add them all in.
 export type ScaleKey =
   // First The naturals
   | [Pitch.A, Mode.Major]

@@ -36,6 +36,7 @@ export const useSleepLock = (shouldSleep: boolean) => {
 
   React.useEffect(() => {
     if (shouldSleep) {
+      console.log("enabling sleep");
       noSleep.enable();
     } else {
       noSleep.disable();
@@ -43,7 +44,7 @@ export const useSleepLock = (shouldSleep: boolean) => {
   }, [shouldSleep, noSleep]);
 };
 
-// TODO - add in some logic to do simple migrations. Otherwise, we get stuck
+// TODO: - add in some logic to do simple migrations. Otherwise, we get stuck
 // with this state forever and have to blow it away.
 export const useLocalStorage = <T>(
   key: t.LocalStorageKey,
@@ -145,7 +146,7 @@ export const useAudioBuffer = (
   const [buffer, updateBuffer] = useState<AudioBuffer>();
   useEffect(() => {
     if (
-      // TODO - refactor this out into a helper method if possible.
+      // TODO: - refactor this out into a helper method if possible.
       audioContext !== undefined &&
       audioContext !== "not-supported" &&
       audioContext !== "pending"

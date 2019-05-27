@@ -91,7 +91,7 @@ const useScales = (): t.Scales => {
     [scalesDB, setScalesDB]
   );
 
-  // TODO - these should probably use a ref so they don't change as often.
+  // TODO: - these should probably use a ref so they don't change as often.
   return {
     addBPM: addBPMPublic,
     toggleLearning: toggleLearningPublic,

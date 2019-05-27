@@ -26,7 +26,6 @@ const FullPage = styled.div`
 
 interface MetronomeProps {
   audioContext: t.MAudioContext;
-  appSettings: t.AppSettings;
 }
 
 const BPM = () => {
@@ -45,18 +44,12 @@ const DialSection: React.FC = React.memo(() => {
   );
 });
 
-const Metronome: React.FC<MetronomeProps> = ({ appSettings, audioContext }) => {
-  const playing = redux.useSelector(a => a.metronomeState.playing);
+const Metronome: React.FC<MetronomeProps> = ({ audioContext }) => {
   const pending = redux.useSelector(a => a.metronomeState.pending);
-  // TODO app settings should just be in redux too.
-  const {
-    state: { keepAwake }
-  } = appSettings;
 
   useMetronome(audioContext);
-  useSleepLock(keepAwake && playing);
 
-  // TODO - this should be saved in appSettings.
+  // TODO: - this should be saved in appSettings.
   const [showTuner, toggleTuner] = usePersistantToggle(
     t.LocalStorageKey.ShowTuner,
     false

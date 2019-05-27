@@ -95,9 +95,9 @@ const TimeSignature = () => {
     setUiEnabledDivisions(immutable.Map<t.Division, boolean>().set(1, true));
   }, [setUiEnabledDivisions]);
 
-  // TODO - make it where clicking on a division group lets you set the volume & accents for that group.
-  // TODO - add an option to turn on or off the accent at the start of every measure.
-  // TODO - clean up these buttons to not use className.
+  // TODO: - make it where clicking on a division group lets you set the volume & accents for that group.
+  // TODO: - add an option to turn on or off the accent at the start of every measure.
+  // TODO: - clean up these buttons to not use className.
 
   const [currentNumerator, setCurrentNumerator] = React.useState(
     numerator.size
@@ -157,7 +157,7 @@ const Signature: React.FC<SignatureProps> = React.memo(
   }
 );
 
-// TODO - margin should be calculated based on number of divisions.
+// TODO: - margin should be calculated based on number of divisions.
 const BeatRowItemWrapper = React.memo(styled.div`
   width: 1px;
   margin-left: 1px;
@@ -165,13 +165,13 @@ const BeatRowItemWrapper = React.memo(styled.div`
   flex-grow: 1;
 `);
 
-// TODO - margin should be calculated based on number of beats.
+// TODO: - margin should be calculated based on number of beats.
 const BeatRowWrapper = React.memo(styled.div`
   display: flex;
   flex-grow: 1;
 `);
 
-// TODO - margin should be calculated based on number of beats.
+// TODO: - margin should be calculated based on number of beats.
 const BeatWrapper = React.memo(styled.div`
   display: flex;
   flex-grow: 1;
@@ -184,8 +184,8 @@ const BeatsWrapper = React.memo(styled.div`
   margin-bottom: 10px;
 `);
 
-// TODO - the selected division values should reset when you stop the metronome.
-// TODO - If not playing, this should show the boring gray background.
+// TODO: - the selected division values should reset when you stop the metronome.
+// TODO: - If not playing, this should show the boring gray background.
 const BeatRowItem: React.FC<{
   beatIndex: number;
   division: t.Division;
@@ -254,7 +254,7 @@ const Beat: React.FC<{
   );
 });
 
-// TODO - make it where you can click and drag on the visual subdivision to
+// TODO: - make it where you can click and drag on the visual subdivision to
 // change the volume and double tap to change it's color and also make it an
 // accent?
 const Beats: React.FC = React.memo(() => {

@@ -7,7 +7,7 @@ export function assertNever(value: never): never {
   );
 }
 
-// TODO - I might be able to overload this so it's actually typesafe by making
+// TODO: - I might be able to overload this so it's actually typesafe by making
 // the return type dependant on a key literal.
 export const fromLocalStorage = <T>(
   key: t.LocalStorageKey,

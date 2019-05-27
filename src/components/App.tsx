@@ -4,7 +4,7 @@ import Settings from "./Settings";
 import Scales from "./Scales";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import Update from "./Update";
-import { useAppSettings } from "../settings";
+import * as redux from "../redux";
 import styled, { keyframes } from "styled-components";
 import { maxWidth } from "./Common";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -67,9 +67,9 @@ const NavIcon = React.memo(styled(FontAwesomeIcon)`
 
 const TopBar = React.memo(() => {
   const [showNav, toggleNav] = useToggle(false);
-  // TODO - figure out how to animate the nav being hidden.
-  // TODO - make it where clicking outside of this element hides it.
-  // TODO - make it where you can swipe from the right of the screen to show the nav.
+  // TODO: - figure out how to animate the nav being hidden.
+  // TODO: - make it where clicking outside of this element hides it.
+  // TODO: - make it where you can swipe from the right of the screen to show the nav.
   return (
     <TopBarWrapper>
       <TopNav className="has-background-primary has-text-light">
@@ -130,12 +130,15 @@ const Wrapper: React.FC = React.memo(({ children }) => {
   );
 });
 
-// TODO - add a button to the overall exception handler that lets you clear local storage.
-// TODO - add an option to the settings to clear local storage.
-// TODO - update components to use the React.FC type.
+// TODO: - add a button to the overall exception handler that lets you clear local storage.
+// TODO: - add an option to the settings to clear local storage.
+// TODO: - update components to use the React.FC type.
 const App: React.FC = () => {
-  const appSettings = useAppSettings();
   const audioContext = hooks.useAudioContext();
+  const keepAwake = redux.useSelector(a => a.settings.keepAwake);
+  const playing = redux.useSelector(a => a.metronomeState.playing);
+  hooks.useSleepLock(keepAwake && playing);
+
   return (
     <Router basename={process.env.PUBLIC_URL}>
       <Wrapper>
@@ -148,20 +151,14 @@ const App: React.FC = () => {
         <Route
           exact
           path="/"
-          render={() => (
-            <Metronome audioContext={audioContext} appSettings={appSettings} />
-          )}
+          render={() => <Metronome audioContext={audioContext} />}
         />
         <Route
           exact
           path="/scales"
           render={() => <Scales audioContext={audioContext} />}
         />
-        <Route
-          exact
-          path="/settings"
-          render={() => <Settings appSettings={appSettings} />}
-        />
+        <Route exact path="/settings" render={() => <Settings />} />
       </Wrapper>
     </Router>
   );

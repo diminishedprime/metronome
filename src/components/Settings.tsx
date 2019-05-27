@@ -1,18 +1,12 @@
 import React from "react";
 import * as t from "../types";
+import * as redux from "../redux";
 import styled from "styled-components";
-
-interface SettingsProps {
-  appSettings: t.AppSettings;
-}
 
 const SettingsWrapper = styled.section``;
 
-const Settings: React.FC<SettingsProps> = ({ appSettings }) => {
-  const {
-    state: { keepAwake },
-    toggleKeepAwake
-  } = appSettings;
+const Settings: React.FC = () => {
+  const keepAwake = redux.useSelector(s => s.settings.keepAwake);
   return (
     <SettingsWrapper>
       <h2 className="is-size-4">Settings</h2>
@@ -23,7 +17,7 @@ const Settings: React.FC<SettingsProps> = ({ appSettings }) => {
               style={{ marginRight: "5px" }}
               type="checkbox"
               checked={keepAwake}
-              onChange={toggleKeepAwake}
+              onChange={redux.toggleKeepAwake}
             />
             Keep screen on while metronome is running.
           </label>

@@ -6,33 +6,44 @@ import * as R from "ramda";
 import * as metronome from "./metronome";
 import * as util from "./util";
 
-// TODO these should live in types.
+// TODO: these should live in types.
 export enum ActionType {
   UpdateActiveBeats,
   SetActiveBeats,
   SetSignature,
   SetPending,
   SetPlaying,
+  SetKeepAwake,
   SetBpm
 }
 
 type RSA<T> = React.SetStateAction<T>;
 export type Action =
-  // TODO update the other types to use action & RSA
+  // TODO: update the other types to use action & RSA
   | { type: ActionType.UpdateActiveBeats; value: t.Beat }
   | { type: ActionType.SetActiveBeats; value: t.ActiveBeats }
   | { type: ActionType.SetPending; action: RSA<boolean> }
   | { type: ActionType.SetPlaying; action: RSA<boolean> }
   | { type: ActionType.SetBpm; action: RSA<number> }
+  | { type: ActionType.SetKeepAwake; action: RSA<boolean> }
   | { type: ActionType.SetSignature; action: RSA<t.TimeSignature> };
 
 export interface ReduxState {
   activeBeats: t.ActiveBeats;
   metronomeState: t.MetronomeState;
+  settings: t.AppSettingsState;
 }
 
+export const toggleKeepAwake = () => {
+  setKeepAwake(old => !old);
+};
+
+const setKeepAwake = (action: React.SetStateAction<boolean>) => {
+  store.dispatch({ type: ActionType.SetKeepAwake, action });
+};
+
 export const setSignature = (action: React.SetStateAction<t.TimeSignature>) => {
-  // TODO - figure out a cleaner way to manage this.
+  // TODO: - figure out a cleaner way to manage this.
   const nextValue =
     action instanceof Function
       ? action(store.getState().metronomeState.signature)
@@ -50,7 +61,7 @@ export const setPlaying = (action: React.SetStateAction<boolean>) => {
 };
 
 export const setBPM = (action: React.SetStateAction<number>) => {
-  // TODO - figure out a cleaner way to manage this.
+  // TODO: - figure out a cleaner way to manage this.
   const nextValue = clampBPM(
     action instanceof Function
       ? action(store.getState().metronomeState.bpm)
@@ -113,6 +124,9 @@ const defaultSignature = {
 };
 const defaultStore = {
   activeBeats: immutable.List(),
+  settings: util.fromLocalStorage(t.LocalStorageKey.AppSettings, {
+    keepAwake: false
+  }),
   metronomeState: {
     ready: false,
     pending: true,
@@ -127,7 +141,12 @@ const defaultStore = {
 
 const clampBPM = (bpm: number) => R.clamp(10, 250, bpm);
 
-// TODO - figure out how to add a local storage thing for hydration???
+const applyAction = <T>(action: RSA<T>, current: T) => {
+  return action instanceof Function ? action(current) : action;
+};
+
+// TODO: - figure out how to add a local storage thing for hydration???
+// TODO: use applyAction for the rest of these.
 const rootReducer = (
   store: ReduxState = defaultStore,
   action: Action
@@ -135,6 +154,14 @@ const rootReducer = (
   switch (action.type) {
     case ActionType.SetActiveBeats:
       return { ...store, activeBeats: action.value };
+    case ActionType.SetKeepAwake:
+      return {
+        ...store,
+        settings: {
+          ...store.settings,
+          keepAwake: applyAction(action.action, store.settings.keepAwake)
+        }
+      };
     case ActionType.UpdateActiveBeats:
       const beat = action.value;
       const old = store.activeBeats.getIn([
@@ -207,7 +234,7 @@ const rootReducer = (
 
 export const store = redux.createStore(rootReducer);
 
-// TODO - once this hook is standardized, update to use it directly.
+// TODO: - once this hook is standardized, update to use it directly.
 export const useSelector = <T>(
   selector: (state: ReduxState) => T,
   comparisonFn?: (t1: T, t2: T) => boolean

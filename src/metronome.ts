@@ -76,7 +76,7 @@ const playBeatsTill = (
     const first = beatsQueue.shift()!;
     // Since the beats are sorted by time in the queue, we can use this trick to
     // only schedule one for each click.
-    // TODO - This does mean that if we have a custotm sound for each division, it could be messy on one.
+    // TODO:: This does mean that if we have a custotm sound for each division, it could be messy on one.
     if (first.time !== lastTime) {
       scheduleNote(audioContext, first);
     }
@@ -85,7 +85,7 @@ const playBeatsTill = (
   }
 };
 
-// TODO - I should clean this up if possible. It takes way too many arguments.
+// TODO: - I should clean this up if possible. It takes way too many arguments.
 const addBeatsToQueue = (
   bpm: number,
   nextNoteTime: React.MutableRefObject<number>,
@@ -123,7 +123,7 @@ const useScheduleAhead = (audioContext: t.MAudioContext) => {
   const nextNoteTimeRef = useRef<number>(0);
   const delay = playing ? (scheduleAhead * 1000) / 2 : undefined;
 
-  // TODO this should probably be updated when the numerator changes.
+  // TODO: this should probably be updated when the numerator changes.
   const beatToSchedule = useRef(0);
   useEffect(() => {
     if (!playing) {
@@ -137,17 +137,17 @@ const useScheduleAhead = (audioContext: t.MAudioContext) => {
       (old + 1) % store.getState().metronomeState.signature.numerator.size;
   }, []);
 
-  // TODO - because the ui callbacks run in the future, I can get in a weird
+  // TODO: - because the ui callbacks run in the future, I can get in a weird
   // spot state-wise. I should figure out a way to either cancel them running
   // when the number of divisions changes.
   const updateUi = useCallback((audioContext: AudioContext, beat: t.Beat) => {
     // We ovewrite activeBeats here because it's definitely changing.
     runAtTime(audioContext, beat.time, () => {
       if (store.getState().metronomeState.playing) {
-        // TODO - this is super janky.
-        // TODO - this would be much nicer with an animation.
-        // TODO - switch this to runAtTime to clear the beat it just set.
-        // TODO - If the division changes, we should reset all active beats to false.
+        // TODO: - this is super janky.
+        // TODO: - this would be much nicer with an animation.
+        // TODO: - switch this to runAtTime to clear the beat it just set.
+        // TODO: - If the division changes, we should reset all active beats to false.
         redux.updateActiveBeat(beat);
       }
     });
@@ -222,7 +222,7 @@ const useMetronome = (audioContext: t.MAudioContext) => {
     s => s.metronomeState.signature.numerator
   );
   useEffect(() => {
-    // TODO - This would be fancier if when the next beat can still happen, it
+    // TODO: - This would be fancier if when the next beat can still happen, it
     // didn't clear the active beat in the UI.
     redux.resetActivebeats();
   }, [numerator]);

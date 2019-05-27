@@ -8,8 +8,8 @@ import { Button, Buttons, ToggleButton } from "./Common";
 import useScales from "../scales";
 import useMetronome from "../metronome";
 
-// TODO - clean up the rendering here. It redraws way too much on a change.
-// TODO - store the scales as a sorted set instead of a set that gets sorted
+// TODO: - clean up the rendering here. It redraws way too much on a change.
+// TODO: - store the scales as a sorted set instead of a set that gets sorted
 // every time.
 
 enum ScaleMode {
@@ -92,7 +92,7 @@ const LearnScales: React.FC<LearnScalesProps> = ({
   }, [maybeScale, start]);
   const nextScaleText = scaleKeys.length > 1 ? "Next Scale" : "Finish";
 
-  // TODO - this error handling makes me sad, I should really do better.
+  // TODO: - this error handling makes me sad, I should really do better.
   if (scaleKeys.length === 0) {
     return <div>No more scales</div>;
   }
@@ -145,7 +145,7 @@ interface ScalesProps {
   audioContext: t.MAudioContext;
 }
 
-// TODO - Add a button to start learning a new scale. This will be a scale
+// TODO: - Add a button to start learning a new scale. This will be a scale
 // that is know known and is not learning.
 const Scales: React.FC<ScalesProps> = ({ audioContext }) => {
   useMetronome(audioContext);
