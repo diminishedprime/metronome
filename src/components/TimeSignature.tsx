@@ -187,15 +187,21 @@ const BeatsWrapper = React.memo(styled.div`
 // TODO - the selected division values should reset when you stop the metronome.
 // TODO - If not playing, this should show the boring gray background.
 const BeatRowItem: React.FC<{
-  on: boolean;
-  beatRows: number;
-}> = React.memo(({ on, beatRows }) => {
+  beatIndex: number;
+  division: t.Division;
+  divisionIndex: number;
+  height: number;
+}> = React.memo(({ height, beatIndex, division, divisionIndex }) => {
+  const on = redux.useSelector(
+    a =>
+      a.activeBeats
+        .get(beatIndex)!
+        .get(division)!
+        .get(divisionIndex)!
+  );
   const className = React.useMemo(() => {
     return on ? "has-background-primary" : "has-background-link";
   }, [on]);
-  const height = React.useMemo(() => {
-    return 70 / beatRows;
-  }, [beatRows]);
   return (
     <BeatRowItemWrapper
       className={className}
@@ -208,21 +214,19 @@ const BeatRowItem: React.FC<{
 });
 
 const BeatRow: React.FC<{
-  bools: immutable.List<boolean>;
-  divisions: t.Division;
-  beatNumber: number;
-  beatRows: number;
-  rowIndex: number;
-}> = React.memo(({ bools, beatNumber, rowIndex, beatRows }) => {
-  const j = rowIndex;
-  const index = beatNumber;
+  beatIndex: number;
+  division: t.Division;
+  height: number;
+}> = React.memo(({ height, beatIndex, division }) => {
   return (
-    <BeatRowWrapper key={`${index}-${j}`}>
-      {bools.map((on, itemIndex) => (
+    <BeatRowWrapper>
+      {R.range(0, division).map(divisionIndex => (
         <BeatRowItem
-          beatRows={beatRows}
-          key={`${index}-${rowIndex}-${itemIndex}`}
-          on={on}
+          key={`${beatIndex}-${division}-${divisionIndex}`}
+          height={height}
+          beatIndex={beatIndex}
+          division={division}
+          divisionIndex={divisionIndex}
         />
       ))}
     </BeatRowWrapper>
@@ -230,20 +234,20 @@ const BeatRow: React.FC<{
 });
 
 const Beat: React.FC<{
-  beat: immutable.Map<t.Division, immutable.List<boolean>>;
-  index: number;
-}> = React.memo(({ beat, index }) => {
-  const things = beat.entrySeq();
+  beatIndex: number;
+}> = React.memo(({ beatIndex }) => {
+  const divisions = redux.useSelector(
+    a => a.activeBeats.get(beatIndex)!.keySeq(),
+    (a, b) => a.equals(b)
+  );
   return (
-    <BeatWrapper key={`${index}`}>
-      {things.map(([divisions, bools], rowIndex) => (
+    <BeatWrapper key={`${beatIndex}`}>
+      {divisions.map(division => (
         <BeatRow
-          beatRows={things.size || 0}
-          key={`${index}-${rowIndex}`}
-          divisions={divisions}
-          bools={bools}
-          beatNumber={index}
-          rowIndex={rowIndex}
+          height={70 / divisions.size!}
+          key={`${beatIndex}-${division}`}
+          beatIndex={beatIndex}
+          division={division}
         />
       ))}
     </BeatWrapper>
@@ -254,11 +258,11 @@ const Beat: React.FC<{
 // change the volume and double tap to change it's color and also make it an
 // accent?
 const Beats: React.FC = React.memo(() => {
-  const activeBeats: t.ActiveBeats = redux.useSelector(a => a.activeBeats);
+  const activeBeats = redux.useSelector(a => a.activeBeats.size);
   return (
     <BeatsWrapper>
-      {activeBeats.map((beat, beatNumber) => (
-        <Beat key={beatNumber} beat={beat} index={beatNumber} />
+      {R.range(0, activeBeats).map(beatIndex => (
+        <Beat key={beatIndex} beatIndex={beatIndex} />
       ))}
     </BeatsWrapper>
   );

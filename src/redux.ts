@@ -208,6 +208,9 @@ const rootReducer = (
 export const store = redux.createStore(rootReducer);
 
 // TODO - once this hook is standardized, update to use it directly.
-export const useSelector = <T>(selector: (state: ReduxState) => T): T => {
-  return (reactRedux as any).useSelector(selector);
+export const useSelector = <T>(
+  selector: (state: ReduxState) => T,
+  comparisonFn?: (t1: T, t2: T) => boolean
+): T => {
+  return (reactRedux as any).useSelector(selector, comparisonFn);
 };
