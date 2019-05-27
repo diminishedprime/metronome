@@ -252,6 +252,9 @@ const Beat: React.FC<{
   );
 });
 
+// TODO - make it where you can click and drag on the visual subdivision to
+// change the volume and double tap to change it's color and also make it an
+// accent?
 const Beats: React.FC = React.memo(() => {
   const activeBeats: t.ActiveBeats = redux.useSelector(a => a.activeBeats);
   return (
