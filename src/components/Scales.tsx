@@ -4,7 +4,7 @@ import * as hooks from "../hooks";
 import * as util from "../util";
 import * as t from "../types";
 import * as redux from "../redux";
-import { Button, Buttons, ToggleButton } from "./Common";
+import * as Common from "./Common";
 import useScales from "../scales";
 import useMetronome from "../metronome";
 
@@ -30,14 +30,14 @@ const ScalesGroup = ({
       <div className="is-size-5 control is-expanded">
         {pitch} {mode}
       </div>
-      <Buttons>
-        <ToggleButton on={known} isInfo onClick={toggleKnown}>
+      <Common.Buttons>
+        <Common.ToggleButton on={known} isInfo onClick={toggleKnown}>
           Known
-        </ToggleButton>
-        <ToggleButton on={learning} isLink onClick={toggleLearning}>
+        </Common.ToggleButton>
+        <Common.ToggleButton on={learning} isLink onClick={toggleLearning}>
           Learning
-        </ToggleButton>
-      </Buttons>
+        </Common.ToggleButton>
+      </Common.Buttons>
     </div>
   );
 };
@@ -112,28 +112,48 @@ const LearnScales: React.FC<LearnScalesProps> = ({
           <div style={{ alignSelf: "center", marginRight: "10px" }}>
             {pitch} {mode} @ {bpm}bpm
           </div>
-          <Buttons grow hasAddons>
-            <Button isDanger isOutlined grow onClick={() => addBPM(scale, -10)}>
+          <Common.Buttons grow hasAddons>
+            <Common.Button
+              isDanger
+              isOutlined
+              grow
+              onClick={() => addBPM(scale, -10)}
+            >
               -10
-            </Button>
-            <Button isDanger isOutlined grow onClick={() => addBPM(scale, -1)}>
+            </Common.Button>
+            <Common.Button
+              isDanger
+              isOutlined
+              grow
+              onClick={() => addBPM(scale, -1)}
+            >
               -
-            </Button>
-            <Button isPrimary isOutlined grow onClick={() => addBPM(scale, 1)}>
+            </Common.Button>
+            <Common.Button
+              isPrimary
+              isOutlined
+              grow
+              onClick={() => addBPM(scale, 1)}
+            >
               +
-            </Button>
-            <Button isPrimary isOutlined grow onClick={() => addBPM(scale, 10)}>
+            </Common.Button>
+            <Common.Button
+              isPrimary
+              isOutlined
+              grow
+              onClick={() => addBPM(scale, 10)}
+            >
               +10
-            </Button>
-          </Buttons>
+            </Common.Button>
+          </Common.Buttons>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <Button isDanger isOutlined onClick={reset}>
+          <Common.Button isDanger isOutlined onClick={reset}>
             Stop
-          </Button>
-          <Button isPrimary onClick={nextScale}>
+          </Common.Button>
+          <Common.Button isPrimary onClick={nextScale}>
             {nextScaleText}
-          </Button>
+          </Common.Button>
         </div>
       </div>
       <TimeSignature />
@@ -176,35 +196,35 @@ const Scales: React.FC<ScalesProps> = ({ audioContext }) => {
             >
               Scales
             </div>
-            <Buttons>
-              <Button
+            <Common.Buttons>
+              <Common.Button
                 onClick={() => setScaleMode(ScaleMode.KNOWN)}
                 disabled={getScale(s => s.known) === undefined}
                 className="is-info is-outlined"
               >
                 Start Known
-              </Button>
-              <Button
+              </Common.Button>
+              <Common.Button
                 onClick={() => setScaleMode(ScaleMode.LEARNING)}
                 disabled={getScale(s => s.learning) === undefined}
                 className="is-link is-outlined"
               >
                 Start Learning
-              </Button>
-            </Buttons>
+              </Common.Button>
+            </Common.Buttons>
           </div>
           <hr />
 
-          <Buttons>
-            <Button
+          <Common.Buttons>
+            <Common.Button
               onClick={toggleShowKnown}
               className={`${
                 showKnown ? "is-primary is-outlined" : "is-danger"
               }`}
             >
               {showKnown ? "Hide Known" : "Show Known"}
-            </Button>
-          </Buttons>
+            </Common.Button>
+          </Common.Buttons>
           {getScales(
             s =>
               s.mode === t.Mode.Major && (showKnown ? true : s.known === false)

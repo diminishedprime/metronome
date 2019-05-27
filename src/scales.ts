@@ -34,6 +34,7 @@ const getScales = (scalesDB: t.ScalesDB, filter: (s: t.Scale) => boolean) => {
   return scalesDB.filter(filter);
 };
 
+// TODO: - store scales in redux.
 const useScales = (): t.Scales => {
   const [scalesDB, setScalesDB] = hooks.useLocalStorage<t.ScalesDB>(
     t.LocalStorageKey.ScalesDB,

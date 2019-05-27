@@ -1,6 +1,6 @@
 import React from "react";
 import * as R from "ramda";
-import { Button } from "./Common";
+import * as Common from "./Common";
 import * as redux from "../redux";
 
 const calculateBPM = R.pipe(
@@ -25,9 +25,9 @@ const TapIn: React.FC = () => {
   };
 
   return (
-    <Button isLink isOutlined onClick={onTap}>
+    <Common.Button isLink isOutlined onClick={onTap}>
       Tap In
-    </Button>
+    </Common.Button>
   );
 };
 

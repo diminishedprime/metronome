@@ -1,7 +1,7 @@
 import React from "react";
 import * as R from "ramda";
 import styled from "styled-components";
-import { Button, Buttons, ToggleButton } from "./Common";
+import * as Common from "./Common";
 import * as hooks from "../hooks";
 import * as t from "../types";
 import * as immutable from "immutable";
@@ -30,11 +30,11 @@ const Divisions: React.FC<DivisionsProps> = React.memo(
     return (
       <DivisionsWrapper>
         <div className="is-size-5">Division</div>
-        <Buttons hasAddons grow style={{ marginRight: "5px" }}>
+        <Common.Buttons hasAddons grow style={{ marginRight: "5px" }}>
           {([2, 3, 4, 5, 6] as t.Division[]).map((num: t.Division) => {
             const on = uiEnabledDivisions.get(num)!;
             return (
-              <ToggleButton
+              <Common.ToggleButton
                 grow
                 on={on}
                 isPrimary
@@ -42,13 +42,13 @@ const Divisions: React.FC<DivisionsProps> = React.memo(
                 onClick={() => toggleDivisionOption(num)}
               >
                 {num}
-              </ToggleButton>
+              </Common.ToggleButton>
             );
           })}
-        </Buttons>
-        <Button grow isDanger isOutlined onClick={clearDivisions}>
+        </Common.Buttons>
+        <Common.Button grow isDanger isOutlined onClick={clearDivisions}>
           Clear
-        </Button>
+        </Common.Button>
       </DivisionsWrapper>
     );
   }
@@ -140,7 +140,7 @@ const Signature: React.FC<SignatureProps> = React.memo(
         {[1, 2, 3, 4, 5].map(num => {
           const on = currentNumerator === num;
           return (
-            <ToggleButton
+            <Common.ToggleButton
               key={`numerator-button-${num}`}
               on={on}
               isPrimary
@@ -149,7 +149,7 @@ const Signature: React.FC<SignatureProps> = React.memo(
               onClick={on ? () => {} : () => setCurrentNumerator(num)}
             >
               <>{num}/4</>
-            </ToggleButton>
+            </Common.ToggleButton>
           );
         })}
       </section>

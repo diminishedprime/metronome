@@ -4,7 +4,7 @@ import TimeSignature from "./TimeSignature";
 import TapIn from "./TapIn";
 import Tuner from "./Tuner";
 import Dial from "./Dial";
-import { Buttons, ToggleButton } from "./Common";
+import * as Common from "./Common";
 import useMetronome from "../metronome";
 import * as t from "../types";
 import * as hooks from "../hooks";
@@ -77,8 +77,8 @@ const Controls: React.FC<ControlsProps> = React.memo(
     const pending = redux.useSelector(a => a.metronomeState.pending);
     return (
       <section className="section">
-        <Buttons hasAddons>
-          <ToggleButton
+        <Common.Buttons hasAddons>
+          <Common.ToggleButton
             isLink
             offIsOutlined
             offIsLink
@@ -86,9 +86,9 @@ const Controls: React.FC<ControlsProps> = React.memo(
             onClick={toggleTuner}
           >
             Tuner
-          </ToggleButton>
+          </Common.ToggleButton>
           <TapIn />
-          <ToggleButton
+          <Common.ToggleButton
             on={playing}
             offIsPrimary
             grow
@@ -99,8 +99,8 @@ const Controls: React.FC<ControlsProps> = React.memo(
           >
             <>Stop</>
             <>Start</>
-          </ToggleButton>
-        </Buttons>
+          </Common.ToggleButton>
+        </Common.Buttons>
       </section>
     );
   }

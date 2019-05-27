@@ -1,6 +1,6 @@
 import React from "react";
 import * as serviceWorker from "../serviceWorker";
-import { Buttons, Button, maxWidth } from "./Common";
+import * as Common from "./Common";
 import styled, { keyframes } from "styled-components";
 
 const rotate = keyframes`
@@ -14,7 +14,7 @@ const rotate = keyframes`
 
 const UpdateStyle = styled.section`
   position: absolute;
-  max-width: ${maxWidth};
+  max-width: ${Common.maxWidth};
   width: 95%;
   margin-top: 10px;
   left: 0;
@@ -54,14 +54,14 @@ export default () => {
       {updateAvailable && (
         <UpdateStyle className="box">
           <span>An Update is Available!</span>
-          <Buttons>
-            <Button isPrimary isOutlined onClick={reload}>
+          <Common.Buttons>
+            <Common.Button isPrimary isOutlined onClick={reload}>
               Refresh
-            </Button>
-            <Button isDanger isOutlined onClick={close}>
+            </Common.Button>
+            <Common.Button isDanger isOutlined onClick={close}>
               x
-            </Button>
-          </Buttons>
+            </Common.Button>
+          </Common.Buttons>
         </UpdateStyle>
       )}
     </>

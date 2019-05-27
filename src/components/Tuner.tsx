@@ -1,6 +1,6 @@
 import React from "react";
 import { useToggle } from "../hooks";
-import { ToggleButton, Buttons } from "./Common";
+import * as Common from "./Common";
 import styled from "styled-components";
 import * as polyfill from "../polyfill";
 
@@ -135,12 +135,12 @@ const Tuner = React.memo(() => {
           "press start to tune"
         )}
       </div>
-      <Buttons className="is-right">
-        <ToggleButton on={on} isDanger offIsPrimary onClick={toggleOn}>
+      <Common.Buttons className="is-right">
+        <Common.ToggleButton on={on} isDanger offIsPrimary onClick={toggleOn}>
           <>Stop</>
           <>Start</>
-        </ToggleButton>
-      </Buttons>
+        </Common.ToggleButton>
+      </Common.Buttons>
     </TunerWrapper>
   );
 });
