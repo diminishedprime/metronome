@@ -6,42 +6,11 @@ import * as R from "ramda";
 import * as metronome from "./metronome";
 import * as util from "./util";
 
-// TODO: these should live in types.
-export enum ActionType {
-  UpdateActiveBeats,
-  SetActiveBeats,
-  SetSignature,
-  SetPending,
-  SetPlaying,
-  SetKeepAwake,
-  SetBpm,
-  SetSettings,
-  SetShowTuner
-}
-
-type RSA<T> = React.SetStateAction<T>;
-export type Action =
-  // TODO: update the other types to use action & RSA
-  | { type: ActionType.UpdateActiveBeats; value: t.Beat }
-  | { type: ActionType.SetActiveBeats; action: RSA<t.ActiveBeats> }
-  | { type: ActionType.SetPending; action: RSA<boolean> }
-  | { type: ActionType.SetSettings; action: RSA<t.AppSettingsState> }
-  | { type: ActionType.SetPlaying; action: RSA<boolean> }
-  | { type: ActionType.SetBpm; action: RSA<number> }
-  | { type: ActionType.SetKeepAwake; action: RSA<boolean> }
-  | { type: ActionType.SetSignature; action: RSA<t.TimeSignature> };
-
-export interface ReduxState {
-  activeBeats: t.ActiveBeats;
-  metronomeState: t.MetronomeState;
-  settings: t.AppSettingsState;
-}
-
 export const setAccent = (
   beatIdx: number,
   division: t.Division,
   divisionIdx: number,
-  action: RSA<boolean>
+  action: t.RSA<boolean>
 ) => {
   setActiveBeats(old =>
     old.update(beatIdx, a => {
@@ -67,7 +36,7 @@ export const toggleKeepAwake = () => {
 };
 
 const setKeepAwake = (action: React.SetStateAction<boolean>) => {
-  store.dispatch({ type: ActionType.SetKeepAwake, action });
+  store.dispatch({ type: t.ActionType.SetKeepAwake, action });
 };
 
 export const setSignature = (action: React.SetStateAction<t.TimeSignature>) => {
@@ -77,14 +46,14 @@ export const setSignature = (action: React.SetStateAction<t.TimeSignature>) => {
       ? action(store.getState().metronomeState.signature)
       : action;
   util.toLocalStorage(t.LocalStorageKey.TimeSignature, nextValue);
-  store.dispatch({ type: ActionType.SetSignature, action: nextValue });
+  store.dispatch({ type: t.ActionType.SetSignature, action: nextValue });
 };
 
 export const toggleTuner = () => {
   setTuner(a => !a);
 };
 
-const setTuner = (action: RSA<boolean>) => {
+const setTuner = (action: t.RSA<boolean>) => {
   const nextValue =
     action instanceof Function
       ? action(store.getState().settings.showTuner)
@@ -92,19 +61,19 @@ const setTuner = (action: RSA<boolean>) => {
   setSettings(old => ({ ...old, showTuner: nextValue }));
 };
 
-const setSettings = (action: RSA<t.AppSettingsState>) => {
+const setSettings = (action: t.RSA<t.AppSettingsState>) => {
   const nextValue =
     action instanceof Function ? action(store.getState().settings) : action;
   util.toLocalStorage(t.LocalStorageKey.AppSettings, nextValue);
-  store.dispatch({ type: ActionType.SetSettings, action: nextValue });
+  store.dispatch({ type: t.ActionType.SetSettings, action: nextValue });
 };
 
-export const setPending = (action: RSA<boolean>) => {
-  store.dispatch({ type: ActionType.SetPending, action });
+export const setPending = (action: t.RSA<boolean>) => {
+  store.dispatch({ type: t.ActionType.SetPending, action });
 };
 
 export const setPlaying = (action: React.SetStateAction<boolean>) => {
-  store.dispatch({ type: ActionType.SetPlaying, action });
+  store.dispatch({ type: t.ActionType.SetPlaying, action });
 };
 
 export const setBPM = (action: React.SetStateAction<number>) => {
@@ -115,16 +84,16 @@ export const setBPM = (action: React.SetStateAction<number>) => {
       : action
   );
   util.toLocalStorage(t.LocalStorageKey.BPM, nextValue);
-  store.dispatch({ type: ActionType.SetBpm, action: nextValue });
+  store.dispatch({ type: t.ActionType.SetBpm, action: nextValue });
 };
 
 export const addBPM = (action: number) => {
   setBPM(old => old + action);
 };
 
-export const setActiveBeats = (action: RSA<t.ActiveBeats>) => {
+export const setActiveBeats = (action: t.RSA<t.ActiveBeats>) => {
   store.dispatch({
-    type: ActionType.SetActiveBeats,
+    type: t.ActionType.SetActiveBeats,
     action
   });
 };
@@ -139,7 +108,7 @@ export const resetActivebeats = () => {
 
 export const updateActiveBeat = (beat: t.Beat) => {
   store.dispatch({
-    type: ActionType.UpdateActiveBeats,
+    type: t.ActionType.UpdateActiveBeats,
     value: beat
   });
 };
@@ -190,23 +159,23 @@ const defaultStore = {
 
 const clampBPM = (bpm: number) => R.clamp(10, 250, bpm);
 
-const applyAction = <T>(action: RSA<T>, current: T) => {
+const applyAction = <T>(action: t.RSA<T>, current: T) => {
   return action instanceof Function ? action(current) : action;
 };
 
 // TODO: - figure out how to add a local storage thing for hydration???
 // TODO: use applyAction for the rest of these.
 const rootReducer = (
-  store: ReduxState = defaultStore,
-  action: Action
-): ReduxState => {
+  store: t.ReduxState = defaultStore,
+  action: t.Action
+): t.ReduxState => {
   switch (action.type) {
-    case ActionType.SetActiveBeats:
+    case t.ActionType.SetActiveBeats:
       return {
         ...store,
         activeBeats: applyAction(action.action, store.activeBeats)
       };
-    case ActionType.SetKeepAwake:
+    case t.ActionType.SetKeepAwake:
       return {
         ...store,
         settings: {
@@ -214,7 +183,7 @@ const rootReducer = (
           keepAwake: applyAction(action.action, store.settings.keepAwake)
         }
       };
-    case ActionType.UpdateActiveBeats:
+    case t.ActionType.UpdateActiveBeats:
       const beat = action.value;
       const old = store.activeBeats.getIn([
         beat.currentBeat,
@@ -234,7 +203,7 @@ const rootReducer = (
           });
         })
       };
-    case ActionType.SetSignature:
+    case t.ActionType.SetSignature:
       return {
         ...store,
         metronomeState: {
@@ -245,7 +214,7 @@ const rootReducer = (
               : action.action
         }
       };
-    case ActionType.SetPending:
+    case t.ActionType.SetPending:
       return {
         ...store,
         metronomeState: {
@@ -256,7 +225,7 @@ const rootReducer = (
               : action.action
         }
       };
-    case ActionType.SetPlaying:
+    case t.ActionType.SetPlaying:
       return {
         ...store,
         metronomeState: {
@@ -267,7 +236,7 @@ const rootReducer = (
               : action.action
         }
       };
-    case ActionType.SetBpm:
+    case t.ActionType.SetBpm:
       return {
         ...store,
         metronomeState: {
@@ -278,7 +247,7 @@ const rootReducer = (
               : action.action
         }
       };
-    case ActionType.SetSettings:
+    case t.ActionType.SetSettings:
       return {
         ...store,
         settings: applyAction(action.action, store.settings)
@@ -296,7 +265,7 @@ export const store = redux.createStore(rootReducer);
 
 // TODO: - once this hook is standardized, update to use it directly.
 export const useSelector = <T>(
-  selector: (state: ReduxState) => T,
+  selector: (state: t.ReduxState) => T,
   comparisonFn?: (t1: T, t2: T) => boolean
 ): T => {
   return (reactRedux as any).useSelector(selector, comparisonFn);

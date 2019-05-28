@@ -1,6 +1,35 @@
 import React from "react";
 import * as immutable from "immutable";
 
+export type RSA<T> = React.SetStateAction<T>;
+export type Action =
+  | { type: ActionType.UpdateActiveBeats; value: Beat }
+  | { type: ActionType.SetActiveBeats; action: RSA<ActiveBeats> }
+  | { type: ActionType.SetPending; action: RSA<boolean> }
+  | { type: ActionType.SetSettings; action: RSA<AppSettingsState> }
+  | { type: ActionType.SetPlaying; action: RSA<boolean> }
+  | { type: ActionType.SetBpm; action: RSA<number> }
+  | { type: ActionType.SetKeepAwake; action: RSA<boolean> }
+  | { type: ActionType.SetSignature; action: RSA<TimeSignature> };
+
+export interface ReduxState {
+  activeBeats: ActiveBeats;
+  metronomeState: MetronomeState;
+  settings: AppSettingsState;
+}
+
+export enum ActionType {
+  UpdateActiveBeats,
+  SetActiveBeats,
+  SetSignature,
+  SetPending,
+  SetPlaying,
+  SetKeepAwake,
+  SetBpm,
+  SetSettings,
+  SetShowTuner
+}
+
 export interface Beat {
   time: number;
   pitch: number;
