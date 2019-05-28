@@ -29,7 +29,6 @@ export const useSleepLock = (shouldSleep: boolean) => {
 
   React.useEffect(() => {
     if (shouldSleep) {
-      console.log("enabling sleep");
       noSleep.enable();
     } else {
       noSleep.disable();
