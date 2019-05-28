@@ -9,7 +9,8 @@ import styled, { keyframes } from "styled-components";
 import { maxWidth } from "./Common";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faBars as faCoffee,
+  faBars,
+  faCoffee,
   faHome,
   faCog as faGear,
   faMusic
@@ -101,6 +102,9 @@ const NavDrop = ({ toggleNav }: { toggleNav: () => void }) => {
 
 const TopBar = React.memo(() => {
   const [showNav, toggleNav] = hooks.useToggle(false);
+  const thing = redux.useSelector(
+    a => a.settings.keepAwake && a.metronomeState.playing
+  );
   // TODO: - figure out how to animate the nav being hidden.
   // TODO: - make it where you can swipe from the right of the screen to show the nav.
   return (
@@ -109,8 +113,15 @@ const TopBar = React.memo(() => {
         <Link to="/" className="has-text-white">
           <h2 className="is-size-4 is-bold">(mjh)tronome</h2>
         </Link>
+        {thing && (
+          <Link to="/settings">
+            <CenterIcon className="has-text-info" onClick={toggleNav}>
+              <FontAwesomeIcon icon={faCoffee} size="2x" />
+            </CenterIcon>
+          </Link>
+        )}
         <CenterIcon onClick={toggleNav}>
-          <FontAwesomeIcon icon={faCoffee} size="2x" />
+          <FontAwesomeIcon icon={faBars} size="2x" />
         </CenterIcon>
       </TopNav>
       {showNav && <NavDrop toggleNav={toggleNav} />}
