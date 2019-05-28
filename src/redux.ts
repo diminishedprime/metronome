@@ -6,6 +6,49 @@ import * as R from "ramda";
 import * as metronome from "./metronome";
 import * as util from "./util";
 
+export const setPending = (action: t.RSA<boolean>) => {
+  setMetronomeState(old => ({
+    ...old,
+    pending: applyAction(action, old.pending)
+  }));
+};
+
+export const setBPM = (action: React.SetStateAction<number>) => {
+  setMetronomeState(old => {
+    const bpm = clampBPM(applyAction(action, old.bpm));
+    util.toLocalStorage(t.LocalStorageKey.BPM, bpm);
+    return { ...old, bpm };
+  });
+};
+
+export const setSignature = (action: React.SetStateAction<t.TimeSignature>) => {
+  setMetronomeState(old => {
+    const signature = applyAction(action, old.signature);
+    util.toLocalStorage(t.LocalStorageKey.TimeSignature, signature);
+    return { ...old, signature };
+  });
+};
+
+export const updateActiveBeat = (beat: t.Beat) => {
+  setActiveBeats(old => {
+    const oldBeats = old.getIn([
+      beat.currentBeat,
+      beat.divisions,
+      beat.divisionIndex
+    ]);
+    if (oldBeats === undefined) {
+      return old;
+    }
+    return old.update(beat.currentBeat, a => {
+      return a.update(beat.divisions, b => {
+        return b.update(beat.divisionIndex, c => {
+          return { ...c, isActive: !c.isActive };
+        });
+      });
+    });
+  });
+};
+
 export const setAccent = (
   beatIdx: number,
   division: t.Division,
@@ -35,82 +78,21 @@ export const toggleKeepAwake = () => {
   setKeepAwake(old => !old);
 };
 
-const setKeepAwake = (action: React.SetStateAction<boolean>) => {
-  store.dispatch({ type: t.ActionType.SetKeepAwake, action });
-};
-
-export const setSignature = (action: React.SetStateAction<t.TimeSignature>) => {
-  // TODO: - figure out a cleaner way to manage this.
-  const nextValue =
-    action instanceof Function
-      ? action(store.getState().metronomeState.signature)
-      : action;
-  util.toLocalStorage(t.LocalStorageKey.TimeSignature, nextValue);
-  store.dispatch({ type: t.ActionType.SetSignature, action: nextValue });
-};
-
 export const toggleTuner = () => {
   setTuner(a => !a);
-};
-
-const setTuner = (action: t.RSA<boolean>) => {
-  const nextValue =
-    action instanceof Function
-      ? action(store.getState().settings.showTuner)
-      : action;
-  setSettings(old => ({ ...old, showTuner: nextValue }));
-};
-
-const setSettings = (action: t.RSA<t.AppSettingsState>) => {
-  const nextValue =
-    action instanceof Function ? action(store.getState().settings) : action;
-  util.toLocalStorage(t.LocalStorageKey.AppSettings, nextValue);
-  store.dispatch({ type: t.ActionType.SetSettings, action: nextValue });
-};
-
-export const setPending = (action: t.RSA<boolean>) => {
-  store.dispatch({ type: t.ActionType.SetPending, action });
-};
-
-export const setPlaying = (action: React.SetStateAction<boolean>) => {
-  store.dispatch({ type: t.ActionType.SetPlaying, action });
-};
-
-export const setBPM = (action: React.SetStateAction<number>) => {
-  // TODO: - figure out a cleaner way to manage this.
-  const nextValue = clampBPM(
-    action instanceof Function
-      ? action(store.getState().metronomeState.bpm)
-      : action
-  );
-  util.toLocalStorage(t.LocalStorageKey.BPM, nextValue);
-  store.dispatch({ type: t.ActionType.SetBpm, action: nextValue });
 };
 
 export const addBPM = (action: number) => {
   setBPM(old => old + action);
 };
 
-export const setActiveBeats = (action: t.RSA<t.ActiveBeats>) => {
-  store.dispatch({
-    type: t.ActionType.SetActiveBeats,
-    action
-  });
-};
-
+// TODO: - just set the active booleans to false.
 export const resetActivebeats = () => {
   setActiveBeats(
     metronome.resetActiveBeats(
       store.getState().metronomeState.signature.numerator
     )
   );
-};
-
-export const updateActiveBeat = (beat: t.Beat) => {
-  store.dispatch({
-    type: t.ActionType.UpdateActiveBeats,
-    value: beat
-  });
 };
 
 export const toggleStart = () => {
@@ -123,38 +105,31 @@ export const start = (bpm?: number) => {
   }
   setPlaying(true);
 };
+
 export const stop = () => {
   setPlaying(false);
 };
 
-const defaultBeat = immutable.Map<t.Division, boolean>().set(1, true);
+const setPlaying = (action: React.SetStateAction<boolean>) => {
+  setMetronomeState(old => ({
+    ...old,
+    playing: applyAction(action, old.playing)
+  }));
+};
 
-const defaultSignature = util.fromLocalStorage(
-  t.LocalStorageKey.TimeSignature,
-  {
-    denominator: 4,
-    numerator: immutable.List([
-      defaultBeat,
-      defaultBeat,
-      defaultBeat,
-      defaultBeat
-    ])
-  }
-);
+const setKeepAwake = (action: React.SetStateAction<boolean>) => {
+  setSettings(old => ({
+    ...old,
+    keepAwake: applyAction(action, old.keepAwake)
+  }));
+};
 
-const defaultStore = {
-  activeBeats: metronome.resetActiveBeats(defaultSignature.numerator),
-  settings: util.fromLocalStorage(t.LocalStorageKey.AppSettings, {
-    keepAwake: false,
-    showTuner: false
-  }),
-  metronomeState: {
-    ready: false,
-    pending: true,
-    bpm: util.fromLocalStorage(t.LocalStorageKey.BPM, 60),
-    playing: false,
-    signature: defaultSignature
-  }
+const setTuner = (action: t.RSA<boolean>) => {
+  const nextValue =
+    action instanceof Function
+      ? action(store.getState().settings.showTuner)
+      : action;
+  setSettings(old => ({ ...old, showTuner: nextValue }));
 };
 
 const clampBPM = (bpm: number) => R.clamp(10, 250, bpm);
@@ -163,89 +138,66 @@ const applyAction = <T>(action: t.RSA<T>, current: T) => {
   return action instanceof Function ? action(current) : action;
 };
 
+export const setActiveBeats = (action: t.RSA<t.ActiveBeats>) => {
+  store.dispatch({ type: t.ActionType.SetActiveBeats, action });
+};
+
+const setMetronomeState = (action: t.RSA<t.MetronomeState>) => {
+  store.dispatch({ type: t.ActionType.SetMetronomeState, action });
+};
+
+const setSettings = (action: t.RSA<t.AppSettingsState>) => {
+  const nextValue =
+    action instanceof Function ? action(store.getState().settings) : action;
+  util.toLocalStorage(t.LocalStorageKey.AppSettings, nextValue);
+  store.dispatch({ type: t.ActionType.SetSettings, action: nextValue });
+};
+
+const defaultBeat = () => immutable.Map<t.Division, boolean>().set(1, true);
+
+const defaultSignature = () =>
+  util.fromLocalStorage(t.LocalStorageKey.TimeSignature, {
+    denominator: 4,
+    numerator: immutable.List([
+      defaultBeat(),
+      defaultBeat(),
+      defaultBeat(),
+      defaultBeat()
+    ])
+  });
+
+const defaultStore = () => {
+  const signature = defaultSignature();
+  return {
+    // TODO: hydrate this from localStorage.
+    activeBeats: metronome.resetActiveBeats(signature.numerator),
+    settings: util.fromLocalStorage(t.LocalStorageKey.AppSettings, {
+      keepAwake: false,
+      showTuner: false
+    }),
+    metronomeState: {
+      ready: false,
+      pending: true,
+      bpm: util.fromLocalStorage(t.LocalStorageKey.BPM, 60),
+      playing: false,
+      signature: signature
+    }
+  };
+};
 // TODO: - figure out how to add a local storage thing for hydration???
-// TODO: use applyAction for the rest of these.
 const rootReducer = (
-  store: t.ReduxState = defaultStore,
+  store: t.ReduxState = defaultStore(),
   action: t.Action
 ): t.ReduxState => {
   switch (action.type) {
     case t.ActionType.SetActiveBeats:
-      return {
-        ...store,
+      return Object.assign(store, {
         activeBeats: applyAction(action.action, store.activeBeats)
-      };
-    case t.ActionType.SetKeepAwake:
+      });
+    case t.ActionType.SetMetronomeState:
       return {
         ...store,
-        settings: {
-          ...store.settings,
-          keepAwake: applyAction(action.action, store.settings.keepAwake)
-        }
-      };
-    case t.ActionType.UpdateActiveBeats:
-      const beat = action.value;
-      const old = store.activeBeats.getIn([
-        beat.currentBeat,
-        beat.divisions,
-        beat.divisionIndex
-      ]);
-      if (old === undefined) {
-        return store;
-      }
-      return {
-        ...store,
-        activeBeats: store.activeBeats.update(beat.currentBeat, a => {
-          return a.update(beat.divisions, b => {
-            return b.update(beat.divisionIndex, c => {
-              return { ...c, isActive: !c.isActive };
-            });
-          });
-        })
-      };
-    case t.ActionType.SetSignature:
-      return {
-        ...store,
-        metronomeState: {
-          ...store.metronomeState,
-          signature:
-            action.action instanceof Function
-              ? action.action(store.metronomeState.signature)
-              : action.action
-        }
-      };
-    case t.ActionType.SetPending:
-      return {
-        ...store,
-        metronomeState: {
-          ...store.metronomeState,
-          pending:
-            action.action instanceof Function
-              ? action.action(store.metronomeState.pending)
-              : action.action
-        }
-      };
-    case t.ActionType.SetPlaying:
-      return {
-        ...store,
-        metronomeState: {
-          ...store.metronomeState,
-          playing:
-            action.action instanceof Function
-              ? action.action(store.metronomeState.playing)
-              : action.action
-        }
-      };
-    case t.ActionType.SetBpm:
-      return {
-        ...store,
-        metronomeState: {
-          ...store.metronomeState,
-          bpm:
-            action.action instanceof Function
-              ? action.action(store.metronomeState.bpm)
-              : action.action
-        }
+        metronomeState: applyAction(action.action, store.metronomeState)
       };
     case t.ActionType.SetSettings:
       return {
