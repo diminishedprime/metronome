@@ -20,7 +20,8 @@ const TopBarWrapper = React.memo(styled.section`
   margin-bottom: 10px;
   margin-left: 0px !important;
   margin-right: 0px !important;
-  display: flex;
+  position: relative;
+  display: inline-block;
   flex-direction: column;
 `);
 
@@ -44,17 +45,25 @@ const dropDown = keyframes`
   from {
 font-size: 0px;
   }
+to {
+margin: 10px;
+}
 `;
 
 const NavDropDown = React.memo(styled.nav`
   display: flex;
+  position: absolute;
+  z-index: 2;
+  width: 100%;
   flex-direction: column;
   align-items: flex-end;
   padding-right: 10px;
   align-self: flex-end;
+  opacity: 0.9;
   > a {
-    animation: ease-in 0.3s ${dropDown};
+    animation: ease-in 0.1s ${dropDown};
     font-size: 1.5rem;
+    margin: 10px;
   }
 `);
 
@@ -64,10 +73,35 @@ const NavIcon = React.memo(styled(FontAwesomeIcon)`
   margin-left: 5px;
 `);
 
+const NavDrop = ({ toggleNav }: { toggleNav: () => void }) => {
+  const onClick = toggleNav;
+  React.useEffect(() => {
+    window.addEventListener("click", onClick);
+    return () => {
+      window.removeEventListener("click", onClick);
+    };
+  }, []);
+  return (
+    <NavDropDown className="has-background-white">
+      <NavItem to="/">
+        Home
+        <NavIcon icon={faHome} />
+      </NavItem>
+      <NavItem to="/scales">
+        Scales
+        <NavIcon icon={faMusic} />
+      </NavItem>
+      <NavItem to="/settings">
+        Settings
+        <NavIcon icon={faGear} />
+      </NavItem>
+    </NavDropDown>
+  );
+};
+
 const TopBar = React.memo(() => {
   const [showNav, toggleNav] = hooks.useToggle(false);
   // TODO: - figure out how to animate the nav being hidden.
-  // TODO: - make it where clicking outside of this element hides it.
   // TODO: - make it where you can swipe from the right of the screen to show the nav.
   return (
     <TopBarWrapper>
@@ -79,22 +113,7 @@ const TopBar = React.memo(() => {
           <FontAwesomeIcon icon={faCoffee} size="2x" />
         </CenterIcon>
       </TopNav>
-      {showNav && (
-        <NavDropDown onClick={toggleNav}>
-          <NavItem to="/">
-            Home
-            <NavIcon icon={faHome} />
-          </NavItem>
-          <NavItem to="/scales">
-            Scales
-            <NavIcon icon={faMusic} />
-          </NavItem>
-          <NavItem to="/settings">
-            Settings
-            <NavIcon icon={faGear} />
-          </NavItem>
-        </NavDropDown>
-      )}
+      {showNav && <NavDrop toggleNav={toggleNav} />}
     </TopBarWrapper>
   );
 });
