@@ -46,14 +46,9 @@ const DialSection: React.FC = React.memo(() => {
 
 const Metronome: React.FC<MetronomeProps> = ({ audioContext }) => {
   const pending = redux.useSelector(a => a.metronomeState.pending);
+  const showTuner = redux.useSelector(a => a.settings.showTuner);
 
   useMetronome(audioContext);
-
-  // TODO: - this should be saved in appSettings.
-  const [showTuner, toggleTuner] = hooks.usePersistantToggle(
-    t.LocalStorageKey.ShowTuner,
-    false
-  );
 
   return (
     <>
@@ -61,48 +56,42 @@ const Metronome: React.FC<MetronomeProps> = ({ audioContext }) => {
       {showTuner && <Tuner />}
       <DialSection />
       <TimeSignature />
-      <Controls showTuner={showTuner} toggleTuner={toggleTuner} />
+      <Controls />
     </>
   );
 };
 
-interface ControlsProps {
-  showTuner: boolean;
-  toggleTuner: () => void;
-}
-
-const Controls: React.FC<ControlsProps> = React.memo(
-  ({ showTuner, toggleTuner }) => {
-    const playing = redux.useSelector(a => a.metronomeState.playing);
-    const pending = redux.useSelector(a => a.metronomeState.pending);
-    return (
-      <section className="section">
-        <Common.Buttons hasAddons>
-          <Common.ToggleButton
-            isLink
-            offIsOutlined
-            offIsLink
-            on={showTuner}
-            onClick={toggleTuner}
-          >
-            Tuner
-          </Common.ToggleButton>
-          <TapIn />
-          <Common.ToggleButton
-            on={playing}
-            offIsPrimary
-            grow
-            isOutlined
-            isDanger
-            disabled={pending}
-            onClick={redux.toggleStart}
-          >
-            <>Stop</>
-            <>Start</>
-          </Common.ToggleButton>
-        </Common.Buttons>
-      </section>
-    );
-  }
-);
+const Controls: React.FC = React.memo(() => {
+  const playing = redux.useSelector(a => a.metronomeState.playing);
+  const pending = redux.useSelector(a => a.metronomeState.pending);
+  const showTuner = redux.useSelector(a => a.settings.showTuner);
+  return (
+    <section className="section">
+      <Common.Buttons hasAddons>
+        <Common.ToggleButton
+          isLink
+          offIsOutlined
+          offIsLink
+          on={showTuner}
+          onClick={redux.toggleTuner}
+        >
+          Tuner
+        </Common.ToggleButton>
+        <TapIn />
+        <Common.ToggleButton
+          on={playing}
+          offIsPrimary
+          grow
+          isOutlined
+          isDanger
+          disabled={pending}
+          onClick={redux.toggleStart}
+        >
+          <>Stop</>
+          <>Start</>
+        </Common.ToggleButton>
+      </Common.Buttons>
+    </section>
+  );
+});
 export default Metronome;

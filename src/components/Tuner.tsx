@@ -3,6 +3,7 @@ import { useToggle } from "../hooks";
 import * as Common from "./Common";
 import styled from "styled-components";
 import * as polyfill from "../polyfill";
+import * as redux from "../redux";
 
 const noteIdx: { [note: number]: string } = {
   0: "A",
@@ -124,6 +125,11 @@ const Tuner = React.memo(() => {
   // TODO: - add in a graph of the FFT that's label with pitches and neato log bars.
   return (
     <TunerWrapper className="box has-text-centered">
+      <Close>
+        <Common.Button isDanger isOutlined onClick={redux.toggleTuner}>
+          X
+        </Common.Button>
+      </Close>
       <div className="is-size-1">{on ? note + octave : "Stopped"}</div>
 
       <div>
@@ -144,9 +150,16 @@ const Tuner = React.memo(() => {
     </TunerWrapper>
   );
 });
+const Close = styled.div`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  text-align: unset !important;
+`;
 
 const TunerWrapper = styled.section`
   margin-top: 10px;
+  position: relative;
 `;
 
 export default Tuner;

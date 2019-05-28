@@ -14,7 +14,9 @@ export enum ActionType {
   SetPending,
   SetPlaying,
   SetKeepAwake,
-  SetBpm
+  SetBpm,
+  SetSettings,
+  SetShowTuner
 }
 
 type RSA<T> = React.SetStateAction<T>;
@@ -23,6 +25,7 @@ export type Action =
   | { type: ActionType.UpdateActiveBeats; value: t.Beat }
   | { type: ActionType.SetActiveBeats; action: RSA<t.ActiveBeats> }
   | { type: ActionType.SetPending; action: RSA<boolean> }
+  | { type: ActionType.SetSettings; action: RSA<t.AppSettingsState> }
   | { type: ActionType.SetPlaying; action: RSA<boolean> }
   | { type: ActionType.SetBpm; action: RSA<number> }
   | { type: ActionType.SetKeepAwake; action: RSA<boolean> }
@@ -75,6 +78,25 @@ export const setSignature = (action: React.SetStateAction<t.TimeSignature>) => {
       : action;
   util.toLocalStorage(t.LocalStorageKey.TimeSignature, nextValue);
   store.dispatch({ type: ActionType.SetSignature, action: nextValue });
+};
+
+export const toggleTuner = () => {
+  setTuner(a => !a);
+};
+
+const setTuner = (action: RSA<boolean>) => {
+  const nextValue =
+    action instanceof Function
+      ? action(store.getState().settings.showTuner)
+      : action;
+  setSettings(old => ({ ...old, showTuner: nextValue }));
+};
+
+const setSettings = (action: RSA<t.AppSettingsState>) => {
+  const nextValue =
+    action instanceof Function ? action(store.getState().settings) : action;
+  util.toLocalStorage(t.LocalStorageKey.AppSettings, nextValue);
+  store.dispatch({ type: ActionType.SetSettings, action: nextValue });
 };
 
 export const setPending = (action: RSA<boolean>) => {
@@ -154,7 +176,8 @@ const defaultSignature = util.fromLocalStorage(
 const defaultStore = {
   activeBeats: metronome.resetActiveBeats(defaultSignature.numerator),
   settings: util.fromLocalStorage(t.LocalStorageKey.AppSettings, {
-    keepAwake: false
+    keepAwake: false,
+    showTuner: false
   }),
   metronomeState: {
     ready: false,
@@ -254,6 +277,11 @@ const rootReducer = (
               ? action.action(store.metronomeState.bpm)
               : action.action
         }
+      };
+    case ActionType.SetSettings:
+      return {
+        ...store,
+        settings: applyAction(action.action, store.settings)
       };
     default:
       // @ts-ignore - It's too smart for us here, but this is safe.

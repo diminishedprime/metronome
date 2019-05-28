@@ -51,6 +51,7 @@ export interface MetronomeState {
 
 export interface AppSettingsState {
   keepAwake: boolean;
+  showTuner: boolean;
 }
 
 export interface AppSettings {
