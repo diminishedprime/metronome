@@ -26,23 +26,37 @@ const DivisionsWrapper = React.memo(styled.section`
 
 const Divisions: React.FC<DivisionsProps> = React.memo(
   ({ uiEnabledDivisions, toggleDivisionOption, clearDivisions }) => {
-    const firstBeat = redux.useSelector(
+    // TODO: I could write typed helpers for trying to navigate down the
+    // a.activeBeats.
+    const accentOne = redux.useSelector(
       a =>
-        a.activeBeats
-          .get(0)!
-          .get(1)!
-          .get(0)!.isAccented
+        (a.activeBeats.getIn(
+          // This should really always work since there should always beat a 1 division, and at least 1 beat.
+          [0, 1, 0],
+          t.defaultDivisionDetails
+        ) as t.DivisionDetails).isAccented
     );
+    const [firstBeat, setFirstBeat] = React.useState(accentOne);
+
+    // Keep the activeDivision state & this button in sync.
+    React.useEffect(() => {
+      if (accentOne !== firstBeat) {
+        setFirstBeat(accentOne);
+      }
+    }, [accentOne]);
+    React.useEffect(() => {
+      redux.setAccent(0, 1, 0, firstBeat);
+    }, [firstBeat]);
+
     return (
       <DivisionsWrapper>
         <div className="is-size-5">Division</div>
         <Common.ToggleButton
           isLink
-          isOutlined
           on={firstBeat}
-          onClick={() => redux.toggleAccent(0, 1, 0)}
+          onClick={() => setFirstBeat(a => !a)}
         >
-          ^ 1
+          {">"}
         </Common.ToggleButton>
         <Common.Buttons hasAddons grow style={{ marginRight: "5px" }}>
           {([2, 3, 4, 5, 6] as t.Division[]).map((num: t.Division) => {

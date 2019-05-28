@@ -34,20 +34,29 @@ export interface ReduxState {
   settings: t.AppSettingsState;
 }
 
-export const toggleAccent = (
+export const setAccent = (
   beatIdx: number,
   division: t.Division,
-  divisionIdx: number
+  divisionIdx: number,
+  action: RSA<boolean>
 ) => {
   setActiveBeats(old =>
     old.update(beatIdx, a => {
       return a.update(division, d => {
         return d.update(divisionIdx, dd => {
-          return { ...dd, isAccented: !dd.isAccented };
+          return { ...dd, isAccented: applyAction(action, dd.isAccented) };
         });
       });
     })
   );
+};
+
+export const toggleAccent = (
+  beatIdx: number,
+  division: t.Division,
+  divisionIdx: number
+) => {
+  setAccent(beatIdx, division, divisionIdx, a => !a);
 };
 
 export const toggleKeepAwake = () => {
