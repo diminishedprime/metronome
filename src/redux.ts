@@ -21,7 +21,7 @@ type RSA<T> = React.SetStateAction<T>;
 export type Action =
   // TODO: update the other types to use action & RSA
   | { type: ActionType.UpdateActiveBeats; value: t.Beat }
-  | { type: ActionType.SetActiveBeats; value: t.ActiveBeats }
+  | { type: ActionType.SetActiveBeats; action: RSA<t.ActiveBeats> }
   | { type: ActionType.SetPending; action: RSA<boolean> }
   | { type: ActionType.SetPlaying; action: RSA<boolean> }
   | { type: ActionType.SetBpm; action: RSA<number> }
@@ -33,6 +33,22 @@ export interface ReduxState {
   metronomeState: t.MetronomeState;
   settings: t.AppSettingsState;
 }
+
+export const toggleAccent = (
+  beatIdx: number,
+  division: t.Division,
+  divisionIdx: number
+) => {
+  setActiveBeats(old =>
+    old.update(beatIdx, a => {
+      return a.update(division, d => {
+        return d.update(divisionIdx, dd => {
+          return { ...dd, isAccented: !dd.isAccented };
+        });
+      });
+    })
+  );
+};
 
 export const toggleKeepAwake = () => {
   setKeepAwake(old => !old);
@@ -75,10 +91,10 @@ export const addBPM = (action: number) => {
   setBPM(old => old + action);
 };
 
-export const setActiveBeats = (activeBeats: t.ActiveBeats) => {
+export const setActiveBeats = (action: RSA<t.ActiveBeats>) => {
   store.dispatch({
     type: ActionType.SetActiveBeats,
-    value: activeBeats
+    action
   });
 };
 
@@ -113,17 +129,21 @@ export const stop = () => {
 
 const defaultBeat = immutable.Map<t.Division, boolean>().set(1, true);
 
-const defaultSignature = {
-  denominator: 4,
-  numerator: immutable.List([
-    defaultBeat,
-    defaultBeat,
-    defaultBeat,
-    defaultBeat
-  ])
-};
+const defaultSignature = util.fromLocalStorage(
+  t.LocalStorageKey.TimeSignature,
+  {
+    denominator: 4,
+    numerator: immutable.List([
+      defaultBeat,
+      defaultBeat,
+      defaultBeat,
+      defaultBeat
+    ])
+  }
+);
+
 const defaultStore = {
-  activeBeats: immutable.List(),
+  activeBeats: metronome.resetActiveBeats(defaultSignature.numerator),
   settings: util.fromLocalStorage(t.LocalStorageKey.AppSettings, {
     keepAwake: false
   }),
@@ -132,10 +152,7 @@ const defaultStore = {
     pending: true,
     bpm: util.fromLocalStorage(t.LocalStorageKey.BPM, 60),
     playing: false,
-    signature: util.fromLocalStorage(
-      t.LocalStorageKey.TimeSignature,
-      defaultSignature
-    )
+    signature: defaultSignature
   }
 };
 
@@ -153,7 +170,10 @@ const rootReducer = (
 ): ReduxState => {
   switch (action.type) {
     case ActionType.SetActiveBeats:
-      return { ...store, activeBeats: action.value };
+      return {
+        ...store,
+        activeBeats: applyAction(action.action, store.activeBeats)
+      };
     case ActionType.SetKeepAwake:
       return {
         ...store,
@@ -174,10 +194,13 @@ const rootReducer = (
       }
       return {
         ...store,
-        activeBeats: store.activeBeats.setIn(
-          [beat.currentBeat, beat.divisions, beat.divisionIndex],
-          !old
-        )
+        activeBeats: store.activeBeats.update(beat.currentBeat, a => {
+          return a.update(beat.divisions, b => {
+            return b.update(beat.divisionIndex, c => {
+              return { ...c, isActive: !c.isActive };
+            });
+          });
+        })
       };
     case ActionType.SetSignature:
       return {

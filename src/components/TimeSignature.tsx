@@ -7,10 +7,6 @@ import * as t from "../types";
 import * as immutable from "immutable";
 import * as redux from "../redux";
 
-interface Props {
-  metronome: t.Metronome;
-}
-
 interface DivisionsProps {
   uiEnabledDivisions: t.EnabledDivisions;
   toggleDivisionOption: (option: t.Division) => void;
@@ -20,16 +16,34 @@ interface DivisionsProps {
 const DivisionsWrapper = React.memo(styled.section`
   display: flex;
   align-items: baseline;
+  > button {
+    margin-right: 5px;
+  }
   > div {
-    margin-right: 10px;
+    margin-right: 5px;
   }
 `);
 
 const Divisions: React.FC<DivisionsProps> = React.memo(
   ({ uiEnabledDivisions, toggleDivisionOption, clearDivisions }) => {
+    const firstBeat = redux.useSelector(
+      a =>
+        a.activeBeats
+          .get(0)!
+          .get(1)!
+          .get(0)!.isAccented
+    );
     return (
       <DivisionsWrapper>
         <div className="is-size-5">Division</div>
+        <Common.ToggleButton
+          isLink
+          isOutlined
+          on={firstBeat}
+          onClick={() => redux.toggleAccent(0, 1, 0)}
+        >
+          ^ 1
+        </Common.ToggleButton>
         <Common.Buttons hasAddons grow style={{ marginRight: "5px" }}>
           {([2, 3, 4, 5, 6] as t.Division[]).map((num: t.Division) => {
             const on = uiEnabledDivisions.get(num)!;
@@ -157,21 +171,22 @@ const Signature: React.FC<SignatureProps> = React.memo(
   }
 );
 
-// TODO: - margin should be calculated based on number of divisions.
 const BeatRowItemWrapper = React.memo(styled.div`
   width: 1px;
   margin-left: 1px;
   margin-right: 1px;
   flex-grow: 1;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `);
 
-// TODO: - margin should be calculated based on number of beats.
 const BeatRowWrapper = React.memo(styled.div`
   display: flex;
   flex-grow: 1;
 `);
 
-// TODO: - margin should be calculated based on number of beats.
 const BeatWrapper = React.memo(styled.div`
   display: flex;
   flex-grow: 1;
@@ -186,13 +201,14 @@ const BeatsWrapper = React.memo(styled.div`
 
 // TODO: - the selected division values should reset when you stop the metronome.
 // TODO: - If not playing, this should show the boring gray background.
+// TODO: - Resetting the beats should not reset the chosen accents.
 const BeatRowItem: React.FC<{
   beatIndex: number;
   division: t.Division;
   divisionIndex: number;
   height: number;
 }> = React.memo(({ height, beatIndex, division, divisionIndex }) => {
-  const on = redux.useSelector(
+  const details = redux.useSelector(
     a =>
       a.activeBeats
         .get(beatIndex)!
@@ -200,16 +216,19 @@ const BeatRowItem: React.FC<{
         .get(divisionIndex)!
   );
   const className = React.useMemo(() => {
-    return on ? "has-background-primary" : "has-background-link";
-  }, [on]);
+    return details.isActive ? "has-background-primary" : "has-background-link";
+  }, [details.isActive]);
   return (
     <BeatRowItemWrapper
       className={className}
+      onClick={() => redux.toggleAccent(beatIndex, division, divisionIndex)}
       style={{
         height,
         marginTop: 1
       }}
-    />
+    >
+      <div>{details.isAccented && ">"}</div>
+    </BeatRowItemWrapper>
   );
 });
 

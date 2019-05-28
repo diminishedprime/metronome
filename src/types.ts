@@ -10,13 +10,27 @@ export interface Beat {
   divisionIndex: number;
   divisionLength: number;
   currentBeat: number;
+  isAccented: boolean;
 }
 
 export type Division = 1 | 2 | 3 | 4 | 5 | 6;
+export interface DivisionDetails {
+  isActive: boolean;
+  isAccented: boolean;
+}
+export const defaultDivisionDetails: DivisionDetails = {
+  isActive: false,
+  isAccented: false
+};
 
-export type ActiveDivision = immutable.List<boolean>;
+export type ActiveDivision = immutable.List<DivisionDetails>;
+export const defaultActiveDivision: ActiveDivision = immutable.List();
+
 export type ActiveBeat = immutable.Map<Division, ActiveDivision>;
+export const defaultActiveBeat: ActiveBeat = immutable.Map();
+
 export type ActiveBeats = immutable.List<ActiveBeat>;
+export const defaultActiveBeats: ActiveBeats = immutable.List();
 
 export type EnabledDivisions = immutable.Map<Division, boolean>;
 

@@ -10,17 +10,17 @@ import { store } from "./redux";
 
 const click = require("./click.wav");
 
+// TODO - instead of scheduling a t.Beat, I think I should schedule a
+// t.DivisionDetails
 const scheduleNote = (
   audioContext: AudioContext,
-  { time, gain, buffer, pitch, currentBeat, divisionIndex }: t.Beat
+  { time, gain, buffer }: t.Beat
 ) => {
-  const isOne = currentBeat === 0 && divisionIndex === 0;
   const sound = audioContext.createBufferSource();
   sound.buffer = buffer;
-  sound.detune.value = isOne ? 0 : -pitch;
 
   const volume = audioContext.createGain();
-  volume.gain.value = isOne ? 1.0 : gain;
+  volume.gain.value = gain;
 
   sound.connect(volume);
   volume.connect(audioContext.destination);
@@ -35,6 +35,7 @@ const beatsFor = (
   currentBeat: number
 ): Array<t.Beat> => {
   const beats: Array<t.Beat> = [];
+  const activeDeets: t.ActiveBeats = store.getState().activeBeats;
   divisions
     .filter(a => a)
     .forEach((_, divisionOption) => {
@@ -44,17 +45,23 @@ const beatsFor = (
         divisionIndex < divisionOption;
         divisionIndex++
       ) {
+        const { isAccented } = activeDeets
+          .get(currentBeat, t.defaultActiveBeat)
+          .get(divisionOption, t.defaultActiveDivision)
+          .get(divisionIndex, t.defaultDivisionDetails);
         const time = startOfBeatTime + divisionIndex * noteOffset;
         const divisionLength = noteOffset;
+        const gain = isAccented ? 1.0 : 0.1 * 1.0;
         const beat: t.Beat = {
           time,
           divisionLength,
           pitch: 220,
-          gain: 1.0 * 0.5,
+          gain,
           buffer,
           divisions: divisionOption,
           divisionIndex,
-          currentBeat
+          currentBeat,
+          isAccented
         };
         beats.push(beat);
       }
@@ -77,7 +84,7 @@ const playBeatsTill = (
     // Since the beats are sorted by time in the queue, we can use this trick to
     // only schedule one for each click.
     // TODO:: This does mean that if we have a custotm sound for each division, it could be messy on one.
-    if (first.time !== lastTime) {
+    if (first.time !== lastTime || first.isAccented) {
       scheduleNote(audioContext, first);
     }
     lastTime = first.time;
@@ -202,9 +209,14 @@ export const resetActiveBeats = (
     beats.map((enabledDivisions: t.EnabledDivisions) =>
       enabledDivisions.reduce((acc, b, d) => {
         return b
-          ? acc.set(d, immutable.List(R.range(0, d).map(() => true)))
+          ? acc.set(
+              d,
+              immutable.List(
+                R.range(0, d).map(() => ({ isActive: true, isAccented: false }))
+              )
+            )
           : acc;
-      }, immutable.Map<t.Division, immutable.List<boolean>>())
+      }, immutable.Map<t.Division, t.ActiveDivision>())
     )
   );
 
