@@ -7,7 +7,6 @@ import Dial from "./Dial";
 import * as Common from "./Common";
 import useMetronome from "../metronome";
 import * as t from "../types";
-import * as hooks from "../hooks";
 import styled from "styled-components";
 import * as redux from "../redux";
 

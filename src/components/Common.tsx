@@ -149,7 +149,7 @@ export const Buttons: React.FC<ButtonsProps> = ({
         "is-grow": grow,
         "is-right": isRight
       }),
-    [hasAddons, grow, propsClassName]
+    [hasAddons, grow, propsClassName, isRight]
   );
   return (
     <ButtonsWrapper ref={ref as any} {...props} className={className}>

@@ -75,13 +75,12 @@ const NavIcon = React.memo(styled(FontAwesomeIcon)`
 `);
 
 const NavDrop = ({ toggleNav }: { toggleNav: () => void }) => {
-  const onClick = toggleNav;
   React.useEffect(() => {
-    window.addEventListener("click", onClick);
+    window.addEventListener("click", toggleNav);
     return () => {
-      window.removeEventListener("click", onClick);
+      window.removeEventListener("click", toggleNav);
     };
-  }, []);
+  }, [toggleNav]);
   return (
     <NavDropDown className="has-background-white">
       <NavItem to="/">

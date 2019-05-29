@@ -43,7 +43,7 @@ const Divisions: React.FC<DivisionsProps> = React.memo(
       if (accentOne !== firstBeat) {
         setFirstBeat(accentOne);
       }
-    }, [accentOne]);
+    }, [accentOne, firstBeat]);
     React.useEffect(() => {
       redux.setAccent(0, 1, 0, firstBeat);
     }, [firstBeat]);
