@@ -29,6 +29,35 @@ export const setSignature = (action: React.SetStateAction<t.TimeSignature>) => {
   });
 };
 
+export const toggleLearning = (s: t.Scale) => {
+  setScales(old => {
+    const scale = old.get(s);
+    if (!scale) {
+      return old;
+    }
+    return old.remove(scale).add({ ...scale, learning: !scale.learning });
+  });
+};
+export const toggleKnown = (s: t.Scale) => {
+  setScales(old => {
+    const scale = old.get(s);
+    if (!scale) {
+      return old;
+    }
+    return old.remove(scale).add({ ...scale, known: !scale.known });
+  });
+};
+
+export const addBPMToScale = (s: t.Scale, bpm: number) => {
+  setScales(old => {
+    const scale = old.get(s);
+    if (!scale) {
+      return old;
+    }
+    return old.remove(scale).add({ ...scale, bpm: scale.bpm + bpm });
+  });
+};
+
 export const updateActiveBeat = (beat: t.Beat) => {
   setActiveBeats(old => {
     const oldBeats = old.getIn([
@@ -153,6 +182,20 @@ const setSettings = (action: t.RSA<t.AppSettingsState>) => {
   store.dispatch({ type: t.ActionType.SetSettings, action: nextValue });
 };
 
+const setScales = (action: t.RSA<t.ScalesDB>): void => {
+  // TODO: - store the scales as a sorted set instead of a set that gets sorted
+  // every time.
+  const nextValue = (action instanceof Function
+    ? action(store.getState().scales)
+    : action
+  ).sortBy(a => a.pitch);
+  util.toLocalStorage(t.LocalStorageKey.ScalesDB, nextValue);
+  store.dispatch({
+    type: t.ActionType.SetScales,
+    action: nextValue
+  });
+};
+
 const defaultBeat = () => immutable.Map<t.Division, boolean>().set(1, true);
 
 const defaultSignature = () =>
@@ -166,10 +209,33 @@ const defaultSignature = () =>
     ])
   });
 
-const defaultStore = () => {
+const initScale = (scaleKey: t.ScaleKey): t.Scale => ({
+  scaleKey,
+  pitch: scaleKey[0],
+  mode: scaleKey[1],
+  known: false,
+  learning: false,
+  bpm: 60
+});
+
+const addScale = (scalesDB: t.ScalesDB, key: t.ScaleKey): t.ScalesDB => {
+  return scalesDB.add(initScale(key));
+};
+
+const initScalesDB = (): t.ScalesDB => {
+  return t.scaleKeys
+    .reduce(
+      (scalesDB: t.ScalesDB, scaleKey) => addScale(scalesDB, scaleKey),
+      immutable.OrderedSet<t.Scale>()
+    )
+    .sortBy(a => a.pitch);
+};
+
+const defaultStore = (): t.ReduxState => {
   const signature = defaultSignature();
   return {
     // TODO: hydrate this from localStorage.
+    scales: util.fromLocalStorage(t.LocalStorageKey.ScalesDB, initScalesDB()),
     activeBeats: metronome.resetActiveBeats(signature.numerator),
     settings: util.fromLocalStorage(t.LocalStorageKey.AppSettings, {
       keepAwake: false,
@@ -203,6 +269,11 @@ const rootReducer = (
       return {
         ...store,
         settings: applyAction(action.action, store.settings)
+      };
+    case t.ActionType.SetScales:
+      return {
+        ...store,
+        scales: applyAction(action.action, store.scales)
       };
     default:
       // @ts-ignore - It's too smart for us here, but this is safe.

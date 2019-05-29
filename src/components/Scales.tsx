@@ -5,13 +5,9 @@ import * as util from "../util";
 import * as t from "../types";
 import * as redux from "../redux";
 import * as Common from "./Common";
-import useScales from "../scales";
 import useMetronome from "../metronome";
 
 // TODO: - clean up the rendering here. It redraws way too much on a change.
-// TODO: - store the scales as a sorted set instead of a set that gets sorted
-// every time.
-
 enum ScaleMode {
   NOT_STARTED = "not-started",
   KNOWN = "known",
@@ -43,27 +39,23 @@ const ScalesGroup = ({
 };
 
 interface LearnScalesProps {
-  scales: t.Scales;
   reset: () => void;
   scaleMode: ScaleMode;
 }
 
-const LearnScales: React.FC<LearnScalesProps> = ({
-  scales,
-  reset,
-  scaleMode
-}) => {
-  const { getScales, getScale, addBPM } = scales;
+const LearnScales: React.FC<LearnScalesProps> = ({ reset, scaleMode }) => {
+  const scales = redux.useSelector(a => a.scales);
   const [scaleKeys, setScales] = React.useState<Array<t.ScaleKey>>(() =>
     util.shuffle(
-      getScales(s => {
-        if (scaleMode === ScaleMode.LEARNING) {
-          return s.learning;
-        } else if (scaleMode === ScaleMode.KNOWN) {
-          return s.known;
-        }
-        return false;
-      })
+      scales
+        .filter(s => {
+          if (scaleMode === ScaleMode.LEARNING) {
+            return s.learning;
+          } else if (scaleMode === ScaleMode.KNOWN) {
+            return s.known;
+          }
+          return false;
+        })
         .valueSeq()
         .map(({ scaleKey }) => scaleKey)
         .toArray()
@@ -82,7 +74,7 @@ const LearnScales: React.FC<LearnScalesProps> = ({
   };
 
   const currentKey = scaleKeys[0] || [];
-  const maybeScale = getScale(
+  const maybeScale = scales.find(
     (s: t.Scale) => s.mode === currentKey[1] && s.pitch === currentKey[0]
   );
   React.useEffect(() => {
@@ -117,7 +109,7 @@ const LearnScales: React.FC<LearnScalesProps> = ({
               isDanger
               isOutlined
               grow
-              onClick={() => addBPM(scale, -10)}
+              onClick={() => redux.addBPMToScale(scale, -10)}
             >
               -10
             </Common.Button>
@@ -125,7 +117,7 @@ const LearnScales: React.FC<LearnScalesProps> = ({
               isDanger
               isOutlined
               grow
-              onClick={() => addBPM(scale, -1)}
+              onClick={() => redux.addBPMToScale(scale, -1)}
             >
               -
             </Common.Button>
@@ -133,7 +125,7 @@ const LearnScales: React.FC<LearnScalesProps> = ({
               isPrimary
               isOutlined
               grow
-              onClick={() => addBPM(scale, 1)}
+              onClick={() => redux.addBPMToScale(scale, 1)}
             >
               +
             </Common.Button>
@@ -141,7 +133,7 @@ const LearnScales: React.FC<LearnScalesProps> = ({
               isPrimary
               isOutlined
               grow
-              onClick={() => addBPM(scale, 10)}
+              onClick={() => redux.addBPMToScale(scale, 10)}
             >
               +10
             </Common.Button>
@@ -184,8 +176,7 @@ const Scales: React.FC<ScalesProps> = ({ audioContext }) => {
     }
   }, [scaleMode]);
 
-  const scales = useScales();
-  const { getScale, getScales, toggleLearning, toggleKnown } = scales;
+  const scales = redux.useSelector(s => s.scales);
 
   return (
     <div style={{ marginTop: "10px" }}>
@@ -201,14 +192,14 @@ const Scales: React.FC<ScalesProps> = ({ audioContext }) => {
             <Common.Buttons>
               <Common.Button
                 onClick={() => setScaleMode(ScaleMode.KNOWN)}
-                disabled={getScale(s => s.known) === undefined}
+                disabled={scales.find(a => a.known) === undefined}
                 className="is-info is-outlined"
               >
                 Start Known
               </Common.Button>
               <Common.Button
                 onClick={() => setScaleMode(ScaleMode.LEARNING)}
-                disabled={getScale(s => s.learning) === undefined}
+                disabled={scales.find(s => s.learning) === undefined}
                 className="is-link is-outlined"
               >
                 Start Learning
@@ -227,34 +218,39 @@ const Scales: React.FC<ScalesProps> = ({ audioContext }) => {
               {showKnown ? "Hide Known" : "Show Known"}
             </Common.Button>
           </Common.Buttons>
-          {getScales(
-            s =>
-              s.mode === t.Mode.Major && (showKnown ? true : s.known === false)
-          ).map((scale: t.Scale) => (
-            <ScalesGroup
-              key={`${scale.pitch}-${scale.mode}`}
-              {...scale}
-              toggleLearning={() => toggleLearning(scale)}
-              toggleKnown={() => toggleKnown(scale)}
-            />
-          ))}
+          {scales
+            .filter(
+              s =>
+                s.mode === t.Mode.Major &&
+                (showKnown ? true : s.known === false)
+            )
+            .map((scale: t.Scale) => (
+              <ScalesGroup
+                key={`${scale.pitch}-${scale.mode}`}
+                {...scale}
+                toggleLearning={() => redux.toggleLearning(scale)}
+                toggleKnown={() => redux.toggleKnown(scale)}
+              />
+            ))}
           <hr />
-          {getScales(
-            s =>
-              s.mode === t.Mode.Minor && (showKnown ? true : s.known === false)
-          ).map((scale: t.Scale) => (
-            <ScalesGroup
-              key={`${scale.pitch}-${scale.mode}`}
-              {...scale}
-              toggleLearning={() => toggleLearning(scale)}
-              toggleKnown={() => toggleKnown(scale)}
-            />
-          ))}
+          {scales
+            .filter(
+              s =>
+                s.mode === t.Mode.Minor &&
+                (showKnown ? true : s.known === false)
+            )
+            .map((scale: t.Scale) => (
+              <ScalesGroup
+                key={`${scale.pitch}-${scale.mode}`}
+                {...scale}
+                toggleLearning={() => redux.toggleLearning(scale)}
+                toggleKnown={() => redux.toggleKnown(scale)}
+              />
+            ))}
         </div>
       ) : (
         <LearnScales
           scaleMode={scaleMode}
-          scales={scales}
           reset={() => setScaleMode(ScaleMode.NOT_STARTED)}
         />
       )}

@@ -5,15 +5,18 @@ export type RSA<T> = React.SetStateAction<T>;
 export type Action =
   | { type: ActionType.SetActiveBeats; action: RSA<ActiveBeats> }
   | { type: ActionType.SetSettings; action: RSA<AppSettingsState> }
+  | { type: ActionType.SetScales; action: RSA<ScalesDB> }
   | { type: ActionType.SetMetronomeState; action: RSA<MetronomeState> };
 
 export interface ReduxState {
   activeBeats: ActiveBeats;
   metronomeState: MetronomeState;
   settings: AppSettingsState;
+  scales: ScalesDB;
 }
 
 export enum ActionType {
+  SetScales,
   SetActiveBeats,
   SetMetronomeState,
   SetSettings
@@ -231,13 +234,4 @@ export interface Scale {
   bpm: number;
 }
 
-export type ScalesDB = immutable.Set<Scale>;
-
-export interface Scales {
-  getScale: (filter: (s: Scale) => boolean) => Scale | undefined;
-  getScales: (filter: (s: Scale) => boolean) => ScalesDB;
-  addScale: (s: Scale) => void;
-  toggleLearning: (s: Scale) => void;
-  toggleKnown: (s: Scale) => void;
-  addBPM: (s: Scale, bpm: number) => void;
-}
+export type ScalesDB = immutable.OrderedSet<Scale>;
