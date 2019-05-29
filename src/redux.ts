@@ -183,8 +183,6 @@ const setSettings = (action: t.RSA<t.AppSettingsState>) => {
 };
 
 const setScales = (action: t.RSA<t.ScalesDB>): void => {
-  // TODO: - store the scales as a sorted set instead of a set that gets sorted
-  // every time.
   const nextValue = (action instanceof Function
     ? action(store.getState().scales)
     : action
