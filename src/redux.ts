@@ -29,18 +29,18 @@ export const setSignature = (action: React.SetStateAction<t.TimeSignature>) => {
   });
 };
 
-export const toggleLearning = (s: t.Scale) => {
+export const toggleLearning = (id: string) => {
   setScales(old => {
-    const scale = old.get(s);
+    const scale = old.find(s => s.id === id);
     if (!scale) {
       return old;
     }
     return old.remove(scale).add({ ...scale, learning: !scale.learning });
   });
 };
-export const toggleKnown = (s: t.Scale) => {
+export const toggleKnown = (id: string) => {
   setScales(old => {
-    const scale = old.get(s);
+    const scale = old.find(s => s.id === id);
     if (!scale) {
       return old;
     }
@@ -215,7 +215,8 @@ const initScale = (scaleKey: t.ScaleKey): t.Scale => ({
   mode: scaleKey[1],
   known: false,
   learning: false,
-  bpm: 60
+  bpm: 60,
+  id: `scaleId-${scaleKey[0]}-${scaleKey[1]}`
 });
 
 const addScale = (scalesDB: t.ScalesDB, key: t.ScaleKey): t.ScalesDB => {

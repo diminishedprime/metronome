@@ -100,7 +100,7 @@ export enum LocalStorageKey {
   AppSettings = "@mjh/k/app-settings-0",
   SignatureDivisions = "@mjh/k/signature-divisions-3",
   ShowKnown = "@mjh/k/show-known-2",
-  ScalesDB = "@mjh/k/scales-db-2",
+  ScalesDB = "@mjh/k/scales-db-3",
   ActiveBeats = "@mjh/k/active-beats-2",
   TimeSignature = "@mjh/k/signature-3",
   BPM = "@mjh/k/bpm-0",
@@ -232,6 +232,7 @@ export interface Scale {
   known: boolean;
   learning: boolean;
   bpm: number;
+  id: string;
 }
 
 export type ScalesDB = immutable.OrderedSet<Scale>;

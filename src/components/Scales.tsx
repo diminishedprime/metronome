@@ -14,29 +14,38 @@ enum ScaleMode {
   LEARNING = "learning"
 }
 
-const ScalesGroup = ({
-  scaleKey: [pitch, mode],
-  learning,
-  known,
-  toggleLearning,
-  toggleKnown
-}: t.Scale & { toggleLearning: () => void; toggleKnown: () => void }) => {
+interface ScalesGroupProps {
+  id: string;
+}
+
+const ScalesGroup: React.FC<ScalesGroupProps> = React.memo(({ id }) => {
+  const { pitch, mode, known, learning } = redux.useSelector(a =>
+    a.scales.find(a => a.id === id)
+  )!;
   return (
     <div className="is-grouped field has-addons">
       <div className="is-size-5 control is-expanded">
         {pitch} {mode}
       </div>
       <Common.Buttons>
-        <Common.ToggleButton on={known} isInfo onClick={toggleKnown}>
+        <Common.ToggleButton
+          on={known}
+          isInfo
+          onClick={() => redux.toggleKnown(id)}
+        >
           Known
         </Common.ToggleButton>
-        <Common.ToggleButton on={learning} isLink onClick={toggleLearning}>
+        <Common.ToggleButton
+          on={learning}
+          isLink
+          onClick={() => redux.toggleLearning(id)}
+        >
           Learning
         </Common.ToggleButton>
       </Common.Buttons>
     </div>
   );
-};
+});
 
 interface LearnScalesProps {
   reset: () => void;
@@ -170,13 +179,14 @@ const Scales: React.FC<ScalesProps> = ({ audioContext }) => {
     false
   );
 
+  const hasKnown = redux.useSelector(a => !!a.scales.find(s => s.known));
+  const hasLearning = redux.useSelector(a => !!a.scales.find(s => s.learning));
+
   React.useEffect(() => {
     if (scaleMode === ScaleMode.NOT_STARTED) {
       redux.stop();
     }
   }, [scaleMode]);
-
-  const scales = redux.useSelector(s => s.scales);
 
   return (
     <div style={{ marginTop: "10px" }}>
@@ -192,14 +202,14 @@ const Scales: React.FC<ScalesProps> = ({ audioContext }) => {
             <Common.Buttons>
               <Common.Button
                 onClick={() => setScaleMode(ScaleMode.KNOWN)}
-                disabled={scales.find(a => a.known) === undefined}
+                disabled={!hasKnown}
                 className="is-info is-outlined"
               >
                 Start Known
               </Common.Button>
               <Common.Button
                 onClick={() => setScaleMode(ScaleMode.LEARNING)}
-                disabled={scales.find(s => s.learning) === undefined}
+                disabled={!hasLearning}
                 className="is-link is-outlined"
               >
                 Start Learning
@@ -207,46 +217,20 @@ const Scales: React.FC<ScalesProps> = ({ audioContext }) => {
             </Common.Buttons>
           </div>
           <hr />
-
-          <Common.Buttons>
-            <Common.Button
+          <Common.Buttons isRight>
+            <Common.ToggleButton
+              offIsDanger
+              offIsOutlined
+              on={showKnown}
               onClick={toggleShowKnown}
-              className={`${
-                showKnown ? "is-primary is-outlined" : "is-danger"
-              }`}
             >
-              {showKnown ? "Hide Known" : "Show Known"}
-            </Common.Button>
+              <>Hide Known</>
+              <>Hiding Known</>
+            </Common.ToggleButton>
           </Common.Buttons>
-          {scales
-            .filter(
-              s =>
-                s.mode === t.Mode.Major &&
-                (showKnown ? true : s.known === false)
-            )
-            .map((scale: t.Scale) => (
-              <ScalesGroup
-                key={`${scale.pitch}-${scale.mode}`}
-                {...scale}
-                toggleLearning={() => redux.toggleLearning(scale)}
-                toggleKnown={() => redux.toggleKnown(scale)}
-              />
-            ))}
+          <ScalesGrouping mode={t.Mode.Major} hideKnown={!showKnown} />
           <hr />
-          {scales
-            .filter(
-              s =>
-                s.mode === t.Mode.Minor &&
-                (showKnown ? true : s.known === false)
-            )
-            .map((scale: t.Scale) => (
-              <ScalesGroup
-                key={`${scale.pitch}-${scale.mode}`}
-                {...scale}
-                toggleLearning={() => redux.toggleLearning(scale)}
-                toggleKnown={() => redux.toggleKnown(scale)}
-              />
-            ))}
+          <ScalesGrouping mode={t.Mode.Minor} hideKnown={!showKnown} />
         </div>
       ) : (
         <LearnScales
@@ -255,6 +239,30 @@ const Scales: React.FC<ScalesProps> = ({ audioContext }) => {
         />
       )}
     </div>
+  );
+};
+
+const ScalesGrouping = ({
+  mode,
+  hideKnown
+}: {
+  mode: t.Mode;
+  hideKnown: boolean;
+}) => {
+  // TODO check on re-render logic.
+  const scales = redux.useSelector(
+    a =>
+      a.scales
+        .filter(s => s.mode === mode && (hideKnown ? !s.known : true))
+        .map(s => s.id),
+    (a, b) => a.equals(b)
+  );
+  return (
+    <>
+      {scales.map(id => (
+        <ScalesGroup key={`scale-${id}`} id={id} />
+      ))}
+    </>
   );
 };
 

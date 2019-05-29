@@ -123,7 +123,8 @@ interface ButtonsProps
     HTMLDivElement
   > {
   hasAddons?: true;
-  grow?: true | undefined;
+  grow?: true;
+  isRight?: true;
 }
 
 const ButtonsWrapper = styled.div`
@@ -135,6 +136,7 @@ const ButtonsWrapper = styled.div`
 export const Buttons: React.FC<ButtonsProps> = ({
   children,
   hasAddons,
+  isRight,
   ref,
   className: propsClassName,
   grow,
@@ -144,7 +146,8 @@ export const Buttons: React.FC<ButtonsProps> = ({
     () =>
       classnames(propsClassName, "buttons", {
         "has-addons": hasAddons,
-        "is-grow": grow
+        "is-grow": grow,
+        "is-right": isRight
       }),
     [hasAddons, grow, propsClassName]
   );
