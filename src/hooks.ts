@@ -24,8 +24,6 @@ export const useSingleton = <T>(initialValue?: T) => {
   };
 };
 
-// TODO - add an indication (coffee cup icon) to the top when sleep mode in
-// enabled. Make it where clicking on the coffee cup turns it off?
 export const useSleepLock = (shouldSleep: boolean) => {
   const [noSleep] = React.useState(new NoSleep());
 
