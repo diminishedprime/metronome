@@ -10,20 +10,20 @@ type ReactButton = React.DetailedHTMLProps<
   HTMLButtonElement
 >;
 interface ButtonProps extends ReactButton {
-  primary?: true;
-  isPrimary?: true;
-  isLink?: true;
-  isInfo?: true;
-  isSuccess?: true;
-  isDanger?: true;
-  isOutlined?: true;
-  offIsPrimary?: true;
-  offIsLink?: true;
-  offIsInfo?: true;
-  offIsSuccess?: true;
-  offIsDanger?: true;
-  offIsOutlined?: true;
-  grow?: true;
+  primary?: boolean;
+  isPrimary?: boolean;
+  isLink?: boolean;
+  isInfo?: boolean;
+  isSuccess?: boolean;
+  isDanger?: boolean;
+  isOutlined?: boolean;
+  offIsPrimary?: boolean;
+  offIsLink?: boolean;
+  offIsInfo?: boolean;
+  offIsSuccess?: boolean;
+  offIsDanger?: boolean;
+  offIsOutlined?: boolean;
+  grow?: boolean;
 }
 
 interface ToggleButtonProps extends ButtonProps {

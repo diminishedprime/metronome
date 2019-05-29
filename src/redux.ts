@@ -48,9 +48,9 @@ export const toggleKnown = (id: string) => {
   });
 };
 
-export const addBPMToScale = (s: t.Scale, bpm: number) => {
+export const addBPMToScale = (id: string, bpm: number) => {
   setScales(old => {
-    const scale = old.get(s);
+    const scale = old.find(s => s.id === id);
     if (!scale) {
       return old;
     }
