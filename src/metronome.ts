@@ -80,15 +80,12 @@ const playBeatsTill = (
   const now = audioContext.currentTime;
   const scheduleTil = now + intervalLength + intervalError;
   while (beatsQueue.peekFront() && beatsQueue.peekFront()!.time < scheduleTil) {
-    const first = beatsQueue.shift()!;
-    // Since the beats are sorted by time in the queue, we can use this trick to
-    // only schedule one for each click.
-    // TODO:: This does mean that if we have a custotm sound for each division, it could be messy on one.
-    if (first.time !== lastTime || first.isAccented) {
-      scheduleNote(audioContext, first);
+    const toSchedule = beatsQueue.shift()!;
+    if (toSchedule.time !== lastTime || toSchedule.isAccented) {
+      scheduleNote(audioContext, toSchedule);
     }
-    lastTime = first.time;
-    updateUi(audioContext, first);
+    lastTime = toSchedule.time;
+    updateUi(audioContext, toSchedule);
   }
 };
 
@@ -125,23 +122,28 @@ const intervalError = 0.1;
 const useScheduleAhead = (audioContext: t.MAudioContext) => {
   const playing = redux.useSelector(a => a.metronomeState.playing);
   const buffer = useAudioBuffer(audioContext, click);
+  const numeratorSize = redux.useSelector(
+    a => a.metronomeState.signature.numerator.size
+  );
+  const numeratorSizeRef = React.useRef(numeratorSize);
+  const playingRef = React.useRef(playing);
 
   const scheduleAhead = 0.3;
   const nextNoteTimeRef = React.useRef<number>(0);
   const delay = playing ? (scheduleAhead * 1000) / 2 : undefined;
 
-  // TODO: this should probably be updated when the numerator changes.
   const beatToSchedule = React.useRef(0);
   React.useEffect(() => {
     if (!playing) {
       beatToSchedule.current = 0;
     }
-  }, [playing]);
+    playingRef.current = playing;
+    numeratorSizeRef.current = numeratorSize;
+  }, [playing, numeratorSize]);
 
   const nextBeat = React.useCallback(() => {
     let old = beatToSchedule.current;
-    beatToSchedule.current =
-      (old + 1) % store.getState().metronomeState.signature.numerator.size;
+    beatToSchedule.current = (old + 1) % numeratorSizeRef.current;
   }, []);
 
   // TODO: - because the ui callbacks run in the future, I can get in a weird
@@ -151,7 +153,7 @@ const useScheduleAhead = (audioContext: t.MAudioContext) => {
     (audioContext: AudioContext, beat: t.Beat) => {
       // We ovewrite activeBeats here because it's definitely changing.
       runAtTime(audioContext, beat.time, () => {
-        if (store.getState().metronomeState.playing) {
+        if (playingRef.current) {
           // TODO: - this is super janky.
           // TODO: - this would be much nicer with an animation.
           // TODO: - switch this to runAtTime to clear the beat it just set.
