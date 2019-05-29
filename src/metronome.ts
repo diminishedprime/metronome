@@ -1,10 +1,8 @@
 import React from "react";
-import * as R from "ramda";
 import * as t from "./types";
 import { useAudioBuffer } from "./hooks";
 import Deque from "double-ended-queue";
 import { runAtTime } from "./util";
-import * as immutable from "immutable";
 import * as redux from "./redux";
 import { store } from "./redux";
 
@@ -204,24 +202,6 @@ const useScheduleAhead = (audioContext: t.MAudioContext) => {
   }, [delay, buffer, audioContext, updateUi, nextBeat]);
 };
 
-export const resetActiveBeats = (
-  beats: immutable.List<t.EnabledDivisions>
-): immutable.List<t.ActiveBeat> =>
-  immutable.List(
-    beats.map((enabledDivisions: t.EnabledDivisions) =>
-      enabledDivisions.reduce((acc, b, d) => {
-        return b
-          ? acc.set(
-              d,
-              immutable.List(
-                R.range(0, d).map(() => ({ isActive: true, isAccented: false }))
-              )
-            )
-          : acc;
-      }, immutable.Map<t.Division, t.ActiveDivision>())
-    )
-  );
-
 const useMetronome = (audioContext: t.MAudioContext) => {
   const playing = redux.useSelector(s => s.metronomeState.playing);
 
@@ -242,6 +222,7 @@ const useMetronome = (audioContext: t.MAudioContext) => {
     // TODO: - This would be fancier if when the next beat can still happen, it
     // didn't clear the active beat in the UI.
     redux.resetActivebeats();
+    redux.updateActiveBeats(numerator);
   }, [numerator]);
 
   // If the metronome stops playing, we should reset the active beats.

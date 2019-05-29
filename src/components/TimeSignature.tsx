@@ -235,7 +235,7 @@ const BeatRowItem: React.FC<{
         .get(divisionIndex)!
   );
   const className = React.useMemo(() => {
-    return details.isActive ? "has-background-primary" : "has-background-link";
+    return details.isActive ? "has-background-link" : "has-background-primary";
   }, [details.isActive]);
   return (
     <BeatRowItemWrapper

@@ -3,7 +3,6 @@ import * as t from "./types";
 import * as immutable from "immutable";
 import * as reactRedux from "react-redux";
 import * as R from "ramda";
-import * as metronome from "./metronome";
 import * as util from "./util";
 
 export const setPending = (action: t.RSA<boolean>) => {
@@ -117,11 +116,38 @@ export const addBPM = (action: number) => {
 
 // TODO: - just set the active booleans to false.
 export const resetActivebeats = () => {
-  setActiveBeats(
-    metronome.resetActiveBeats(
-      store.getState().metronomeState.signature.numerator
-    )
+  setActiveBeats(abs =>
+    abs.map(ab => ab.map(dd => dd.map(d => ({ ...d, isActive: false }))))
   );
+};
+export const updateActiveBeats = (numerator: t.Numerator) => {
+  setActiveBeats(old => {
+    return numerator.map((numeratorBeat, beatIndex) => {
+      const oldActiveBeat = old.get(beatIndex);
+      return numeratorBeat.reduce(
+        (activeBeat: t.ActiveBeat, enabled, division) => {
+          if (enabled) {
+            // Check to see if this division was already there.
+            if (oldActiveBeat && oldActiveBeat.get(division)) {
+              return activeBeat.set(division, oldActiveBeat.get(division)!);
+            }
+            return activeBeat.set(
+              division,
+              immutable.List(
+                R.range(0, division).map(() => ({
+                  isActive: false,
+                  isAccented: false
+                }))
+              )
+            );
+          } else {
+            return activeBeat;
+          }
+        },
+        immutable.Map<t.Division, t.ActiveDivision>() as t.ActiveBeat
+      );
+    });
+  });
 };
 
 export const toggleStart = () => {
@@ -230,12 +256,30 @@ const initScalesDB = (): t.ScalesDB => {
     .sortBy(a => a.pitch);
 };
 
+const initialActiveBeats = (
+  beats: immutable.List<t.EnabledDivisions>
+): immutable.List<t.ActiveBeat> =>
+  immutable.List(
+    beats.map((enabledDivisions: t.EnabledDivisions) =>
+      enabledDivisions.reduce((acc, b, d) => {
+        return b
+          ? acc.set(
+              d,
+              immutable.List(
+                R.range(0, d).map(() => ({ isActive: true, isAccented: false }))
+              )
+            )
+          : acc;
+      }, immutable.Map<t.Division, t.ActiveDivision>())
+    )
+  );
+
 const defaultStore = (): t.ReduxState => {
   const signature = defaultSignature();
   return {
     // TODO: hydrate this from localStorage.
     scales: util.fromLocalStorage(t.LocalStorageKey.ScalesDB, initScalesDB()),
-    activeBeats: metronome.resetActiveBeats(signature.numerator),
+    activeBeats: initialActiveBeats(signature.numerator),
     settings: util.fromLocalStorage(t.LocalStorageKey.AppSettings, {
       keepAwake: false,
       showTuner: false
