@@ -160,69 +160,69 @@ export const useAudioContext = ():
   const [audioContext, setAudioContext] = React.useState<
     AudioContext | "not-supported" | "pending"
   >("pending");
-  const [hasFixed, setHasFixed] = React.useState(false);
+  const hasFixed = React.useRef(false);
 
   React.useEffect(() => {
     if (polyfill.AudioContext === undefined) {
       setAudioContext("not-supported");
-    } else {
-      const context = new polyfill.AudioContext();
-      const fixAudioContext = () => {
-        if (!hasFixed) {
-          setAudioContext("pending");
-          context.resume().then(() => {
-            const firstGain = context.createGain();
-            firstGain.gain.value = 0.01;
-            const firstNote = context.createOscillator();
-            firstNote.type = "sine";
-            firstNote.frequency.value = 440;
-            firstNote.connect(firstGain);
-            firstGain.connect(context.destination);
-
-            const secondGain = context.createGain();
-            secondGain.gain.value = 0.01;
-            const secondNote = context.createOscillator();
-            secondNote.type = "sine";
-            secondNote.frequency.value = 554;
-            secondNote.connect(secondGain);
-            secondGain.connect(context.destination);
-
-            const thirdGain = context.createGain();
-            thirdGain.gain.value = 0.01;
-            const thirdNote = context.createOscillator();
-            thirdNote.type = "sine";
-            thirdNote.frequency.value = 659;
-            thirdNote.connect(thirdGain);
-            thirdGain.connect(context.destination);
-
-            const noteOffset = 0.025;
-
-            const first = context.currentTime + 0.1;
-            const second = first + noteOffset;
-            const third = second + noteOffset;
-            const end = third + noteOffset;
-
-            firstNote.start(first);
-            firstNote.stop(second);
-
-            secondNote.start(second);
-            secondNote.stop(third);
-
-            thirdNote.start(third);
-            thirdNote.stop(end);
-
-            setHasFixed(true);
-            setAudioContext(context);
-            document.removeEventListener("touchstart", fixAudioContext);
-            document.removeEventListener("click", fixAudioContext);
-            document.removeEventListener("touchend", fixAudioContext);
-          });
-        }
-      };
-      document.addEventListener("touchstart", fixAudioContext);
-      document.addEventListener("click", fixAudioContext);
-      document.addEventListener("touchend", fixAudioContext);
+      return;
     }
+    const context = new polyfill.AudioContext();
+    const fixAudioContext = () => {
+      if (!hasFixed.current) {
+        setAudioContext("pending");
+        context.resume().then(() => {
+          const firstGain = context.createGain();
+          firstGain.gain.value = 0.01;
+          const firstNote = context.createOscillator();
+          firstNote.type = "sine";
+          firstNote.frequency.value = 440;
+          firstNote.connect(firstGain);
+          firstGain.connect(context.destination);
+
+          const secondGain = context.createGain();
+          secondGain.gain.value = 0.01;
+          const secondNote = context.createOscillator();
+          secondNote.type = "sine";
+          secondNote.frequency.value = 554;
+          secondNote.connect(secondGain);
+          secondGain.connect(context.destination);
+
+          const thirdGain = context.createGain();
+          thirdGain.gain.value = 0.01;
+          const thirdNote = context.createOscillator();
+          thirdNote.type = "sine";
+          thirdNote.frequency.value = 659;
+          thirdNote.connect(thirdGain);
+          thirdGain.connect(context.destination);
+
+          const noteOffset = 0.025;
+
+          const first = context.currentTime + 0.1;
+          const second = first + noteOffset;
+          const third = second + noteOffset;
+          const end = third + noteOffset;
+
+          firstNote.start(first);
+          firstNote.stop(second);
+
+          secondNote.start(second);
+          secondNote.stop(third);
+
+          thirdNote.start(third);
+          thirdNote.stop(end);
+
+          hasFixed.current = true;
+          setAudioContext(context);
+          document.removeEventListener("touchstart", fixAudioContext);
+          document.removeEventListener("click", fixAudioContext);
+          document.removeEventListener("touchend", fixAudioContext);
+        });
+      }
+    };
+    document.addEventListener("touchstart", fixAudioContext);
+    document.addEventListener("click", fixAudioContext);
+    document.addEventListener("touchend", fixAudioContext);
   }, []);
 
   return audioContext;
