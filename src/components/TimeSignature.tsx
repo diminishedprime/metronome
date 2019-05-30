@@ -26,38 +26,9 @@ const DivisionsWrapper = React.memo(styled.section`
 
 const Divisions: React.FC<DivisionsProps> = React.memo(
   ({ uiEnabledDivisions, toggleDivisionOption, clearDivisions }) => {
-    // TODO: I could write typed helpers for trying to navigate down the
-    // a.activeBeats.
-    const accentOne = redux.useSelector(
-      a =>
-        (a.activeBeats.getIn(
-          // This should really always work since there should always beat a 1 division, and at least 1 beat.
-          [0, 1, 0],
-          t.defaultDivisionDetails
-        ) as t.DivisionDetails).isAccented
-    );
-    const [firstBeat, setFirstBeat] = React.useState(accentOne);
-
-    // Keep the activeDivision state & this button in sync.
-    React.useEffect(() => {
-      if (accentOne !== firstBeat) {
-        setFirstBeat(accentOne);
-      }
-    }, [accentOne, firstBeat]);
-    React.useEffect(() => {
-      redux.setAccent(0, 1, 0, firstBeat);
-    }, [firstBeat]);
-
     return (
       <DivisionsWrapper>
         <div className="is-size-5">Division</div>
-        <Common.ToggleButton
-          isLink
-          on={firstBeat}
-          onClick={() => setFirstBeat(a => !a)}
-        >
-          {">"}
-        </Common.ToggleButton>
         <Common.Buttons hasAddons grow style={{ marginRight: "5px" }}>
           {([2, 3, 4, 5, 6] as t.Division[]).map((num: t.Division) => {
             const on = uiEnabledDivisions.get(num)!;
@@ -168,8 +139,18 @@ interface SignatureProps {
 
 const Signature: React.FC<SignatureProps> = React.memo(
   ({ setCurrentNumerator, currentNumerator }) => {
+    const hasAccent = redux.useSelector(
+      a => !!a.activeBeats.find(b => !!b.find(c => !!c.find(d => d.isAccented)))
+    );
     return (
       <section className="section buttons is-centered">
+        <Common.Button
+          disabled={!hasAccent}
+          isDanger={hasAccent}
+          onClick={() => redux.clearAccents()}
+        >
+          {">"}
+        </Common.Button>
         {[1, 2, 3, 4, 5].map(num => {
           const on = currentNumerator === num;
           return (
@@ -221,6 +202,8 @@ const BeatsWrapper = React.memo(styled.div`
 // TODO: - the selected division values should reset when you stop the metronome.
 // TODO: - If not playing, this should show the boring gray background.
 // TODO: - Resetting the beats should not reset the chosen accents.
+// TODO: I could write typed helpers for trying to navigate down the
+// a.activeBeats.
 const BeatRowItem: React.FC<{
   beatIndex: number;
   division: t.Division;

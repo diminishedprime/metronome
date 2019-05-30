@@ -114,12 +114,18 @@ export const addBPM = (action: number) => {
   setBPM(old => old + action);
 };
 
-// TODO: - just set the active booleans to false.
 export const resetActivebeats = () => {
   setActiveBeats(abs =>
     abs.map(ab => ab.map(dd => dd.map(d => ({ ...d, isActive: false }))))
   );
 };
+
+export const clearAccents = () => {
+  setActiveBeats(abs =>
+    abs.map(ab => ab.map(dd => dd.map(d => ({ ...d, isAccented: false }))))
+  );
+};
+
 export const updateActiveBeats = (numerator: t.Numerator) => {
   setActiveBeats(old => {
     return numerator.map((numeratorBeat, beatIndex) => {
@@ -194,7 +200,10 @@ const applyAction = <T>(action: t.RSA<T>, current: T) => {
 };
 
 export const setActiveBeats = (action: t.RSA<t.ActiveBeats>) => {
-  store.dispatch({ type: t.ActionType.SetActiveBeats, action });
+  const nextValue =
+    action instanceof Function ? action(store.getState().activeBeats) : action;
+  util.toLocalStorage(t.LocalStorageKey.ActiveBeats, nextValue);
+  store.dispatch({ type: t.ActionType.SetActiveBeats, action: nextValue });
 };
 
 const setMetronomeState = (action: t.RSA<t.MetronomeState>) => {
@@ -279,7 +288,10 @@ const defaultStore = (): t.ReduxState => {
   return {
     // TODO: hydrate this from localStorage.
     scales: util.fromLocalStorage(t.LocalStorageKey.ScalesDB, initScalesDB()),
-    activeBeats: initialActiveBeats(signature.numerator),
+    activeBeats: util.fromLocalStorage(
+      t.LocalStorageKey.ActiveBeats,
+      initialActiveBeats(signature.numerator)
+    ),
     settings: util.fromLocalStorage(t.LocalStorageKey.AppSettings, {
       keepAwake: false,
       showTuner: false

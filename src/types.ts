@@ -101,7 +101,7 @@ export enum LocalStorageKey {
   SignatureDivisions = "@mjh/k/signature-divisions-3",
   ShowKnown = "@mjh/k/show-known-2",
   ScalesDB = "@mjh/k/scales-db-3",
-  ActiveBeats = "@mjh/k/active-beats-2",
+  ActiveBeats = "@mjh/k/active-beats-3",
   TimeSignature = "@mjh/k/signature-3",
   BPM = "@mjh/k/bpm-0",
   KnownScales = "@mjh/k/known-scales-0",
