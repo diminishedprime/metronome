@@ -151,8 +151,6 @@ const useScheduleAhead = (audioContext: t.MAudioContext) => {
       runAtTime(audioContext, beat.time, () => {
         if (playingRef.current) {
           // TODO: - this is super janky.
-          // TODO: - this would be much nicer with an animation.
-          // TODO: - switch this to runAtTime to clear the beat it just set.
           // TODO: - If the division changes, we should reset all active beats to false.
           redux.updateActiveBeat(beat);
         }
