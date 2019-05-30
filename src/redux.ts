@@ -114,7 +114,7 @@ export const addBPM = (action: number) => {
   setBPM(old => old + action);
 };
 
-export const resetActivebeats = () => {
+export const clearActiveBeats = () => {
   setActiveBeats(abs =>
     abs.map(ab => ab.map(dd => dd.map(d => ({ ...d, isActive: false }))))
   );
