@@ -286,7 +286,6 @@ const initialActiveBeats = (
 const defaultStore = (): t.ReduxState => {
   const signature = defaultSignature();
   return {
-    // TODO: hydrate this from localStorage.
     scales: util.fromLocalStorage(t.LocalStorageKey.ScalesDB, initScalesDB()),
     activeBeats: util.fromLocalStorage(
       t.LocalStorageKey.ActiveBeats,
