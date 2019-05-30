@@ -304,7 +304,7 @@ const defaultStore = (): t.ReduxState => {
     }
   };
 };
-// TODO: - figure out how to add a local storage thing for hydration???
+
 const rootReducer = (
   store: t.ReduxState = defaultStore(),
   action: t.Action
