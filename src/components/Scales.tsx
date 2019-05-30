@@ -68,14 +68,6 @@ const LearnScales: React.FC<LearnScalesProps> = React.memo(({ reset, scaleMode }
         }
     }, [currentScale]);
 
-    if (id === undefined) {
-        reset();
-        return null;
-    }
-
-    const scale = currentScale!;
-    const { mode, pitch, bpm } = scale;
-
     const stop = React.useMemo(() => (
         <Common.Button isDanger isOutlined onClick={reset}>
             Stop
@@ -87,6 +79,15 @@ const LearnScales: React.FC<LearnScalesProps> = React.memo(({ reset, scaleMode }
             {nextScaleText}
         </Common.Button>
     ), [nextScaleText, nextScale])
+
+    if (id === undefined) {
+        reset();
+        return null;
+    }
+
+    const scale = currentScale!;
+    const { mode, pitch, bpm } = scale;
+
 
     return (
         <>
