@@ -54,10 +54,6 @@ const Divisions: React.FC<DivisionsProps> = React.memo(
 );
 
 // TODO: the logic for the time signature is way too complicated. I should update this to be simplier.
-// TODO: When changing the time signature, if we're adding, we should keep
-// existing accents, and use the same divisions as currently enabled in the UI.
-// TODO: When changing the time signature, if we're removing, we should just
-// remove from the end of the list.
 const TimeSignature = () => {
   const setSignature = redux.setSignature;
   const numerator = redux.useSelector(
