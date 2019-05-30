@@ -8,8 +8,6 @@ import { store } from "./redux";
 
 const click = require("./click.wav");
 
-// TODO - instead of scheduling a t.Beat, I think I should schedule a
-// t.DivisionDetails
 const scheduleNote = (
   audioContext: AudioContext,
   { time, gain, buffer }: t.Beat
