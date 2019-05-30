@@ -222,7 +222,7 @@ const useMetronome = (audioContext: t.MAudioContext) => {
     // TODO: - This would be fancier if when the next beat can still happen, it
     // didn't clear the active beat in the UI.
     redux.clearActiveBeats();
-    redux.updateActiveBeats(numerator);
+    redux.alignActiveBeatsWithNumerator(numerator);
   }, [numerator]);
 
   // If the metronome stops playing, we should reset the active beats.

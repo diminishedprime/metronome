@@ -126,7 +126,7 @@ export const clearAccents = () => {
   );
 };
 
-export const updateActiveBeats = (numerator: t.Numerator) => {
+export const alignActiveBeatsWithNumerator = (numerator: t.Numerator) => {
   setActiveBeats(old => {
     return numerator.map((numeratorBeat, beatIndex) => {
       const oldActiveBeat = old.get(beatIndex);
@@ -150,7 +150,7 @@ export const updateActiveBeats = (numerator: t.Numerator) => {
             return activeBeat;
           }
         },
-        immutable.Map<t.Division, t.ActiveDivision>() as t.ActiveBeat
+        immutable.Map<t.Division, t.ActiveDivision>()
       );
     });
   });
