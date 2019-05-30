@@ -172,7 +172,7 @@ export const useAudioContext = ():
           setAudioContext("pending");
           context.resume().then(() => {
             const firstGain = context.createGain();
-            firstGain.gain.value = 0.5;
+            firstGain.gain.value = 0.01;
             const firstNote = context.createOscillator();
             firstNote.type = "sine";
             firstNote.frequency.value = 440;
@@ -180,7 +180,7 @@ export const useAudioContext = ():
             firstGain.connect(context.destination);
 
             const secondGain = context.createGain();
-            secondGain.gain.value = 0.5;
+            secondGain.gain.value = 0.01;
             const secondNote = context.createOscillator();
             secondNote.type = "sine";
             secondNote.frequency.value = 554;
@@ -188,7 +188,7 @@ export const useAudioContext = ():
             secondGain.connect(context.destination);
 
             const thirdGain = context.createGain();
-            thirdGain.gain.value = 0.5;
+            thirdGain.gain.value = 0.01;
             const thirdNote = context.createOscillator();
             thirdNote.type = "sine";
             thirdNote.frequency.value = 659;
