@@ -158,41 +158,72 @@ export const useAudioContext = ():
   | "pending"
   | "not-supported" => {
   const [audioContext, setAudioContext] = React.useState<
-    AudioContext | "not-supported" | "pending" | undefined
-  >();
-  const audioContextRef = React.useRef<AudioContext>();
+    AudioContext | "not-supported" | "pending"
+  >("pending");
   const [hasFixed, setHasFixed] = React.useState(false);
-
-  const fixAudioContext = React.useCallback(() => {
-    if (!hasFixed) {
-      if (audioContextRef.current !== undefined) {
-        setAudioContext("pending");
-        audioContextRef.current.resume().then(() => {
-          setHasFixed(true);
-          setAudioContext(audioContextRef.current);
-          document.removeEventListener("touchstart", fixAudioContext);
-          document.removeEventListener("click", fixAudioContext);
-          document.removeEventListener("touchend", fixAudioContext);
-        });
-      }
-    }
-  }, [hasFixed, setHasFixed]);
 
   React.useEffect(() => {
     if (polyfill.AudioContext === undefined) {
       setAudioContext("not-supported");
     } else {
       const context = new polyfill.AudioContext();
-      audioContextRef.current = context;
-      if (context.state === "suspended") {
-        document.addEventListener("touchstart", fixAudioContext);
-        document.addEventListener("click", fixAudioContext);
-        document.addEventListener("touchend", fixAudioContext);
-      } else {
-        setAudioContext(context);
-      }
+      const fixAudioContext = () => {
+        if (!hasFixed) {
+          setAudioContext("pending");
+          context.resume().then(() => {
+            const firstGain = context.createGain();
+            firstGain.gain.value = 0.5;
+            const firstNote = context.createOscillator();
+            firstNote.type = "sine";
+            firstNote.frequency.value = 440;
+            firstNote.connect(firstGain);
+            firstGain.connect(context.destination);
+
+            const secondGain = context.createGain();
+            secondGain.gain.value = 0.5;
+            const secondNote = context.createOscillator();
+            secondNote.type = "sine";
+            secondNote.frequency.value = 554;
+            secondNote.connect(secondGain);
+            secondGain.connect(context.destination);
+
+            const thirdGain = context.createGain();
+            thirdGain.gain.value = 0.5;
+            const thirdNote = context.createOscillator();
+            thirdNote.type = "sine";
+            thirdNote.frequency.value = 659;
+            thirdNote.connect(thirdGain);
+            thirdGain.connect(context.destination);
+
+            const noteOffset = 0.025;
+
+            const first = context.currentTime + 0.1;
+            const second = first + noteOffset;
+            const third = second + noteOffset;
+            const end = third + noteOffset;
+
+            firstNote.start(first);
+            firstNote.stop(second);
+
+            secondNote.start(second);
+            secondNote.stop(third);
+
+            thirdNote.start(third);
+            thirdNote.stop(end);
+
+            setHasFixed(true);
+            setAudioContext(context);
+            document.removeEventListener("touchstart", fixAudioContext);
+            document.removeEventListener("click", fixAudioContext);
+            document.removeEventListener("touchend", fixAudioContext);
+          });
+        }
+      };
+      document.addEventListener("touchstart", fixAudioContext);
+      document.addEventListener("click", fixAudioContext);
+      document.addEventListener("touchend", fixAudioContext);
     }
-  }, [fixAudioContext]);
+  }, []);
 
   return audioContext;
 };
