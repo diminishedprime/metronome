@@ -1,5 +1,6 @@
 import React from "react";
 import Metronome from "./Metronome";
+import Dial2 from "./Dial2";
 import Settings from "./Settings";
 import Scales from "./Scales";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
@@ -176,11 +177,7 @@ const App: React.FC = () => {
             work. Sorry :(
           </div>
         )}
-        <Route
-          exact
-          path="/"
-          render={() => <Metronome audioContext={audioContext} />}
-        />
+        <Route exact path="/" render={() => <Dial2 />} />
         <Route
           exact
           path="/scales"
