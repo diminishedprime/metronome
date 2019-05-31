@@ -220,9 +220,13 @@ export const useAudioContext = ():
         });
       }
     };
-    document.addEventListener("touchstart", fixAudioContext);
-    document.addEventListener("click", fixAudioContext);
-    document.addEventListener("touchend", fixAudioContext);
+    if (context.state === "suspended") {
+      document.addEventListener("touchstart", fixAudioContext);
+      document.addEventListener("click", fixAudioContext);
+      document.addEventListener("touchend", fixAudioContext);
+    } else {
+      setAudioContext(context);
+    }
   }, []);
 
   return audioContext;
