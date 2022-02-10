@@ -64,7 +64,7 @@
     "@types/styled-components": "^4.1.14",
     "craco-workbox": "^0.1.0",
     "gh-pages": "^2.0.1",
-    "node-sass": "^4.12.0",
+    "node-sass": "^7.0.0",
     "prettier": "^1.17.0",
     "serve": "^11.0.0"
   }
